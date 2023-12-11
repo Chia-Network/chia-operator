@@ -19,7 +19,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller"
+	"github.com/chia-network/chia-operator/internal/controller/chiaca"
+	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
+	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
+	"github.com/chia-network/chia-operator/internal/controller/chianode"
+	"github.com/chia-network/chia-operator/internal/controller/chiatimelord"
+	"github.com/chia-network/chia-operator/internal/controller/chiawallet"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -77,42 +82,42 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.ChiaNodeReconciler{
+	if err = (&chianode.ChiaNodeReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaNode")
 		os.Exit(1)
 	}
-	if err = (&controller.ChiaFarmerReconciler{
+	if err = (&chiafarmer.ChiaFarmerReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaFarmer")
 		os.Exit(1)
 	}
-	if err = (&controller.ChiaHarvesterReconciler{
+	if err = (&chiaharvester.ChiaHarvesterReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaHarvester")
 		os.Exit(1)
 	}
-	if err = (&controller.ChiaCAReconciler{
+	if err = (&chiaca.ChiaCAReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaCA")
 		os.Exit(1)
 	}
-	if err = (&controller.ChiaWalletReconciler{
+	if err = (&chiawallet.ChiaWalletReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaWallet")
 		os.Exit(1)
 	}
-	if err = (&controller.ChiaTimelordReconciler{
+	if err = (&chiatimelord.ChiaTimelordReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
