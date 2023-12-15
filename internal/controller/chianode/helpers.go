@@ -173,12 +173,8 @@ func (r *ChiaNodeReconciler) getOwnerReference(ctx context.Context, node k8schia
 
 // getFullNodePort determines the correct full node port to use
 func (r *ChiaNodeReconciler) getFullNodePort(ctx context.Context, node k8schianetv1.ChiaNode) int32 {
-	if node.Spec.ChiaConfig.Testnet != nil {
-		if *node.Spec.ChiaConfig.Testnet {
-			return consts.TestnetNodePort
-		} else {
-			return consts.MainnetNodePort
-		}
+	if node.Spec.ChiaConfig.Testnet != nil && *node.Spec.ChiaConfig.Testnet {
+		return consts.TestnetNodePort
 	}
 	return consts.MainnetNodePort
 }

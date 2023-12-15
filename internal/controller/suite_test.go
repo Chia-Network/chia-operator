@@ -29,6 +29,7 @@ import (
 	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
 	"github.com/chia-network/chia-operator/internal/controller/chianode"
 	"github.com/chia-network/chia-operator/internal/controller/chiawallet"
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -61,7 +62,6 @@ var _ = BeforeSuite(func() {
 	}
 
 	var err error
-	// cfg is defined in this file globally.
 	cfg, err = testEnv.Start()
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
@@ -156,14 +156,14 @@ var _ = Describe("ChiaCA controller", func() {
 			Expect(k8sClient.Create(ctx, ca)).Should(Succeed())
 
 			// Look up the created ChiaCA
-			cronjobLookupKey := types.NamespacedName{Name: chiaCAName, Namespace: chiaCANamespace}
+			chiaCALookupKey := types.NamespacedName{Name: chiaCAName, Namespace: chiaCANamespace}
 			createdChiaCA := &apiv1.ChiaCA{}
 			Eventually(func() bool {
-				err := k8sClient.Get(ctx, cronjobLookupKey, createdChiaCA)
+				err := k8sClient.Get(ctx, chiaCALookupKey, createdChiaCA)
 				return err == nil
 			}, timeout, interval).Should(BeTrue())
 
-			// Ensure the ChiaCA's spec.chia.timezone was set to the expected timezone
+			// Ensure the ChiaCA's spec.Secret is equal to the given Secret name
 			Expect(createdChiaCA.Spec.Secret).Should(Equal(caSecretName))
 		})
 	})
@@ -200,10 +200,12 @@ var _ = Describe("ChiaFarmer controller", func() {
 				},
 				Spec: apiv1.ChiaFarmerSpec{
 					ChiaConfig: apiv1.ChiaFarmerConfigSpec{
-						CASecretName: caSecretName,
-						Testnet:      &testnet,
-						Timezone:     &timezone,
-						LogLevel:     &logLevel,
+						CommonChiaConfigSpec: apiv1.CommonChiaConfigSpec{
+							CASecretName: caSecretName,
+							Testnet:      &testnet,
+							Timezone:     &timezone,
+							LogLevel:     &logLevel,
+						},
 						FullNodePeer: fullNodePeer,
 						SecretKeySpec: apiv1.ChiaKeysSpec{
 							Name: secretKeyName,
@@ -335,10 +337,12 @@ var _ = Describe("ChiaNode controller", func() {
 				},
 				Spec: apiv1.ChiaNodeSpec{
 					ChiaConfig: apiv1.ChiaNodeConfigSpec{
-						CASecretName: caSecretName,
-						Testnet:      &testnet,
-						Timezone:     &timezone,
-						LogLevel:     &logLevel,
+						CommonChiaConfigSpec: apiv1.CommonChiaConfigSpec{
+							CASecretName: caSecretName,
+							Testnet:      &testnet,
+							Timezone:     &timezone,
+							LogLevel:     &logLevel,
+						},
 					},
 					Storage: &apiv1.StorageConfig{
 						ChiaRoot: &apiv1.ChiaRootConfig{
@@ -349,6 +353,7 @@ var _ = Describe("ChiaNode controller", func() {
 						},
 					},
 					ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
+						Enabled: true,
 						ServiceLabels: map[string]string{
 							"key": "value",
 						},
@@ -369,6 +374,8 @@ var _ = Describe("ChiaNode controller", func() {
 
 			// Ensure the ChiaNode's spec.chia.timezone was set to the expected timezone
 			Expect(*createdChiaNode.Spec.ChiaConfig.Timezone).Should(Equal(timezone))
+			Expect(createdChiaNode.Spec.ChiaConfig.Image).Should(Equal("ghcr.io/chia-network/chia:latest"))
+			Expect(createdChiaNode.Spec.ChiaExporterConfig.Image).Should(Equal(consts.DefaultChiaExporterImage))
 		})
 	})
 })
@@ -437,5 +444,4 @@ var _ = Describe("ChiaWallet controller", func() {
 			Expect(createdChiaWallet.Spec.ChiaConfig.FullNodePeer).Should(Equal(fullNodePeer))
 		})
 	})
-
 })

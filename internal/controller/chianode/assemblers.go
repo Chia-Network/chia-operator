@@ -181,16 +181,6 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 		chiaResources = *node.Spec.ChiaConfig.Resources
 	}
 
-	var imagePullPolicy corev1.PullPolicy
-	if node.Spec.ImagePullPolicy != nil {
-		imagePullPolicy = *node.Spec.ImagePullPolicy
-	}
-
-	var chiaExporterImage = node.Spec.ChiaExporterConfig.Image
-	if chiaExporterImage == "" {
-		chiaExporterImage = consts.DefaultChiaExporterImage
-	}
-
 	vols, volClaimTemplates := r.getChiaVolumesAndTemplates(ctx, node)
 
 	var stateful appsv1.StatefulSet = appsv1.StatefulSet{
@@ -202,7 +192,7 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 			OwnerReferences: r.getOwnerReference(ctx, node),
 		},
 		Spec: appsv1.StatefulSetSpec{
-			Replicas: node.Spec.Replicas,
+			Replicas: &node.Spec.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: r.getLabels(ctx, node),
 			},
@@ -219,7 +209,7 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 							Name:            "chia",
 							SecurityContext: chiaSecContext,
 							Image:           node.Spec.ChiaConfig.Image,
-							ImagePullPolicy: imagePullPolicy,
+							ImagePullPolicy: node.Spec.ImagePullPolicy,
 							Env:             r.getChiaNodeEnv(ctx, node),
 							Ports: []corev1.ContainerPort{
 								{
@@ -253,8 +243,11 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 		},
 	}
 
-	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, imagePullPolicy, chiaResources)
-	stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, exporterContainer)
+	if node.Spec.ChiaExporterConfig.Enabled {
+		exporterContainer := kube.GetChiaExporterContainer(ctx, node.Spec.ChiaExporterConfig.Image, chiaSecContext, node.Spec.ImagePullPolicy, chiaResources)
+		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, exporterContainer)
+
+	}
 
 	if node.Spec.PodSecurityContext != nil {
 		stateful.Spec.Template.Spec.SecurityContext = node.Spec.PodSecurityContext

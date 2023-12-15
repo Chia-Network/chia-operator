@@ -104,11 +104,6 @@ func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8
 		chiaResources = *farmer.Spec.ChiaConfig.Resources
 	}
 
-	var imagePullPolicy corev1.PullPolicy
-	if farmer.Spec.ImagePullPolicy != nil {
-		imagePullPolicy = *farmer.Spec.ImagePullPolicy
-	}
-
 	var chiaExporterImage = farmer.Spec.ChiaExporterConfig.Image
 	if chiaExporterImage == "" {
 		chiaExporterImage = consts.DefaultChiaExporterImage
@@ -138,7 +133,7 @@ func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8
 							Name:            "chia",
 							SecurityContext: chiaSecContext,
 							Image:           farmer.Spec.ChiaConfig.Image,
-							ImagePullPolicy: imagePullPolicy,
+							ImagePullPolicy: farmer.Spec.ImagePullPolicy,
 							Env:             r.getChiaEnv(ctx, farmer),
 							Ports: []corev1.ContainerPort{
 								{
@@ -184,7 +179,7 @@ func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8
 		},
 	}
 
-	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, imagePullPolicy, chiaResources)
+	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, farmer.Spec.ImagePullPolicy, chiaResources)
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 
 	if farmer.Spec.PodSecurityContext != nil {
