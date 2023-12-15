@@ -727,11 +727,18 @@ spec:
                     description: Timezone can be set to your local timezone for accurate
                       timestamps. Defaults to UTC
                     type: string
+                required:
+                - caSecretName
                 type: object
               chiaExporter:
                 description: ChiaExporterConfig defines the configuration options
                   available to Chia component containers
                 properties:
+                  enabled:
+                    default: true
+                    description: Enabled defines whether a chia-exporter sidecar container
+                      should run with the chia container
+                    type: boolean
                   image:
                     default: ghcr.io/chia-network/chia-exporter:latest
                     description: Image defines the image to use for the chia exporter

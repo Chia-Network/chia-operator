@@ -4,19 +4,69 @@ Copyright 2023 Chia Network Inc.
 
 package v1
 
+import corev1 "k8s.io/api/core/v1"
+
+// CommonChiaConfigSpec represents the common configuration options for a chia spec
+type CommonChiaConfigSpec struct {
+	// Image defines the image to use for the chia component containers
+	// +kubebuilder:default="ghcr.io/chia-network/chia:latest"
+	// +optional
+	Image string `json:"image,omitempty"`
+
+	// CASecretName is the name of the secret that contains the CA crt and key.
+	CASecretName string `json:"caSecretName"`
+
+	// Testnet is set to true if the Chia container should switch to the latest default testnet's settings
+	// +optional
+	Testnet *bool `json:"testnet,omitempty"`
+
+	// Timezone can be set to your local timezone for accurate timestamps. Defaults to UTC
+	// +optional
+	Timezone *string `json:"timezone,omitempty"`
+
+	// LogLevel is set to the desired chia config log_level
+	// +optional
+	LogLevel *string `json:"logLevel,omitempty"`
+
+	// Periodic probe of container liveness.
+	// +optional
+	LivenessProbe *corev1.Probe `json:"livenessProbe,omitempty"`
+
+	// Periodic probe of container service readiness.
+	// +optional
+	ReadinessProbe *corev1.Probe `json:"readinessProbe,omitempty"`
+
+	// StartupProbe indicates that the Pod has successfully initialized.
+	// +optional
+	StartupProbe *corev1.Probe `json:"startupProbe,omitempty"`
+
+	// Resources defines the compute resources for the Chia container
+	// +optional
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+
+	// SecurityContext defines the security context for the chia container
+	// +optional
+	SecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
+}
+
 // ChiaExporterConfigSpec defines the desired state of Chia exporter configuration
 type ChiaExporterConfigSpec struct {
+	// Enabled defines whether a chia-exporter sidecar container should run with the chia container
+	// +kubebuilder:default=true
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
+
 	// Image defines the image to use for the chia exporter containers
 	// +kubebuilder:default="ghcr.io/chia-network/chia-exporter:latest"
 	// +optional
-	Image string `json:"image"`
+	Image string `json:"image,omitempty"`
 
 	// Labels is a map of string keys and values to attach to the chia exporter k8s Service
 	// +optional
 	ServiceLabels map[string]string `json:"serviceLabels,omitempty"`
 }
 
-// ChiaKeysSpec defines the name of a kubernetes secret and key in that secret that contains the Chia mnemonic
+// ChiaKeysSpec defines the name of a kubernetes secret and key in that namespace that contains the Chia mnemonic
 type ChiaKeysSpec struct {
 	// SecretName is the name of the kubernetes secret containing a mnemonic key
 	Name string `json:"name"`
