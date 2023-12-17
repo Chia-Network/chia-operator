@@ -12,7 +12,7 @@ type CommonSpec struct {
 
 	// ChiaExporterConfig defines the configuration options available to Chia component containers
 	// +optional
-	ChiaExporterConfig ChiaExporterSpecChiaExporter `json:"chiaExporter,omitempty"`
+	ChiaExporterConfig SpecChiaExporter `json:"chiaExporter,omitempty"`
 
 	//StorageConfig defines the Chia container's CHIA_ROOT storage config
 	// +optional
@@ -80,8 +80,8 @@ type CommonSpecChia struct {
 	SecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
 }
 
-// ChiaExporterSpecChiaExporter defines the desired state of Chia exporter configuration
-type ChiaExporterSpecChiaExporter struct {
+// SpecChiaExporter defines the desired state of Chia exporter configuration
+type SpecChiaExporter struct {
 	// Enabled defines whether a chia-exporter sidecar container should run with the chia container
 	// +kubebuilder:default=true
 	// +optional
