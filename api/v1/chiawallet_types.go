@@ -13,15 +13,15 @@ type ChiaWalletSpec struct {
 	CommonSpec `json:",inline"`
 
 	// ChiaConfig defines the configuration options available to Chia component containers
-	ChiaConfig ChiaWalletConfigSpec `json:"chia"`
+	ChiaConfig ChiaWalletSpecChia `json:"chia"`
 }
 
-// ChiaWalletConfigSpec defines the desired state of Chia component configuration
-type ChiaWalletConfigSpec struct {
-	CommonChiaConfigSpec `json:",inline"`
+// ChiaWalletSpecChia defines the desired state of Chia component configuration
+type ChiaWalletSpecChia struct {
+	CommonSpecChia `json:",inline"`
 
-	// SecretKeySpec defines the k8s Secret name and key for a Chia mnemonic
-	SecretKeySpec ChiaKeysSpec `json:"secretKey"`
+	// SecretKey defines the k8s Secret name and key for a Chia mnemonic
+	SecretKey ChiaSecretKey `json:"secretKey"`
 
 	// FullNodePeer defines the farmer's full_node peer in host:port format.
 	// In Kubernetes this is likely to be <node service name>.<namespace>.svc.cluster.local:8555

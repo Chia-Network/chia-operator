@@ -13,7 +13,7 @@ type ChiaNodeSpec struct {
 	CommonSpec `json:",inline"`
 
 	// ChiaConfig defines the configuration options available to Chia component containers
-	ChiaConfig ChiaNodeConfigSpec `json:"chia"`
+	ChiaConfig ChiaNodeSpecChia `json:"chia"`
 
 	// Replicas is the desired number of replicas of the given Statefulset. defaults to 1.
 	// +optional
@@ -21,9 +21,9 @@ type ChiaNodeSpec struct {
 	Replicas int32 `json:"replicas,omitempty"`
 }
 
-// ChiaConfigSpec defines the desired state of Chia component configuration
-type ChiaNodeConfigSpec struct {
-	CommonChiaConfigSpec `json:",inline"`
+// ChiaNodeSpecChia defines the desired state of Chia component configuration
+type ChiaNodeSpecChia struct {
+	CommonSpecChia `json:",inline"`
 }
 
 // ChiaNodeStatus defines the observed state of ChiaNode

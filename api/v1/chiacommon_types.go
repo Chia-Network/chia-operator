@@ -12,7 +12,7 @@ type CommonSpec struct {
 
 	// ChiaExporterConfig defines the configuration options available to Chia component containers
 	// +optional
-	ChiaExporterConfig ChiaExporterConfigSpec `json:"chiaExporter,omitempty"`
+	ChiaExporterConfig ChiaExporterSpecChiaExporter `json:"chiaExporter,omitempty"`
 
 	//StorageConfig defines the Chia container's CHIA_ROOT storage config
 	// +optional
@@ -37,8 +37,8 @@ type CommonSpec struct {
 	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
 }
 
-// CommonChiaConfigSpec represents the common configuration options for a chia spec
-type CommonChiaConfigSpec struct {
+// CommonSpecChia represents the common configuration options for a chia spec
+type CommonSpecChia struct {
 	// Image defines the image to use for the chia component containers
 	// +kubebuilder:default="ghcr.io/chia-network/chia:latest"
 	// +optional
@@ -80,8 +80,8 @@ type CommonChiaConfigSpec struct {
 	SecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
 }
 
-// ChiaExporterConfigSpec defines the desired state of Chia exporter configuration
-type ChiaExporterConfigSpec struct {
+// ChiaExporterSpecChiaExporter defines the desired state of Chia exporter configuration
+type ChiaExporterSpecChiaExporter struct {
 	// Enabled defines whether a chia-exporter sidecar container should run with the chia container
 	// +kubebuilder:default=true
 	// +optional
@@ -97,8 +97,8 @@ type ChiaExporterConfigSpec struct {
 	ServiceLabels map[string]string `json:"serviceLabels,omitempty"`
 }
 
-// ChiaKeysSpec defines the name of a kubernetes secret and key in that namespace that contains the Chia mnemonic
-type ChiaKeysSpec struct {
+// ChiaSecretKey defines the name of a kubernetes secret and key in that namespace that contains the Chia mnemonic
+type ChiaSecretKey struct {
 	// SecretName is the name of the kubernetes secret containing a mnemonic key
 	Name string `json:"name"`
 

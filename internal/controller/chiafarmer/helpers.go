@@ -34,7 +34,7 @@ func (r *ChiaFarmerReconciler) getChiaVolumes(ctx context.Context, farmer k8schi
 		Name: "key",
 		VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
-				SecretName: farmer.Spec.ChiaConfig.SecretKeySpec.Name,
+				SecretName: farmer.Spec.ChiaConfig.SecretKey.Name,
 			},
 		},
 	})
@@ -126,7 +126,7 @@ func (r *ChiaFarmerReconciler) getChiaEnv(ctx context.Context, farmer k8schianet
 	// keys env var
 	env = append(env, corev1.EnvVar{
 		Name:  "keys",
-		Value: fmt.Sprintf("/key/%s", farmer.Spec.ChiaConfig.SecretKeySpec.Key),
+		Value: fmt.Sprintf("/key/%s", farmer.Spec.ChiaConfig.SecretKey.Key),
 	})
 
 	// node peer env var

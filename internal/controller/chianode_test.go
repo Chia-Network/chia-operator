@@ -37,8 +37,8 @@ var _ = Describe("ChiaNode controller", func() {
 					Namespace: "default",
 				},
 				Spec: apiv1.ChiaNodeSpec{
-					ChiaConfig: apiv1.ChiaNodeConfigSpec{
-						CommonChiaConfigSpec: apiv1.CommonChiaConfigSpec{
+					ChiaConfig: apiv1.ChiaNodeSpecChia{
+						CommonSpecChia: apiv1.CommonSpecChia{
 							CASecretName: "test-secret",
 						},
 					},
@@ -47,8 +47,8 @@ var _ = Describe("ChiaNode controller", func() {
 			expect := &apiv1.ChiaNode{
 				Spec: apiv1.ChiaNodeSpec{
 					Replicas: 1,
-					ChiaConfig: apiv1.ChiaNodeConfigSpec{
-						CommonChiaConfigSpec: apiv1.CommonChiaConfigSpec{
+					ChiaConfig: apiv1.ChiaNodeSpecChia{
+						CommonSpecChia: apiv1.CommonSpecChia{
 							Image:        "ghcr.io/chia-network/chia:latest",
 							CASecretName: "test-secret",
 						},
@@ -56,7 +56,7 @@ var _ = Describe("ChiaNode controller", func() {
 					CommonSpec: apiv1.CommonSpec{
 						ServiceType:     "ClusterIP",
 						ImagePullPolicy: "Always",
-						ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
+						ChiaExporterConfig: apiv1.ChiaExporterSpecChiaExporter{
 							Enabled: true,
 							Image:   "ghcr.io/chia-network/chia-exporter:latest",
 						},

@@ -13,12 +13,12 @@ type ChiaHarvesterSpec struct {
 	CommonSpec `json:",inline"`
 
 	// ChiaConfig defines the configuration options available to Chia component containers
-	ChiaConfig ChiaHarvesterConfigSpec `json:"chia"`
+	ChiaConfig ChiaHarvesterSpecChia `json:"chia"`
 }
 
-// ChiaHarvesterConfigSpec defines the desired state of Chia component configuration
-type ChiaHarvesterConfigSpec struct {
-	CommonChiaConfigSpec `json:",inline"`
+// ChiaHarvesterSpecChia defines the desired state of Chia component configuration
+type ChiaHarvesterSpecChia struct {
+	CommonSpecChia `json:",inline"`
 
 	// FarmerAddress defines the harvester's farmer peer's hostname. The farmer's port is inferred.
 	// In Kubernetes this is likely to be <farmer service name>.<namespace>.svc.cluster.local

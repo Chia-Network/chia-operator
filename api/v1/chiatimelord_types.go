@@ -13,12 +13,12 @@ type ChiaTimelordSpec struct {
 	CommonSpec `json:",inline"`
 
 	// ChiaConfig defines the configuration options available to Chia component containers
-	ChiaConfig ChiaTimelordConfigSpec `json:"chia"`
+	ChiaConfig ChiaTimelordSpecChia `json:"chia"`
 }
 
-// ChiaTimelordConfigSpec defines the desired state of Chia component configuration
-type ChiaTimelordConfigSpec struct {
-	CommonChiaConfigSpec `json:",inline"`
+// ChiaTimelordSpecChia defines the desired state of Chia component configuration
+type ChiaTimelordSpecChia struct {
+	CommonSpecChia `json:",inline"`
 
 	// FullNodePeer defines the timelord's full_node peer in host:port format.
 	// In Kubernetes this is likely to be <node service name>.<namespace>.svc.cluster.local:8555

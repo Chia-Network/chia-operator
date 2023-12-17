@@ -37,8 +37,8 @@ var _ = Describe("ChiaTimelord controller", func() {
 					Namespace: "default",
 				},
 				Spec: apiv1.ChiaTimelordSpec{
-					ChiaConfig: apiv1.ChiaTimelordConfigSpec{
-						CommonChiaConfigSpec: apiv1.CommonChiaConfigSpec{
+					ChiaConfig: apiv1.ChiaTimelordSpecChia{
+						CommonSpecChia: apiv1.CommonSpecChia{
 							CASecretName: "test-secret",
 						},
 						FullNodePeer: "node.default.svc.cluster.local:58444",
@@ -47,8 +47,8 @@ var _ = Describe("ChiaTimelord controller", func() {
 			}
 			expect := &apiv1.ChiaTimelord{
 				Spec: apiv1.ChiaTimelordSpec{
-					ChiaConfig: apiv1.ChiaTimelordConfigSpec{
-						CommonChiaConfigSpec: apiv1.CommonChiaConfigSpec{
+					ChiaConfig: apiv1.ChiaTimelordSpecChia{
+						CommonSpecChia: apiv1.CommonSpecChia{
 							Image:        "ghcr.io/chia-network/chia:latest",
 							CASecretName: "test-secret",
 						},
@@ -57,7 +57,7 @@ var _ = Describe("ChiaTimelord controller", func() {
 					CommonSpec: apiv1.CommonSpec{
 						ServiceType:     "ClusterIP",
 						ImagePullPolicy: "Always",
-						ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
+						ChiaExporterConfig: apiv1.ChiaExporterSpecChiaExporter{
 							Enabled: true,
 							Image:   "ghcr.io/chia-network/chia-exporter:latest",
 						},

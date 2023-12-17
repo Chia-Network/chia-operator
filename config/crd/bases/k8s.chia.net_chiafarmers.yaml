@@ -409,8 +409,8 @@ spec:
                         type: object
                     type: object
                   secretKey:
-                    description: SecretKeySpec defines the k8s Secret name and key
-                      for a Chia mnemonic
+                    description: SecretKey defines the k8s Secret name and key for
+                      a Chia mnemonic
                     properties:
                       key:
                         description: Key is the key of the data item in the Secret

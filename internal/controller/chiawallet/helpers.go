@@ -34,7 +34,7 @@ func (r *ChiaWalletReconciler) getChiaVolumes(ctx context.Context, wallet k8schi
 		Name: "key",
 		VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
-				SecretName: wallet.Spec.ChiaConfig.SecretKeySpec.Name,
+				SecretName: wallet.Spec.ChiaConfig.SecretKey.Name,
 			},
 		},
 	})
@@ -126,7 +126,7 @@ func (r *ChiaWalletReconciler) getChiaEnv(ctx context.Context, wallet k8schianet
 	// keys env var
 	env = append(env, corev1.EnvVar{
 		Name:  "keys",
-		Value: fmt.Sprintf("/key/%s", wallet.Spec.ChiaConfig.SecretKeySpec.Key),
+		Value: fmt.Sprintf("/key/%s", wallet.Spec.ChiaConfig.SecretKey.Key),
 	})
 
 	// node peer env var

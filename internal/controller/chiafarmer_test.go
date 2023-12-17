@@ -37,12 +37,12 @@ var _ = Describe("ChiaFarmer controller", func() {
 					Namespace: "default",
 				},
 				Spec: apiv1.ChiaFarmerSpec{
-					ChiaConfig: apiv1.ChiaFarmerConfigSpec{
-						CommonChiaConfigSpec: apiv1.CommonChiaConfigSpec{
+					ChiaConfig: apiv1.ChiaFarmerSpecChia{
+						CommonSpecChia: apiv1.CommonSpecChia{
 							CASecretName: "test-secret",
 						},
 						FullNodePeer: "node.default.svc.cluster.local:58444",
-						SecretKeySpec: apiv1.ChiaKeysSpec{
+						SecretKey: apiv1.ChiaSecretKey{
 							Name: "testkeys",
 							Key:  "key.txt",
 						},
@@ -51,13 +51,13 @@ var _ = Describe("ChiaFarmer controller", func() {
 			}
 			expect := &apiv1.ChiaFarmer{
 				Spec: apiv1.ChiaFarmerSpec{
-					ChiaConfig: apiv1.ChiaFarmerConfigSpec{
-						CommonChiaConfigSpec: apiv1.CommonChiaConfigSpec{
+					ChiaConfig: apiv1.ChiaFarmerSpecChia{
+						CommonSpecChia: apiv1.CommonSpecChia{
 							Image:        "ghcr.io/chia-network/chia:latest",
 							CASecretName: "test-secret",
 						},
 						FullNodePeer: "node.default.svc.cluster.local:58444",
-						SecretKeySpec: apiv1.ChiaKeysSpec{
+						SecretKey: apiv1.ChiaSecretKey{
 							Name: "testkeys",
 							Key:  "key.txt",
 						},
@@ -65,7 +65,7 @@ var _ = Describe("ChiaFarmer controller", func() {
 					CommonSpec: apiv1.CommonSpec{
 						ServiceType:     "ClusterIP",
 						ImagePullPolicy: "Always",
-						ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
+						ChiaExporterConfig: apiv1.ChiaExporterSpecChiaExporter{
 							Enabled: true,
 							Image:   "ghcr.io/chia-network/chia-exporter:latest",
 						},
