@@ -5,42 +5,15 @@ Copyright 2023 Chia Network Inc.
 package v1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ChiaFarmerSpec defines the desired state of ChiaFarmer
 type ChiaFarmerSpec struct {
-	AdditionalMetadata `json:",inline"`
+	CommonSpec `json:",inline"`
 
 	// ChiaConfig defines the configuration options available to Chia component containers
 	ChiaConfig ChiaFarmerConfigSpec `json:"chia"`
-
-	// ChiaExporterConfig defines the configuration options available to Chia component containers
-	// +optional
-	ChiaExporterConfig ChiaExporterConfigSpec `json:"chiaExporter,omitempty"`
-
-	//StorageConfig defines the Chia container's CHIA_ROOT storage config
-	// +optional
-	Storage *StorageConfig `json:"storage,omitempty"`
-
-	// ServiceType is the type of the service for the farmer instance
-	// +optional
-	// +kubebuilder:default="ClusterIP"
-	ServiceType string `json:"serviceType"`
-
-	// ImagePullPolicy is the pull policy for containers in the pod
-	// +optional
-	// +kubebuilder:default="Always"
-	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
-
-	// NodeSelector selects a node by key value pairs
-	// +optional
-	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
-
-	// PodSecurityContext defines the security context for the pod
-	// +optional
-	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
 }
 
 // ChiaFarmerConfigSpec defines the desired state of Chia component configuration

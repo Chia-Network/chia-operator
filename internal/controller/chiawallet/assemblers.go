@@ -1,3 +1,7 @@
+/*
+Copyright 2023 Chia Network Inc.
+*/
+
 package chiawallet
 
 import (
@@ -104,11 +108,6 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 		chiaResources = *wallet.Spec.ChiaConfig.Resources
 	}
 
-	var imagePullPolicy corev1.PullPolicy
-	if wallet.Spec.ImagePullPolicy != nil {
-		imagePullPolicy = *wallet.Spec.ImagePullPolicy
-	}
-
 	var chiaExporterImage = wallet.Spec.ChiaExporterConfig.Image
 	if chiaExporterImage == "" {
 		chiaExporterImage = consts.DefaultChiaExporterImage
@@ -138,7 +137,7 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 							Name:            "chia",
 							SecurityContext: chiaSecContext,
 							Image:           wallet.Spec.ChiaConfig.Image,
-							ImagePullPolicy: imagePullPolicy,
+							ImagePullPolicy: wallet.Spec.ImagePullPolicy,
 							Env:             r.getChiaEnv(ctx, wallet),
 							Ports: []corev1.ContainerPort{
 								{
@@ -184,7 +183,7 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 		},
 	}
 
-	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, imagePullPolicy, chiaResources)
+	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, wallet.Spec.ImagePullPolicy, chiaResources)
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 
 	if wallet.Spec.PodSecurityContext != nil {

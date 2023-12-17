@@ -6,6 +6,37 @@ package v1
 
 import corev1 "k8s.io/api/core/v1"
 
+// CommonSpec represents the common configuration options for controller APIs at the top-spec level
+type CommonSpec struct {
+	AdditionalMetadata `json:",inline"`
+
+	// ChiaExporterConfig defines the configuration options available to Chia component containers
+	// +optional
+	ChiaExporterConfig ChiaExporterConfigSpec `json:"chiaExporter,omitempty"`
+
+	//StorageConfig defines the Chia container's CHIA_ROOT storage config
+	// +optional
+	Storage *StorageConfig `json:"storage,omitempty"`
+
+	// ServiceType is the type of the service that governs this ChiaNode StatefulSet.
+	// +optional
+	// +kubebuilder:default="ClusterIP"
+	ServiceType string `json:"serviceType,omitempty"`
+
+	// ImagePullPolicy is the pull policy for containers in the pod
+	// +optional
+	// +kubebuilder:default="Always"
+	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
+
+	// NodeSelector selects a node by key value pairs
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
+	// PodSecurityContext defines the security context for the pod
+	// +optional
+	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
+}
+
 // CommonChiaConfigSpec represents the common configuration options for a chia spec
 type CommonChiaConfigSpec struct {
 	// Image defines the image to use for the chia component containers

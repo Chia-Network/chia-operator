@@ -1,3 +1,7 @@
+/*
+Copyright 2023 Chia Network Inc.
+*/
+
 package chiatimelord
 
 import (
@@ -104,11 +108,6 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 		chiaResources = *tl.Spec.ChiaConfig.Resources
 	}
 
-	var imagePullPolicy corev1.PullPolicy
-	if tl.Spec.ImagePullPolicy != nil {
-		imagePullPolicy = *tl.Spec.ImagePullPolicy
-	}
-
 	var chiaExporterImage = tl.Spec.ChiaExporterConfig.Image
 	if chiaExporterImage == "" {
 		chiaExporterImage = consts.DefaultChiaExporterImage
@@ -138,7 +137,7 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 							Name:            "chia",
 							SecurityContext: chiaSecContext,
 							Image:           tl.Spec.ChiaConfig.Image,
-							ImagePullPolicy: imagePullPolicy,
+							ImagePullPolicy: tl.Spec.ImagePullPolicy,
 							Env:             r.getChiaEnv(ctx, tl),
 							Ports: []corev1.ContainerPort{
 								{
@@ -180,7 +179,7 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 		},
 	}
 
-	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, imagePullPolicy, chiaResources)
+	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, tl.Spec.ImagePullPolicy, chiaResources)
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 
 	if tl.Spec.PodSecurityContext != nil {

@@ -212,9 +212,11 @@ var _ = Describe("ChiaFarmer controller", func() {
 							Key:  secretKeyKey,
 						},
 					},
-					ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
-						ServiceLabels: map[string]string{
-							"key": "value",
+					CommonSpec: apiv1.CommonSpec{
+						ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
+							ServiceLabels: map[string]string{
+								"key": "value",
+							},
 						},
 					},
 				},
@@ -265,26 +267,30 @@ var _ = Describe("ChiaHarvester controller", func() {
 				},
 				Spec: apiv1.ChiaHarvesterSpec{
 					ChiaConfig: apiv1.ChiaHarvesterConfigSpec{
-						CASecretName: caSecretName,
-						Testnet:      &testnet,
-						Timezone:     &timezone,
-						LogLevel:     &logLevel,
-					},
-					Storage: &apiv1.StorageConfig{
-						Plots: &apiv1.PlotsConfig{
-							HostPathVolume: []*apiv1.HostPathVolumeConfig{
-								{
-									Path: "/home/test/plot1",
-								},
-								{
-									Path: "/home/test/plot2",
-								},
-							},
+						CommonChiaConfigSpec: apiv1.CommonChiaConfigSpec{
+							CASecretName: caSecretName,
+							Testnet:      &testnet,
+							Timezone:     &timezone,
+							LogLevel:     &logLevel,
 						},
 					},
-					ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
-						ServiceLabels: map[string]string{
-							"key": "value",
+					CommonSpec: apiv1.CommonSpec{
+						ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
+							ServiceLabels: map[string]string{
+								"key": "value",
+							},
+						},
+						Storage: &apiv1.StorageConfig{
+							Plots: &apiv1.PlotsConfig{
+								HostPathVolume: []*apiv1.HostPathVolumeConfig{
+									{
+										Path: "/home/test/plot1",
+									},
+									{
+										Path: "/home/test/plot2",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -344,18 +350,19 @@ var _ = Describe("ChiaNode controller", func() {
 							LogLevel:     &logLevel,
 						},
 					},
-					Storage: &apiv1.StorageConfig{
-						ChiaRoot: &apiv1.ChiaRootConfig{
-							PersistentVolumeClaim: &apiv1.PersistentVolumeClaimConfig{
-								StorageClass:    storageClass,
-								ResourceRequest: resourceRequest,
+					CommonSpec: apiv1.CommonSpec{
+						ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
+							ServiceLabels: map[string]string{
+								"key": "value",
 							},
 						},
-					},
-					ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
-						Enabled: true,
-						ServiceLabels: map[string]string{
-							"key": "value",
+						Storage: &apiv1.StorageConfig{
+							ChiaRoot: &apiv1.ChiaRootConfig{
+								PersistentVolumeClaim: &apiv1.PersistentVolumeClaimConfig{
+									StorageClass:    storageClass,
+									ResourceRequest: resourceRequest,
+								},
+							},
 						},
 					},
 				},
@@ -411,19 +418,23 @@ var _ = Describe("ChiaWallet controller", func() {
 				},
 				Spec: apiv1.ChiaWalletSpec{
 					ChiaConfig: apiv1.ChiaWalletConfigSpec{
-						CASecretName: caSecretName,
-						Testnet:      &testnet,
-						Timezone:     &timezone,
-						LogLevel:     &logLevel,
+						CommonChiaConfigSpec: apiv1.CommonChiaConfigSpec{
+							CASecretName: caSecretName,
+							Testnet:      &testnet,
+							Timezone:     &timezone,
+							LogLevel:     &logLevel,
+						},
 						FullNodePeer: fullNodePeer,
 						SecretKeySpec: apiv1.ChiaKeysSpec{
 							Name: secretKeyName,
 							Key:  secretKeyKey,
 						},
 					},
-					ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
-						ServiceLabels: map[string]string{
-							"key": "value",
+					CommonSpec: apiv1.CommonSpec{
+						ChiaExporterConfig: apiv1.ChiaExporterConfigSpec{
+							ServiceLabels: map[string]string{
+								"key": "value",
+							},
 						},
 					},
 				},

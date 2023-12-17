@@ -942,8 +942,8 @@ spec:
                 type: object
               serviceType:
                 default: ClusterIP
-                description: ServiceType is the type of the service for the timelord
-                  instance
+                description: ServiceType is the type of the service that governs this
+                  ChiaNode StatefulSet.
                 type: string
               storage:
                 description: StorageConfig defines the Chia container's CHIA_ROOT

@@ -1,3 +1,7 @@
+/*
+Copyright 2023 Chia Network Inc.
+*/
+
 package chiaharvester
 
 import (
@@ -104,11 +108,6 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 		chiaResources = *harvester.Spec.ChiaConfig.Resources
 	}
 
-	var imagePullPolicy corev1.PullPolicy
-	if harvester.Spec.ImagePullPolicy != nil {
-		imagePullPolicy = *harvester.Spec.ImagePullPolicy
-	}
-
 	var chiaExporterImage = harvester.Spec.ChiaExporterConfig.Image
 	if chiaExporterImage == "" {
 		chiaExporterImage = consts.DefaultChiaExporterImage
@@ -138,7 +137,7 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 							Name:            "chia",
 							SecurityContext: chiaSecContext,
 							Image:           harvester.Spec.ChiaConfig.Image,
-							ImagePullPolicy: imagePullPolicy,
+							ImagePullPolicy: harvester.Spec.ImagePullPolicy,
 							Env:             r.getChiaEnv(ctx, harvester),
 							Ports: []corev1.ContainerPort{
 								{
@@ -171,7 +170,7 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 		},
 	}
 
-	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, imagePullPolicy, chiaResources)
+	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, harvester.Spec.ImagePullPolicy, chiaResources)
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 
 	if harvester.Spec.PodSecurityContext != nil {
