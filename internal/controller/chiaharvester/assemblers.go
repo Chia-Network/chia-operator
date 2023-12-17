@@ -83,36 +83,6 @@ func (r *ChiaHarvesterReconciler) assembleChiaExporterService(ctx context.Contex
 
 // assembleDeployment assembles the harvester Deployment resource for a ChiaHarvester CR
 func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harvester k8schianetv1.ChiaHarvester) appsv1.Deployment {
-	var chiaSecContext *corev1.SecurityContext
-	if harvester.Spec.ChiaConfig.SecurityContext != nil {
-		chiaSecContext = harvester.Spec.ChiaConfig.SecurityContext
-	}
-
-	var chiaLivenessProbe *corev1.Probe
-	if harvester.Spec.ChiaConfig.LivenessProbe != nil {
-		chiaLivenessProbe = harvester.Spec.ChiaConfig.LivenessProbe
-	}
-
-	var chiaReadinessProbe *corev1.Probe
-	if harvester.Spec.ChiaConfig.ReadinessProbe != nil {
-		chiaReadinessProbe = harvester.Spec.ChiaConfig.ReadinessProbe
-	}
-
-	var chiaStartupProbe *corev1.Probe
-	if harvester.Spec.ChiaConfig.StartupProbe != nil {
-		chiaStartupProbe = harvester.Spec.ChiaConfig.StartupProbe
-	}
-
-	var chiaResources corev1.ResourceRequirements
-	if harvester.Spec.ChiaConfig.Resources != nil {
-		chiaResources = *harvester.Spec.ChiaConfig.Resources
-	}
-
-	var chiaExporterImage = harvester.Spec.ChiaExporterConfig.Image
-	if chiaExporterImage == "" {
-		chiaExporterImage = consts.DefaultChiaExporterImage
-	}
-
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
@@ -135,7 +105,6 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 					Containers: []corev1.Container{
 						{
 							Name:            "chia",
-							SecurityContext: chiaSecContext,
 							Image:           harvester.Spec.ChiaConfig.Image,
 							ImagePullPolicy: harvester.Spec.ImagePullPolicy,
 							Env:             r.getChiaEnv(ctx, harvester),
@@ -156,11 +125,7 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 									Protocol:      "TCP",
 								},
 							},
-							LivenessProbe:  chiaLivenessProbe,
-							ReadinessProbe: chiaReadinessProbe,
-							StartupProbe:   chiaStartupProbe,
-							Resources:      chiaResources,
-							VolumeMounts:   r.getChiaVolumeMounts(ctx, harvester),
+							VolumeMounts: r.getChiaVolumeMounts(ctx, harvester),
 						},
 					},
 					NodeSelector: harvester.Spec.NodeSelector,
@@ -170,8 +135,34 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 		},
 	}
 
-	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, harvester.Spec.ImagePullPolicy, chiaResources)
-	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
+	var containerSecurityContext *corev1.SecurityContext
+	if harvester.Spec.ChiaConfig.SecurityContext != nil {
+		containerSecurityContext = harvester.Spec.ChiaConfig.SecurityContext
+		deploy.Spec.Template.Spec.Containers[0].SecurityContext = harvester.Spec.ChiaConfig.SecurityContext
+	}
+
+	if harvester.Spec.ChiaConfig.LivenessProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].LivenessProbe = harvester.Spec.ChiaConfig.LivenessProbe
+	}
+
+	if harvester.Spec.ChiaConfig.ReadinessProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].ReadinessProbe = harvester.Spec.ChiaConfig.ReadinessProbe
+	}
+
+	if harvester.Spec.ChiaConfig.StartupProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].StartupProbe = harvester.Spec.ChiaConfig.StartupProbe
+	}
+
+	var containerResorces corev1.ResourceRequirements
+	if harvester.Spec.ChiaConfig.Resources != nil {
+		containerResorces = *harvester.Spec.ChiaConfig.Resources
+		deploy.Spec.Template.Spec.Containers[0].Resources = *harvester.Spec.ChiaConfig.Resources
+	}
+
+	if harvester.Spec.ChiaExporterConfig.Enabled {
+		exporterContainer := kube.GetChiaExporterContainer(ctx, harvester.Spec.ChiaExporterConfig.Image, containerSecurityContext, harvester.Spec.ImagePullPolicy, containerResorces)
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
+	}
 
 	if harvester.Spec.PodSecurityContext != nil {
 		deploy.Spec.Template.Spec.SecurityContext = harvester.Spec.PodSecurityContext

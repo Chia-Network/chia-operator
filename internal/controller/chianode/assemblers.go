@@ -160,31 +160,6 @@ func (r *ChiaNodeReconciler) assembleChiaExporterService(ctx context.Context, no
 
 // assembleStatefulset assembles the node StatefulSet resource for a ChiaNode CR
 func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode) appsv1.StatefulSet {
-	var chiaSecContext *corev1.SecurityContext
-	if node.Spec.ChiaConfig.SecurityContext != nil {
-		chiaSecContext = node.Spec.ChiaConfig.SecurityContext
-	}
-
-	var chiaLivenessProbe *corev1.Probe
-	if node.Spec.ChiaConfig.LivenessProbe != nil {
-		chiaLivenessProbe = node.Spec.ChiaConfig.LivenessProbe
-	}
-
-	var chiaReadinessProbe *corev1.Probe
-	if node.Spec.ChiaConfig.ReadinessProbe != nil {
-		chiaReadinessProbe = node.Spec.ChiaConfig.ReadinessProbe
-	}
-
-	var chiaStartupProbe *corev1.Probe
-	if node.Spec.ChiaConfig.StartupProbe != nil {
-		chiaStartupProbe = node.Spec.ChiaConfig.StartupProbe
-	}
-
-	var chiaResources corev1.ResourceRequirements
-	if node.Spec.ChiaConfig.Resources != nil {
-		chiaResources = *node.Spec.ChiaConfig.Resources
-	}
-
 	vols, volClaimTemplates := r.getChiaVolumesAndTemplates(ctx, node)
 
 	var stateful appsv1.StatefulSet = appsv1.StatefulSet{
@@ -211,7 +186,6 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 					Containers: []corev1.Container{
 						{
 							Name:            "chia",
-							SecurityContext: chiaSecContext,
 							Image:           node.Spec.ChiaConfig.Image,
 							ImagePullPolicy: node.Spec.ImagePullPolicy,
 							Env:             r.getChiaNodeEnv(ctx, node),
@@ -232,11 +206,7 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 									Protocol:      "TCP",
 								},
 							},
-							LivenessProbe:  chiaLivenessProbe,
-							ReadinessProbe: chiaReadinessProbe,
-							StartupProbe:   chiaStartupProbe,
-							Resources:      chiaResources,
-							VolumeMounts:   r.getChiaVolumeMounts(ctx, node),
+							VolumeMounts: r.getChiaVolumeMounts(ctx, node),
 						},
 					},
 					NodeSelector: node.Spec.NodeSelector,
@@ -247,10 +217,33 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 		},
 	}
 
-	if node.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, node.Spec.ChiaExporterConfig.Image, chiaSecContext, node.Spec.ImagePullPolicy, chiaResources)
-		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, exporterContainer)
+	var containerSecurityContext *corev1.SecurityContext
+	if node.Spec.ChiaConfig.SecurityContext != nil {
+		containerSecurityContext = node.Spec.ChiaConfig.SecurityContext
+		stateful.Spec.Template.Spec.Containers[0].SecurityContext = node.Spec.ChiaConfig.SecurityContext
+	}
 
+	if node.Spec.ChiaConfig.LivenessProbe != nil {
+		stateful.Spec.Template.Spec.Containers[0].LivenessProbe = node.Spec.ChiaConfig.LivenessProbe
+	}
+
+	if node.Spec.ChiaConfig.ReadinessProbe != nil {
+		stateful.Spec.Template.Spec.Containers[0].ReadinessProbe = node.Spec.ChiaConfig.ReadinessProbe
+	}
+
+	if node.Spec.ChiaConfig.StartupProbe != nil {
+		stateful.Spec.Template.Spec.Containers[0].StartupProbe = node.Spec.ChiaConfig.StartupProbe
+	}
+
+	var containerResorces corev1.ResourceRequirements
+	if node.Spec.ChiaConfig.Resources != nil {
+		containerResorces = *node.Spec.ChiaConfig.Resources
+		stateful.Spec.Template.Spec.Containers[0].Resources = *node.Spec.ChiaConfig.Resources
+	}
+
+	if node.Spec.ChiaExporterConfig.Enabled {
+		exporterContainer := kube.GetChiaExporterContainer(ctx, node.Spec.ChiaExporterConfig.Image, containerSecurityContext, node.Spec.ImagePullPolicy, containerResorces)
+		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, exporterContainer)
 	}
 
 	if node.Spec.PodSecurityContext != nil {

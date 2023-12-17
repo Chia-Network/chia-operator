@@ -83,36 +83,6 @@ func (r *ChiaWalletReconciler) assembleChiaExporterService(ctx context.Context, 
 
 // assembleDeployment reconciles the wallet Deployment resource for a ChiaWallet CR
 func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet) appsv1.Deployment {
-	var chiaSecContext *corev1.SecurityContext
-	if wallet.Spec.ChiaConfig.SecurityContext != nil {
-		chiaSecContext = wallet.Spec.ChiaConfig.SecurityContext
-	}
-
-	var chiaLivenessProbe *corev1.Probe
-	if wallet.Spec.ChiaConfig.LivenessProbe != nil {
-		chiaLivenessProbe = wallet.Spec.ChiaConfig.LivenessProbe
-	}
-
-	var chiaReadinessProbe *corev1.Probe
-	if wallet.Spec.ChiaConfig.ReadinessProbe != nil {
-		chiaReadinessProbe = wallet.Spec.ChiaConfig.ReadinessProbe
-	}
-
-	var chiaStartupProbe *corev1.Probe
-	if wallet.Spec.ChiaConfig.StartupProbe != nil {
-		chiaStartupProbe = wallet.Spec.ChiaConfig.StartupProbe
-	}
-
-	var chiaResources corev1.ResourceRequirements
-	if wallet.Spec.ChiaConfig.Resources != nil {
-		chiaResources = *wallet.Spec.ChiaConfig.Resources
-	}
-
-	var chiaExporterImage = wallet.Spec.ChiaExporterConfig.Image
-	if chiaExporterImage == "" {
-		chiaExporterImage = consts.DefaultChiaExporterImage
-	}
-
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiawalletNamePattern, wallet.Name),
@@ -135,7 +105,6 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 					Containers: []corev1.Container{
 						{
 							Name:            "chia",
-							SecurityContext: chiaSecContext,
 							Image:           wallet.Spec.ChiaConfig.Image,
 							ImagePullPolicy: wallet.Spec.ImagePullPolicy,
 							Env:             r.getChiaEnv(ctx, wallet),
@@ -156,10 +125,6 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 									Protocol:      "TCP",
 								},
 							},
-							LivenessProbe:  chiaLivenessProbe,
-							ReadinessProbe: chiaReadinessProbe,
-							StartupProbe:   chiaStartupProbe,
-							Resources:      chiaResources,
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "secret-ca",
@@ -183,8 +148,34 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 		},
 	}
 
-	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, wallet.Spec.ImagePullPolicy, chiaResources)
-	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
+	var containerSecurityContext *corev1.SecurityContext
+	if wallet.Spec.ChiaConfig.SecurityContext != nil {
+		containerSecurityContext = wallet.Spec.ChiaConfig.SecurityContext
+		deploy.Spec.Template.Spec.Containers[0].SecurityContext = wallet.Spec.ChiaConfig.SecurityContext
+	}
+
+	if wallet.Spec.ChiaConfig.LivenessProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].LivenessProbe = wallet.Spec.ChiaConfig.LivenessProbe
+	}
+
+	if wallet.Spec.ChiaConfig.ReadinessProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].ReadinessProbe = wallet.Spec.ChiaConfig.ReadinessProbe
+	}
+
+	if wallet.Spec.ChiaConfig.StartupProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].StartupProbe = wallet.Spec.ChiaConfig.StartupProbe
+	}
+
+	var containerResorces corev1.ResourceRequirements
+	if wallet.Spec.ChiaConfig.Resources != nil {
+		containerResorces = *wallet.Spec.ChiaConfig.Resources
+		deploy.Spec.Template.Spec.Containers[0].Resources = *wallet.Spec.ChiaConfig.Resources
+	}
+
+	if wallet.Spec.ChiaExporterConfig.Enabled {
+		exporterContainer := kube.GetChiaExporterContainer(ctx, wallet.Spec.ChiaExporterConfig.Image, containerSecurityContext, wallet.Spec.ImagePullPolicy, containerResorces)
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
+	}
 
 	if wallet.Spec.PodSecurityContext != nil {
 		deploy.Spec.Template.Spec.SecurityContext = wallet.Spec.PodSecurityContext

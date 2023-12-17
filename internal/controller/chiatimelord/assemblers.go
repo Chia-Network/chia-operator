@@ -83,36 +83,6 @@ func (r *ChiaTimelordReconciler) assembleChiaExporterService(ctx context.Context
 
 // assembleDeployment assembles the tl Deployment resource for a ChiaTimelord CR
 func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8schianetv1.ChiaTimelord) appsv1.Deployment {
-	var chiaSecContext *corev1.SecurityContext
-	if tl.Spec.ChiaConfig.SecurityContext != nil {
-		chiaSecContext = tl.Spec.ChiaConfig.SecurityContext
-	}
-
-	var chiaLivenessProbe *corev1.Probe
-	if tl.Spec.ChiaConfig.LivenessProbe != nil {
-		chiaLivenessProbe = tl.Spec.ChiaConfig.LivenessProbe
-	}
-
-	var chiaReadinessProbe *corev1.Probe
-	if tl.Spec.ChiaConfig.ReadinessProbe != nil {
-		chiaReadinessProbe = tl.Spec.ChiaConfig.ReadinessProbe
-	}
-
-	var chiaStartupProbe *corev1.Probe
-	if tl.Spec.ChiaConfig.StartupProbe != nil {
-		chiaStartupProbe = tl.Spec.ChiaConfig.StartupProbe
-	}
-
-	var chiaResources corev1.ResourceRequirements
-	if tl.Spec.ChiaConfig.Resources != nil {
-		chiaResources = *tl.Spec.ChiaConfig.Resources
-	}
-
-	var chiaExporterImage = tl.Spec.ChiaExporterConfig.Image
-	if chiaExporterImage == "" {
-		chiaExporterImage = consts.DefaultChiaExporterImage
-	}
-
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiatimelordNamePattern, tl.Name),
@@ -135,7 +105,6 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 					Containers: []corev1.Container{
 						{
 							Name:            "chia",
-							SecurityContext: chiaSecContext,
 							Image:           tl.Spec.ChiaConfig.Image,
 							ImagePullPolicy: tl.Spec.ImagePullPolicy,
 							Env:             r.getChiaEnv(ctx, tl),
@@ -156,10 +125,6 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 									Protocol:      "TCP",
 								},
 							},
-							LivenessProbe:  chiaLivenessProbe,
-							ReadinessProbe: chiaReadinessProbe,
-							StartupProbe:   chiaStartupProbe,
-							Resources:      chiaResources,
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "secret-ca",
@@ -179,8 +144,34 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 		},
 	}
 
-	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, tl.Spec.ImagePullPolicy, chiaResources)
-	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
+	var containerSecurityContext *corev1.SecurityContext
+	if tl.Spec.ChiaConfig.SecurityContext != nil {
+		containerSecurityContext = tl.Spec.ChiaConfig.SecurityContext
+		deploy.Spec.Template.Spec.Containers[0].SecurityContext = tl.Spec.ChiaConfig.SecurityContext
+	}
+
+	if tl.Spec.ChiaConfig.LivenessProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].LivenessProbe = tl.Spec.ChiaConfig.LivenessProbe
+	}
+
+	if tl.Spec.ChiaConfig.ReadinessProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].ReadinessProbe = tl.Spec.ChiaConfig.ReadinessProbe
+	}
+
+	if tl.Spec.ChiaConfig.StartupProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].StartupProbe = tl.Spec.ChiaConfig.StartupProbe
+	}
+
+	var containerResorces corev1.ResourceRequirements
+	if tl.Spec.ChiaConfig.Resources != nil {
+		containerResorces = *tl.Spec.ChiaConfig.Resources
+		deploy.Spec.Template.Spec.Containers[0].Resources = *tl.Spec.ChiaConfig.Resources
+	}
+
+	if tl.Spec.ChiaExporterConfig.Enabled {
+		exporterContainer := kube.GetChiaExporterContainer(ctx, tl.Spec.ChiaExporterConfig.Image, containerSecurityContext, tl.Spec.ImagePullPolicy, containerResorces)
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
+	}
 
 	if tl.Spec.PodSecurityContext != nil {
 		deploy.Spec.Template.Spec.SecurityContext = tl.Spec.PodSecurityContext

@@ -83,36 +83,6 @@ func (r *ChiaFarmerReconciler) assembleChiaExporterService(ctx context.Context, 
 
 // assembleDeployment assembles the farmer Deployment resource for a ChiaFarmer CR
 func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8schianetv1.ChiaFarmer) appsv1.Deployment {
-	var chiaSecContext *corev1.SecurityContext
-	if farmer.Spec.ChiaConfig.SecurityContext != nil {
-		chiaSecContext = farmer.Spec.ChiaConfig.SecurityContext
-	}
-
-	var chiaLivenessProbe *corev1.Probe
-	if farmer.Spec.ChiaConfig.LivenessProbe != nil {
-		chiaLivenessProbe = farmer.Spec.ChiaConfig.LivenessProbe
-	}
-
-	var chiaReadinessProbe *corev1.Probe
-	if farmer.Spec.ChiaConfig.ReadinessProbe != nil {
-		chiaReadinessProbe = farmer.Spec.ChiaConfig.ReadinessProbe
-	}
-
-	var chiaStartupProbe *corev1.Probe
-	if farmer.Spec.ChiaConfig.StartupProbe != nil {
-		chiaStartupProbe = farmer.Spec.ChiaConfig.StartupProbe
-	}
-
-	var chiaResources corev1.ResourceRequirements
-	if farmer.Spec.ChiaConfig.Resources != nil {
-		chiaResources = *farmer.Spec.ChiaConfig.Resources
-	}
-
-	var chiaExporterImage = farmer.Spec.ChiaExporterConfig.Image
-	if chiaExporterImage == "" {
-		chiaExporterImage = consts.DefaultChiaExporterImage
-	}
-
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
@@ -135,7 +105,6 @@ func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8
 					Containers: []corev1.Container{
 						{
 							Name:            "chia",
-							SecurityContext: chiaSecContext,
 							Image:           farmer.Spec.ChiaConfig.Image,
 							ImagePullPolicy: farmer.Spec.ImagePullPolicy,
 							Env:             r.getChiaEnv(ctx, farmer),
@@ -156,10 +125,6 @@ func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8
 									Protocol:      "TCP",
 								},
 							},
-							LivenessProbe:  chiaLivenessProbe,
-							ReadinessProbe: chiaReadinessProbe,
-							StartupProbe:   chiaStartupProbe,
-							Resources:      chiaResources,
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "secret-ca",
@@ -183,8 +148,34 @@ func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8
 		},
 	}
 
-	exporterContainer := kube.GetChiaExporterContainer(ctx, chiaExporterImage, chiaSecContext, farmer.Spec.ImagePullPolicy, chiaResources)
-	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
+	var containerSecurityContext *corev1.SecurityContext
+	if farmer.Spec.ChiaConfig.SecurityContext != nil {
+		containerSecurityContext = farmer.Spec.ChiaConfig.SecurityContext
+		deploy.Spec.Template.Spec.Containers[0].SecurityContext = farmer.Spec.ChiaConfig.SecurityContext
+	}
+
+	if farmer.Spec.ChiaConfig.LivenessProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].LivenessProbe = farmer.Spec.ChiaConfig.LivenessProbe
+	}
+
+	if farmer.Spec.ChiaConfig.ReadinessProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].ReadinessProbe = farmer.Spec.ChiaConfig.ReadinessProbe
+	}
+
+	if farmer.Spec.ChiaConfig.StartupProbe != nil {
+		deploy.Spec.Template.Spec.Containers[0].StartupProbe = farmer.Spec.ChiaConfig.StartupProbe
+	}
+
+	var containerResorces corev1.ResourceRequirements
+	if farmer.Spec.ChiaConfig.Resources != nil {
+		containerResorces = *farmer.Spec.ChiaConfig.Resources
+		deploy.Spec.Template.Spec.Containers[0].Resources = *farmer.Spec.ChiaConfig.Resources
+	}
+
+	if farmer.Spec.ChiaExporterConfig.Enabled {
+		exporterContainer := kube.GetChiaExporterContainer(ctx, farmer.Spec.ChiaExporterConfig.Image, containerSecurityContext, farmer.Spec.ImagePullPolicy, containerResorces)
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
+	}
 
 	if farmer.Spec.PodSecurityContext != nil {
 		deploy.Spec.Template.Spec.SecurityContext = farmer.Spec.PodSecurityContext
