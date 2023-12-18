@@ -1,6 +1,6 @@
 # chia-operator
 
-NOTE: This is a very early implementation. Features may come in at a fast pace, bugs may exist in plenty, and the CRs themselves may change drastically during this stage. In short: this code is not guaranteed to work. That said, it is being ran as a couple of farms on the mainnet and testnet10 networks today.
+NOTE: This should be considered a beta product. It is an early implementation that is being actively worked on. The API should stay backwards-compatible in the majority of cases but is not currently guaranteed.
 
 Kubernetes operator for managing Chia components in kubernetes. Currently supported components:
 
@@ -183,6 +183,7 @@ Finally, apply this ChiaWallet with `kubectl apply -f wallet.yaml`
 - Add to examples in `config/samples`. The full API for all of this operator's CRDs are shown in Go structs in `api/v1`
 - Add support for other Chia components (dns-introducer, etc)
 - Additional controller tests for CRs with all options set to something non-default, currently all the tests use fairly minimal implementations to test overlaying CRD defaults on top of the submitted CR
+- Add ability to configure a custom testnet for Chia components to switch to
 
 ## License
 
