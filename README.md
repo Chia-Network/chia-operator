@@ -35,6 +35,8 @@ Deploy the operator:
 make deploy
 ```
 
+See the documentation for more in [docs](docs)
+
 ### Start a farm
 
 This guide installs everything in the default namespace, but you can of course install them in any namespace. These are also all fairly minimal examples with just enough config to be helpful. Other options are supported. See the `config/samples` directory of this repo for more full examples.
@@ -181,7 +183,6 @@ Finally, apply this ChiaWallet with `kubectl apply -f wallet.yaml`
 - Add to examples in `config/samples`. The full API for all of this operator's CRDs are shown in Go structs in `api/v1`
 - Add support for other Chia components (dns-introducer, etc)
 - Additional controller tests for CRs with all options set to something non-default, currently all the tests use fairly minimal implementations to test overlaying CRD defaults on top of the submitted CR
-- Add more extensive documentation for each CR's optional fields
 
 ## License
 
