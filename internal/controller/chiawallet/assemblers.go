@@ -8,13 +8,14 @@ import (
 	"context"
 	"fmt"
 
-	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
-	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
+	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 )
 
 const chiawalletNamePattern = "%s-wallet"
@@ -25,7 +26,7 @@ func (r *ChiaWalletReconciler) assembleBaseService(ctx context.Context, wallet k
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiawalletNamePattern, wallet.Name),
 			Namespace:       wallet.Namespace,
-			Labels:          r.getLabels(ctx, wallet, wallet.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
 			Annotations:     wallet.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, wallet),
 		},
@@ -51,7 +52,7 @@ func (r *ChiaWalletReconciler) assembleBaseService(ctx context.Context, wallet k
 					Name:       "rpc",
 				},
 			},
-			Selector: r.getLabels(ctx, wallet, wallet.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -62,7 +63,7 @@ func (r *ChiaWalletReconciler) assembleChiaExporterService(ctx context.Context, 
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-metrics",
 			Namespace:       wallet.Namespace,
-			Labels:          r.getLabels(ctx, wallet, wallet.Spec.AdditionalMetadata.Labels, wallet.Spec.ChiaExporterConfig.ServiceLabels),
+			Labels:          kube.GetCommonLabels(ctx, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, wallet.Spec.ChiaExporterConfig.ServiceLabels),
 			Annotations:     wallet.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, wallet),
 		},
@@ -76,7 +77,7 @@ func (r *ChiaWalletReconciler) assembleChiaExporterService(ctx context.Context, 
 					Name:       "metrics",
 				},
 			},
-			Selector: r.getLabels(ctx, wallet, wallet.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -87,17 +88,17 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiawalletNamePattern, wallet.Name),
 			Namespace:       wallet.Namespace,
-			Labels:          r.getLabels(ctx, wallet, wallet.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
 			Annotations:     wallet.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, wallet),
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: r.getLabels(ctx, wallet),
+				MatchLabels: kube.GetCommonLabels(ctx, wallet.ObjectMeta),
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      r.getLabels(ctx, wallet, wallet.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(ctx, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
 					Annotations: wallet.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{

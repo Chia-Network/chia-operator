@@ -7,12 +7,12 @@ package chianode
 import (
 	"context"
 
-	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
-	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
@@ -146,20 +146,6 @@ func (r *ChiaNodeReconciler) getChiaNodeEnv(ctx context.Context, node k8schianet
 	}
 
 	return env
-}
-
-// getLabels gives some common labels for ChiaNode related objects
-func (r *ChiaNodeReconciler) getLabels(ctx context.Context, node k8schianetv1.ChiaNode, additionalLabels ...map[string]string) map[string]string {
-	var labels = make(map[string]string)
-	for _, addition := range additionalLabels {
-		for k, v := range addition {
-			labels[k] = v
-		}
-	}
-	labels["app.kubernetes.io/instance"] = node.Name
-	labels["app.kubernetes.io/name"] = node.Name
-	labels = kube.GetCommonLabels(ctx, labels)
-	return labels
 }
 
 // getOwnerReference gives the common owner reference spec for ChiaNode related objects

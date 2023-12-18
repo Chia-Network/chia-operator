@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"strconv"
 
-	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
-	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
@@ -219,20 +219,6 @@ func (r *ChiaHarvesterReconciler) getChiaEnv(ctx context.Context, harvester k8sc
 	})
 
 	return env
-}
-
-// getLabels gives some common labels for ChiaHarvester related objects
-func (r *ChiaHarvesterReconciler) getLabels(ctx context.Context, harvester k8schianetv1.ChiaHarvester, additionalLabels ...map[string]string) map[string]string {
-	var labels = make(map[string]string)
-	for _, addition := range additionalLabels {
-		for k, v := range addition {
-			labels[k] = v
-		}
-	}
-	labels["app.kubernetes.io/instance"] = harvester.Name
-	labels["app.kubernetes.io/name"] = harvester.Name
-	labels = kube.GetCommonLabels(ctx, labels)
-	return labels
 }
 
 // getOwnerReference gives the common owner reference spec for ChiaHarvester related objects
