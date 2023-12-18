@@ -39,7 +39,7 @@ func (r *ChiaHarvesterReconciler) getChiaVolumes(ctx context.Context, harvester 
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: harvester.Spec.Storage.ChiaRoot.HostPathVolume.Path,
+						ClaimName: harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
 					},
 				},
 			})

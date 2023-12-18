@@ -48,7 +48,7 @@ func (r *ChiaFarmerReconciler) getChiaVolumes(ctx context.Context, farmer k8schi
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: farmer.Spec.Storage.ChiaRoot.HostPathVolume.Path,
+						ClaimName: farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
 					},
 				},
 			})

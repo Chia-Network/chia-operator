@@ -37,7 +37,7 @@ func (r *ChiaTimelordReconciler) getChiaVolumes(ctx context.Context, tl k8schian
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: tl.Spec.Storage.ChiaRoot.HostPathVolume.Path,
+						ClaimName: tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
 					},
 				},
 			})

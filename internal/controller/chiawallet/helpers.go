@@ -48,7 +48,7 @@ func (r *ChiaWalletReconciler) getChiaVolumes(ctx context.Context, wallet k8schi
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: wallet.Spec.Storage.ChiaRoot.HostPathVolume.Path,
+						ClaimName: wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
 					},
 				},
 			})
