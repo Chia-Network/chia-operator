@@ -7,13 +7,23 @@ package kube
 import (
 	"context"
 
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 )
 
 // GetCommonLabels gives some common labels for chia-operator related objects
-func GetCommonLabels(ctx context.Context, labels map[string]string) map[string]string {
+func GetCommonLabels(ctx context.Context, meta metav1.ObjectMeta, additionalLabels ...map[string]string) map[string]string {
+	var labels = make(map[string]string)
+	for _, addition := range additionalLabels {
+		for k, v := range addition {
+			labels[k] = v
+		}
+	}
+	labels["app.kubernetes.io/instance"] = meta.Name
+	labels["app.kubernetes.io/name"] = meta.Name
 	labels["app.kubernetes.io/managed-by"] = "chia-operator"
 	return labels
 }

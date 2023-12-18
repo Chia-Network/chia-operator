@@ -8,13 +8,14 @@ import (
 	"context"
 	"fmt"
 
-	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
-	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
+	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 )
 
 const chiatimelordNamePattern = "%s-timelord"
@@ -25,7 +26,7 @@ func (r *ChiaTimelordReconciler) assembleBaseService(ctx context.Context, tl k8s
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiatimelordNamePattern, tl.Name),
 			Namespace:       tl.Namespace,
-			Labels:          r.getLabels(ctx, tl, tl.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 			Annotations:     tl.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, tl),
 		},
@@ -51,7 +52,7 @@ func (r *ChiaTimelordReconciler) assembleBaseService(ctx context.Context, tl k8s
 					Name:       "rpc",
 				},
 			},
-			Selector: r.getLabels(ctx, tl, tl.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -62,7 +63,7 @@ func (r *ChiaTimelordReconciler) assembleChiaExporterService(ctx context.Context
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "metrics",
 			Namespace:       tl.Namespace,
-			Labels:          r.getLabels(ctx, tl, tl.Spec.AdditionalMetadata.Labels, tl.Spec.ChiaExporterConfig.ServiceLabels),
+			Labels:          kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, tl.Spec.ChiaExporterConfig.ServiceLabels),
 			Annotations:     tl.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, tl),
 		},
@@ -76,7 +77,7 @@ func (r *ChiaTimelordReconciler) assembleChiaExporterService(ctx context.Context
 					Name:       "metrics",
 				},
 			},
-			Selector: r.getLabels(ctx, tl, tl.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -87,17 +88,17 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiatimelordNamePattern, tl.Name),
 			Namespace:       tl.Namespace,
-			Labels:          r.getLabels(ctx, tl, tl.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 			Annotations:     tl.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, tl),
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: r.getLabels(ctx, tl),
+				MatchLabels: kube.GetCommonLabels(ctx, tl.ObjectMeta),
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      r.getLabels(ctx, tl, tl.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 					Annotations: tl.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
