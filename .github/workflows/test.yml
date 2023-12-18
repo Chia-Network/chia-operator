@@ -1,10 +1,7 @@
 name: Run test and non-trunk build
 
 on:
-  push:
-    branches:
-      - '*'
-      - '!main'
+  pull_request:
 
 permissions:
   id-token: write
@@ -13,7 +10,7 @@ permissions:
 jobs:
   run:
     name: Run tests
-    runs-on: [k8s-public]
+    runs-on: "ubuntu-latest"
     timeout-minutes: 10
     container: golang:1
     env:
