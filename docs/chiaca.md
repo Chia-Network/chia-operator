@@ -13,7 +13,9 @@ spec:
   secret: my-ca
 ```
 
-This will create a kubernetes Secret in the same namespace that this CR is applied named `my-ca`. You can then supply this CA Secret to other Chia custom resources like so:
+This will create a kubernetes Secret in the same namespace that this CR is applied named `my-ca`. If you have your own pre-existing CA that you would like to continue using instead, you can also [create a kubernetes Secret manually, documented in this section of the readme.](https://github.com/Chia-Network/chia-operator/blob/main/README.md#ssl-ca).
+
+You can then supply this CA Secret to other Chia custom resources like so:
 
 ```yaml
 apiVersion: k8s.chia.net/v1
