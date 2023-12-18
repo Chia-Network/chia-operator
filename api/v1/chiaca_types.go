@@ -12,13 +12,17 @@ import (
 type ChiaCASpec struct {
 	// Image defines the CA generator image to run
 	// +kubebuilder:default="ghcr.io/chia-network/chia-operator/ca-gen:latest"
+	// +optional
 	Image string `json:"image,omitempty"`
 
 	// ImagePullSecret defines an ImagePullSecret for the CA generator image
+	// +optional
 	ImagePullSecret string `json:"imagePullSecret,omitempty"`
 
 	// Secret defines the name of the secret to contain CA files
-	Secret string `json:"secret"`
+	// +kubebuilder:default="chia-ca"
+	// +optional
+	Secret string `json:"secret,omitempty"`
 }
 
 // ChiaCAStatus defines the observed state of ChiaCA
