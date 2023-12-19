@@ -25,7 +25,8 @@ type ChiaWalletSpecChia struct {
 
 	// FullNodePeer defines the farmer's full_node peer in host:port format.
 	// In Kubernetes this is likely to be <node service name>.<namespace>.svc.cluster.local:8555
-	FullNodePeer string `json:"fullNodePeer"`
+	// +optional
+	FullNodePeer string `json:"fullNodePeer,omitempty"`
 }
 
 // ChiaWalletStatus defines the observed state of ChiaWallet

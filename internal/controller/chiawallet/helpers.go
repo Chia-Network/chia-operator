@@ -130,10 +130,12 @@ func (r *ChiaWalletReconciler) getChiaEnv(ctx context.Context, wallet k8schianet
 	})
 
 	// node peer env var
-	env = append(env, corev1.EnvVar{
-		Name:  "full_node_peer",
-		Value: wallet.Spec.ChiaConfig.FullNodePeer,
-	})
+	if wallet.Spec.ChiaConfig.FullNodePeer != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "full_node_peer",
+			Value: wallet.Spec.ChiaConfig.FullNodePeer,
+		})
+	}
 
 	return env
 }

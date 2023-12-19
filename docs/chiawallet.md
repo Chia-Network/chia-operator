@@ -1,6 +1,6 @@
 # ChiaWallet
 
-Specifying a ChiaWallet will create a kubernetes Deployment and some Services for a Chia wallet that connects to a local [full_node](chianode.md). It also requires a specified [Chia certificate authority](chiaca.md).
+Specifying a ChiaWallet will create a kubernetes Deployment and some Services for a Chia wallet that optionally connects to a local [full_node](chianode.md). It also requires a specified [Chia certificate authority](chiaca.md).
 
 Here's a minimal ChiaWallet example custom resource (CR):
 
@@ -12,7 +12,6 @@ metadata:
 spec:
   chia:
     caSecretName: chiaca-secret # A kubernetes Secret containing certificate authority files
-    fullNodePeer: "node.default.svc.cluster.local:8444" # A local full_node using kubernetes DNS names
     # A kubernetes Secret named chiakey-secret containing a key.txt file with your mnemonic key
     secretKey:
       name: "chiakey-secret"
@@ -29,6 +28,14 @@ spec:
     testnet: true # Switches to the default testnet in the Chia configuration file.
     timezone: "UTC" # Switches the tzdata timezone in the container.
     logLevel: "INFO" # Sets the Chia log level.
+```
+
+You can also give a local full_node as a peer for your wallet. This does not currently automate the process of setting the full_node for trusted sync, but could still speed up the wallet syncing process because a full_node running in your cluster is probably geographically closer than other full_nodes around the world. Set a full_node peer like so:
+
+```yaml
+spec:
+  chia:
+    fullNodePeer: "node.default.svc.cluster.local:8444" # A local full_node using kubernetes DNS names
 ```
 
 ### CHIA_ROOT storage
