@@ -82,3 +82,16 @@ spec:
   chiaExporter:
     enabled: false
 ```
+
+### Selecting a network
+
+You can select a network from your chia configuration with the following options:
+
+```yaml
+spec:
+  chia:
+    network: "testnetZZ" # Switches to the network with a matching name in the chia config file.
+    networkPort: 58445 # Switches the default network port full_nodes connect with.
+    introducerAddress: "introducer.default.svc.cluster.local" # Sets the introducer address used in the chia config file.
+    dnsIntroducerAddress: "dns-introducer.default.svc.cluster.local" # Sets the DNS introducer address used in the chia config file.
+```
