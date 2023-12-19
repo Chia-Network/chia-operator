@@ -25,26 +25,6 @@ jobs:
         run: |
           make test
 
-  build-controller:
-    runs-on: "ubuntu-latest"
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Docker Container
-        run: |
-          docker build -t test .
-
-  build-ca-gen:
-    runs-on: "ubuntu-latest"
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Docker Container
-        run: |
-          docker build -t test ./chiaca-generator/
-
   test-controller-gen-ran:
     runs-on: "ubuntu-latest"
     timeout-minutes: 10
@@ -77,3 +57,12 @@ jobs:
               exit 1
             fi
           done
+
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v3
