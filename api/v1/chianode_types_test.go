@@ -27,6 +27,10 @@ spec:
   chia:
     caSecretName: chiaca-secret
     testnet: true
+    network: testnet68419
+    networkPort: 8080
+    introducerAddress: introducer.svc.cluster.local
+    dnsIntroducerAddress: dns-introducer.svc.cluster.local
     timezone: "UTC"
     logLevel: "INFO"
   chiaExporter:
@@ -36,9 +40,13 @@ spec:
 `)
 
 	var (
-		testnet  = true
-		timezone = "UTC"
-		logLevel = "INFO"
+		testnet                     = true
+		timezone                    = "UTC"
+		logLevel                    = "INFO"
+		network                     = "testnet68419"
+		networkPort          uint16 = 8080
+		introducerAddress           = "introducer.svc.cluster.local"
+		dnsIntroducerAddress        = "dns-introducer.svc.cluster.local"
 	)
 	expect := ChiaNode{
 		TypeMeta: metav1.TypeMeta{
@@ -57,10 +65,14 @@ spec:
 		Spec: ChiaNodeSpec{
 			ChiaConfig: ChiaNodeSpecChia{
 				CommonSpecChia: CommonSpecChia{
-					CASecretName: "chiaca-secret",
-					Testnet:      &testnet,
-					Timezone:     &timezone,
-					LogLevel:     &logLevel,
+					CASecretName:         "chiaca-secret",
+					Testnet:              &testnet,
+					Network:              &network,
+					NetworkPort:          &networkPort,
+					IntroducerAddress:    &introducerAddress,
+					DNSIntroducerAddress: &dnsIntroducerAddress,
+					Timezone:             &timezone,
+					LogLevel:             &logLevel,
 				},
 			},
 			CommonSpec: CommonSpec{

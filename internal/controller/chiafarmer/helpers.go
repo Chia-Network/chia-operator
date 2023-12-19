@@ -7,6 +7,7 @@ package chiafarmer
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -104,6 +105,38 @@ func (r *ChiaFarmerReconciler) getChiaEnv(ctx context.Context, farmer k8schianet
 		env = append(env, corev1.EnvVar{
 			Name:  "testnet",
 			Value: "true",
+		})
+	}
+
+	// network env var
+	if farmer.Spec.ChiaConfig.Network != nil && *farmer.Spec.ChiaConfig.Network != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "network",
+			Value: *farmer.Spec.ChiaConfig.Network,
+		})
+	}
+
+	// network_port env var
+	if farmer.Spec.ChiaConfig.NetworkPort != nil && *farmer.Spec.ChiaConfig.NetworkPort != 0 {
+		env = append(env, corev1.EnvVar{
+			Name:  "network_port",
+			Value: strconv.Itoa(int(*farmer.Spec.ChiaConfig.NetworkPort)),
+		})
+	}
+
+	// introducer_address env var
+	if farmer.Spec.ChiaConfig.IntroducerAddress != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "introducer_address",
+			Value: *farmer.Spec.ChiaConfig.IntroducerAddress,
+		})
+	}
+
+	// dns_introducer_address env var
+	if farmer.Spec.ChiaConfig.DNSIntroducerAddress != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "dns_introducer_address",
+			Value: *farmer.Spec.ChiaConfig.DNSIntroducerAddress,
 		})
 	}
 

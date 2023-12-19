@@ -49,6 +49,10 @@ spec:
                     description: CASecretName is the name of the secret that contains
                       the CA crt and key.
                     type: string
+                  dnsIntroducerAddress:
+                    description: DNSIntroducerAddress can be set to a hostname to
+                      a DNS Introducer server.
+                    type: string
                   farmerAddress:
                     description: FarmerAddress defines the harvester's farmer peer's
                       hostname. The farmer's port is inferred. In Kubernetes this
@@ -58,6 +62,12 @@ spec:
                     default: ghcr.io/chia-network/chia:latest
                     description: Image defines the image to use for the chia component
                       containers
+                    type: string
+                  introducerAddress:
+                    description: IntroducerAddress can be set to the hostname or IP
+                      address of an introducer to set in the chia config. No port
+                      should be specified, it's taken from the value of the NetworkPort
+                      setting.
                     type: string
                   livenessProbe:
                     description: Periodic probe of container liveness.
@@ -210,6 +220,15 @@ spec:
                   logLevel:
                     description: LogLevel is set to the desired chia config log_level
                     type: string
+                  network:
+                    description: Network can be set to a network name in the chia
+                      configuration file to switch to
+                    type: string
+                  networkPort:
+                    description: NetworkPort can be set to the port that full_nodes
+                      will use in the selected network. This implies specification
+                      of the Network setting.
+                    type: integer
                   readinessProbe:
                     description: Periodic probe of container service readiness.
                     properties:
@@ -729,8 +748,7 @@ spec:
                       switch to the latest default testnet's settings
                     type: boolean
                   timezone:
-                    description: Timezone can be set to your local timezone for accurate
-                      timestamps. Defaults to UTC
+                    description: Timezone
                     type: string
                 required:
                 - caSecretName
