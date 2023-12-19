@@ -749,7 +749,6 @@ spec:
                     type: string
                 required:
                 - caSecretName
-                - fullNodePeer
                 - secretKey
                 type: object
               chiaExporter:
