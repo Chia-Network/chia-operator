@@ -763,6 +763,26 @@ func (in *CommonSpecChia) DeepCopyInto(out *CommonSpecChia) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Network != nil {
+		in, out := &in.Network, &out.Network
+		*out = new(string)
+		**out = **in
+	}
+	if in.NetworkPort != nil {
+		in, out := &in.NetworkPort, &out.NetworkPort
+		*out = new(uint16)
+		**out = **in
+	}
+	if in.IntroducerAddress != nil {
+		in, out := &in.IntroducerAddress, &out.IntroducerAddress
+		*out = new(string)
+		**out = **in
+	}
+	if in.DNSIntroducerAddress != nil {
+		in, out := &in.DNSIntroducerAddress, &out.DNSIntroducerAddress
+		*out = new(string)
+		**out = **in
+	}
 	if in.Timezone != nil {
 		in, out := &in.Timezone, &out.Timezone
 		*out = new(string)

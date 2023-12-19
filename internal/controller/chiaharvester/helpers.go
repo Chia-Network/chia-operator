@@ -185,6 +185,38 @@ func (r *ChiaHarvesterReconciler) getChiaEnv(ctx context.Context, harvester k8sc
 		})
 	}
 
+	// network env var
+	if harvester.Spec.ChiaConfig.Network != nil && *harvester.Spec.ChiaConfig.Network != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "network",
+			Value: *harvester.Spec.ChiaConfig.Network,
+		})
+	}
+
+	// network_port env var
+	if harvester.Spec.ChiaConfig.NetworkPort != nil && *harvester.Spec.ChiaConfig.NetworkPort != 0 {
+		env = append(env, corev1.EnvVar{
+			Name:  "network_port",
+			Value: strconv.Itoa(int(*harvester.Spec.ChiaConfig.NetworkPort)),
+		})
+	}
+
+	// introducer_address env var
+	if harvester.Spec.ChiaConfig.IntroducerAddress != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "introducer_address",
+			Value: *harvester.Spec.ChiaConfig.IntroducerAddress,
+		})
+	}
+
+	// dns_introducer_address env var
+	if harvester.Spec.ChiaConfig.DNSIntroducerAddress != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "dns_introducer_address",
+			Value: *harvester.Spec.ChiaConfig.DNSIntroducerAddress,
+		})
+	}
+
 	// TZ env var
 	if harvester.Spec.ChiaConfig.Timezone != nil {
 		env = append(env, corev1.EnvVar{

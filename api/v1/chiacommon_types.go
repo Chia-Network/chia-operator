@@ -51,6 +51,24 @@ type CommonSpecChia struct {
 	// +optional
 	Testnet *bool `json:"testnet,omitempty"`
 
+	// Network can be set to a network name in the chia configuration file to switch to
+	// +optional
+	Network *string `json:"network,omitempty"`
+
+	// NetworkPort can be set to the port that full_nodes will use in the selected network.
+	// This implies specification of the Network setting.
+	// +optional
+	NetworkPort *uint16 `json:"networkPort,omitempty"`
+
+	// IntroducerAddress can be set to the hostname or IP address of an introducer to set in the chia config.
+	// No port should be specified, it's taken from the value of the NetworkPort setting.
+	// +optional
+	IntroducerAddress *string `json:"introducerAddress,omitempty"`
+
+	// DNSIntroducerAddress can be set to a hostname to a DNS Introducer server.
+	// +optional
+	DNSIntroducerAddress *string `json:"dnsIntroducerAddress,omitempty"`
+
 	// Timezone can be set to your local timezone for accurate timestamps. Defaults to UTC
 	// +optional
 	Timezone *string `json:"timezone,omitempty"`

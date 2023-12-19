@@ -27,6 +27,10 @@ spec:
   chia:
     caSecretName: chiaca-secret
     testnet: true
+    network: testnet68419
+    networkPort: 8080
+    introducerAddress: introducer.svc.cluster.local
+    dnsIntroducerAddress: dns-introducer.svc.cluster.local
     timezone: "UTC"
     logLevel: "INFO"
     fullNodePeer: "node.default.svc.cluster.local:58444"
@@ -40,9 +44,13 @@ spec:
 `)
 
 	var (
-		testnet  = true
-		timezone = "UTC"
-		logLevel = "INFO"
+		testnet                     = true
+		timezone                    = "UTC"
+		logLevel                    = "INFO"
+		network                     = "testnet68419"
+		networkPort          uint16 = 8080
+		introducerAddress           = "introducer.svc.cluster.local"
+		dnsIntroducerAddress        = "dns-introducer.svc.cluster.local"
 	)
 	expect := ChiaFarmer{
 		TypeMeta: metav1.TypeMeta{
@@ -61,10 +69,14 @@ spec:
 		Spec: ChiaFarmerSpec{
 			ChiaConfig: ChiaFarmerSpecChia{
 				CommonSpecChia: CommonSpecChia{
-					CASecretName: "chiaca-secret",
-					Testnet:      &testnet,
-					Timezone:     &timezone,
-					LogLevel:     &logLevel,
+					CASecretName:         "chiaca-secret",
+					Testnet:              &testnet,
+					Timezone:             &timezone,
+					LogLevel:             &logLevel,
+					Network:              &network,
+					NetworkPort:          &networkPort,
+					IntroducerAddress:    &introducerAddress,
+					DNSIntroducerAddress: &dnsIntroducerAddress,
 				},
 				FullNodePeer: "node.default.svc.cluster.local:58444",
 				SecretKey: ChiaSecretKey{
