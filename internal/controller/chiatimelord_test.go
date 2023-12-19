@@ -49,7 +49,7 @@ var _ = Describe("ChiaTimelord controller", func() {
 				Spec: apiv1.ChiaTimelordSpec{
 					ChiaConfig: apiv1.ChiaTimelordSpecChia{
 						CommonSpecChia: apiv1.CommonSpecChia{
-							Image:        "ghcr.io/chia-network/chia:latest",
+							Image:        "ghcr.io/chia-network/chia:2.1.3",
 							CASecretName: "test-secret",
 						},
 						FullNodePeer: "node.default.svc.cluster.local:58444",
@@ -59,7 +59,7 @@ var _ = Describe("ChiaTimelord controller", func() {
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
 							Enabled: true,
-							Image:   "ghcr.io/chia-network/chia-exporter:latest",
+							Image:   "ghcr.io/chia-network/chia-exporter:0.11.0",
 						},
 					},
 				},

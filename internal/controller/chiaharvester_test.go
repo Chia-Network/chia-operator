@@ -49,7 +49,7 @@ var _ = Describe("ChiaHarvester controller", func() {
 				Spec: apiv1.ChiaHarvesterSpec{
 					ChiaConfig: apiv1.ChiaHarvesterSpecChia{
 						CommonSpecChia: apiv1.CommonSpecChia{
-							Image:        "ghcr.io/chia-network/chia:latest",
+							Image:        "ghcr.io/chia-network/chia:2.1.3",
 							CASecretName: "test-secret",
 						},
 						FarmerAddress: "farmer.default.svc.cluster.local",
@@ -59,7 +59,7 @@ var _ = Describe("ChiaHarvester controller", func() {
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
 							Enabled: true,
-							Image:   "ghcr.io/chia-network/chia-exporter:latest",
+							Image:   "ghcr.io/chia-network/chia-exporter:0.11.0",
 						},
 					},
 				},
