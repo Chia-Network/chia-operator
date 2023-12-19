@@ -69,7 +69,7 @@ type CommonSpecChia struct {
 	// +optional
 	DNSIntroducerAddress *string `json:"dnsIntroducerAddress,omitempty"`
 
-	// Timezone
+	// Timezone can be set to your local timezone for accurate timestamps. Defaults to UTC
 	// +optional
 	Timezone *string `json:"timezone,omitempty"`
 

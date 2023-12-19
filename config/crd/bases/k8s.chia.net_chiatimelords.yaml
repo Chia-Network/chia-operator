@@ -748,7 +748,8 @@ spec:
                       switch to the latest default testnet's settings
                     type: boolean
                   timezone:
-                    description: Timezone
+                    description: Timezone can be set to your local timezone for accurate
+                      timestamps. Defaults to UTC
                     type: string
                 required:
                 - caSecretName
