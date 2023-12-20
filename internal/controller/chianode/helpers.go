@@ -43,7 +43,7 @@ func (r *ChiaNodeReconciler) getChiaVolumesAndTemplates(ctx context.Context, nod
 				Spec: corev1.PersistentVolumeClaimSpec{
 					AccessModes:      []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"},
 					StorageClassName: &node.Spec.Storage.ChiaRoot.PersistentVolumeClaim.StorageClass,
-					Resources: corev1.ResourceRequirements{
+					Resources: corev1.VolumeResourceRequirements{
 						Requests: corev1.ResourceList{
 							corev1.ResourceStorage: resource.MustParse(node.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest),
 						},
