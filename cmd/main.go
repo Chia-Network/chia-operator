@@ -20,6 +20,7 @@ import (
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/chiaca"
+	"github.com/chia-network/chia-operator/internal/controller/chiadnsintroducer"
 	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
 	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
 	"github.com/chia-network/chia-operator/internal/controller/chianode"
@@ -122,6 +123,13 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaTimelord")
+		os.Exit(1)
+	}
+	if err = (&chiadnsintroducer.ChiaDNSIntroducerReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ChiaDNSIntroducer")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

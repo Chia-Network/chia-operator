@@ -1,0 +1,27 @@
+# permissions for end users to view chiadnsintroducers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: chiadnsintroducer-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: chia-operator
+    app.kubernetes.io/part-of: chia-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: chiadnsintroducer-viewer-role
+rules:
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiadnsintroducers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiadnsintroducers/status
+  verbs:
+  - get
