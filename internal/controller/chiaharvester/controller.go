@@ -17,6 +17,7 @@ import (
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
+	"github.com/chia-network/chia-operator/internal/metrics"
 	"github.com/cisco-open/operator-tools/pkg/reconciler"
 )
 
@@ -25,6 +26,8 @@ type ChiaHarvesterReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
+
+var chiaharvesters map[string]bool = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaharvesters,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaharvesters/status,verbs=get;update;patch
@@ -43,12 +46,26 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	var harvester k8schianetv1.ChiaHarvester
 	err := r.Get(ctx, req.NamespacedName, &harvester)
 	if err != nil && errors.IsNotFound(err) {
+		// Remove this object from the map for tracking and subtract this CR's total metric by 1
+		_, exists := chiaharvesters[req.NamespacedName.String()]
+		if exists {
+			delete(chiaharvesters, req.NamespacedName.String())
+			metrics.ChiaHarvesters.Sub(1.0)
+		}
+
 		// Return here, this can happen if the CR was deleted
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
 		log.Error(err, fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s unable to fetch ChiaHarvester resource", req.NamespacedName))
 		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
+	_, exists := chiaharvesters[req.NamespacedName.String()]
+	if !exists {
+		chiaharvesters[req.NamespacedName.String()] = true
+		metrics.ChiaHarvesters.Add(1.0)
 	}
 
 	// Reconcile ChiaHarvester owned objects

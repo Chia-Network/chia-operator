@@ -18,6 +18,7 @@ import (
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
+	"github.com/chia-network/chia-operator/internal/metrics"
 	"github.com/cisco-open/operator-tools/pkg/reconciler"
 )
 
@@ -26,6 +27,8 @@ type ChiaCAReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
+
+var chiacas map[string]bool = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacas,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacas/status,verbs=get;update;patch
@@ -47,12 +50,26 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	var ca k8schianetv1.ChiaCA
 	err := r.Get(ctx, req.NamespacedName, &ca)
 	if err != nil && errors.IsNotFound(err) {
-		// Return here, this can happen if the CR was deleted
+		// Remove this object from the map for tracking and subtract this CR's total metric by 1
+		_, exists := chiacas[req.NamespacedName.String()]
+		if exists {
+			delete(chiacas, req.NamespacedName.String())
+			metrics.ChiaCAs.Sub(1.0)
+		}
+
+		// Return here, this can happen if the CR was deleted so we also subtract 1 from the ChiaCA gauge
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
 		log.Error(err, fmt.Sprintf("ChiaCAReconciler ChiaCA=%s unable to fetch ChiaCA resource", req.NamespacedName))
 		return ctrl.Result{}, err
+	}
+
+	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
+	_, exists := chiacas[req.NamespacedName.String()]
+	if !exists {
+		chiacas[req.NamespacedName.String()] = true
+		metrics.ChiaCAs.Add(1.0)
 	}
 
 	// Reconcile resources, creating them if they don't exist
