@@ -25,7 +25,7 @@ func (r *ChiaCAReconciler) assembleJob(ctx context.Context, ca k8schianetv1.Chia
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
 			Namespace:       ca.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, ca.ObjectMeta),
+			Labels:          kube.GetCommonLabels(ctx, ca.Kind, ca.ObjectMeta),
 			OwnerReferences: r.getOwnerReference(ctx, ca),
 		},
 		Spec: batchv1.JobSpec{
@@ -70,7 +70,7 @@ func (r *ChiaCAReconciler) assembleServiceAccount(ctx context.Context, ca k8schi
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
 			Namespace:       ca.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, ca.ObjectMeta),
+			Labels:          kube.GetCommonLabels(ctx, ca.Kind, ca.ObjectMeta),
 			OwnerReferences: r.getOwnerReference(ctx, ca),
 		},
 	}
@@ -82,7 +82,7 @@ func (r *ChiaCAReconciler) assembleRole(ctx context.Context, ca k8schianetv1.Chi
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
 			Namespace:       ca.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, ca.ObjectMeta),
+			Labels:          kube.GetCommonLabels(ctx, ca.Kind, ca.ObjectMeta),
 			OwnerReferences: r.getOwnerReference(ctx, ca),
 		},
 		Rules: []rbacv1.PolicyRule{
@@ -107,7 +107,7 @@ func (r *ChiaCAReconciler) assembleRoleBinding(ctx context.Context, ca k8schiane
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
 			Namespace:       ca.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, ca.ObjectMeta),
+			Labels:          kube.GetCommonLabels(ctx, ca.Kind, ca.ObjectMeta),
 			OwnerReferences: r.getOwnerReference(ctx, ca),
 		},
 		Subjects: []rbacv1.Subject{

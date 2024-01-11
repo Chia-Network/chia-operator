@@ -26,7 +26,7 @@ func (r *ChiaFarmerReconciler) assembleBaseService(ctx context.Context, farmer k
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
 			Namespace:       farmer.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
 			Annotations:     farmer.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, farmer),
 		},
@@ -52,7 +52,7 @@ func (r *ChiaFarmerReconciler) assembleBaseService(ctx context.Context, farmer k
 					Name:       "rpc",
 				},
 			},
-			Selector: kube.GetCommonLabels(ctx, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -63,7 +63,7 @@ func (r *ChiaFarmerReconciler) assembleChiaExporterService(ctx context.Context, 
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-metrics",
 			Namespace:       farmer.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, farmer.Spec.ChiaExporterConfig.ServiceLabels),
+			Labels:          kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, farmer.Spec.ChiaExporterConfig.ServiceLabels),
 			Annotations:     farmer.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, farmer),
 		},
@@ -77,7 +77,7 @@ func (r *ChiaFarmerReconciler) assembleChiaExporterService(ctx context.Context, 
 					Name:       "metrics",
 				},
 			},
-			Selector: kube.GetCommonLabels(ctx, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -88,17 +88,17 @@ func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
 			Namespace:       farmer.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
 			Annotations:     farmer.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, farmer),
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: kube.GetCommonLabels(ctx, farmer.ObjectMeta),
+				MatchLabels: kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta),
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(ctx, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
 					Annotations: farmer.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{

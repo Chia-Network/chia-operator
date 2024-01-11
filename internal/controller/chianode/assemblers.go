@@ -26,7 +26,7 @@ func (r *ChiaNodeReconciler) assembleBaseService(ctx context.Context, node k8sch
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chianodeNamePattern, node.Name),
 			Namespace:       node.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
 			Annotations:     node.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, node),
 		},
@@ -52,7 +52,7 @@ func (r *ChiaNodeReconciler) assembleBaseService(ctx context.Context, node k8sch
 					Name:       "rpc",
 				},
 			},
-			Selector: kube.GetCommonLabels(ctx, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -64,7 +64,7 @@ func (r *ChiaNodeReconciler) assembleInternalService(ctx context.Context, node k
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chianodeNamePattern, node.Name) + "-internal",
 			Namespace:       node.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
 			Annotations:     node.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, node),
 		},
@@ -91,7 +91,7 @@ func (r *ChiaNodeReconciler) assembleInternalService(ctx context.Context, node k
 					Name:       "rpc",
 				},
 			},
-			Selector: kube.GetCommonLabels(ctx, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -102,7 +102,7 @@ func (r *ChiaNodeReconciler) assembleHeadlessService(ctx context.Context, node k
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chianodeNamePattern, node.Name) + "-headless",
 			Namespace:       node.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
 			Annotations:     node.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, node),
 		},
@@ -129,7 +129,7 @@ func (r *ChiaNodeReconciler) assembleHeadlessService(ctx context.Context, node k
 					Name:       "rpc",
 				},
 			},
-			Selector: kube.GetCommonLabels(ctx, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -140,7 +140,7 @@ func (r *ChiaNodeReconciler) assembleChiaExporterService(ctx context.Context, no
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chianodeNamePattern, node.Name) + "-metrics",
 			Namespace:       node.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, node.Spec.ChiaExporterConfig.ServiceLabels),
+			Labels:          kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, node.Spec.ChiaExporterConfig.ServiceLabels),
 			Annotations:     node.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, node),
 		},
@@ -154,7 +154,7 @@ func (r *ChiaNodeReconciler) assembleChiaExporterService(ctx context.Context, no
 					Name:       "metrics",
 				},
 			},
-			Selector: kube.GetCommonLabels(ctx, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -167,19 +167,19 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chianodeNamePattern, node.Name),
 			Namespace:       node.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
 			Annotations:     node.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, node),
 		},
 		Spec: appsv1.StatefulSetSpec{
 			Replicas: &node.Spec.Replicas,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: kube.GetCommonLabels(ctx, node.ObjectMeta),
+				MatchLabels: kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta),
 			},
 			ServiceName: fmt.Sprintf(chianodeNamePattern, node.Name) + "-headless",
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(ctx, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
 					Annotations: node.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
