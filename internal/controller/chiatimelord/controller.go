@@ -8,8 +8,10 @@ import (
 	"context"
 	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -24,7 +26,8 @@ import (
 // ChiaTimelordReconciler reconciles a ChiaTimelord object
 type ChiaTimelordReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 var chiatimelords map[string]bool = make(map[string]bool)
@@ -34,6 +37,7 @@ var chiatimelords map[string]bool = make(map[string]bool)
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiatimelords/finalizers,verbs=update
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch
+//+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
 func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
@@ -73,6 +77,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node Service: %v", req.NamespacedName, err)
 	}
 
@@ -82,6 +87,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node chia-exporter Service: %v", req.NamespacedName, err)
 	}
 
@@ -91,10 +97,12 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord Deployment -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node StatefulSet: %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
+	r.Recorder.Event(&tl, corev1.EventTypeNormal, "Created", "Successfully created ChiaTimelord resources.")
 	tl.Status.Ready = true
 	err = r.Status().Update(ctx, &tl)
 	if err != nil {
