@@ -78,6 +78,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&harvester, "Warning", "Failed", "Failed to create harvester Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester Service: %v", req.NamespacedName, err)
 	}
 
@@ -87,6 +88,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&harvester, "Warning", "Failed", "Failed to create harvester metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester chia-exporter Service: %v", req.NamespacedName, err)
 	}
 
@@ -96,11 +98,12 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&harvester, "Warning", "Failed", "Failed to create harvester Deployment -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester Deployment: %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
-	r.Recorder.Event(&harvester, "Info", "Created", "Successfully created ChiaHarvester resources.")
+	r.Recorder.Event(&harvester, "Normal", "Created", "Successfully created ChiaHarvester resources.")
 	harvester.Status.Ready = true
 	err = r.Status().Update(ctx, &harvester)
 	if err != nil {

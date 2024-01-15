@@ -78,6 +78,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&farmer, "Warning", "Failed", "Failed to create farmer Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer Service: %v", req.NamespacedName, err)
 	}
 
@@ -87,6 +88,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&farmer, "Warning", "Failed", "Failed to create farmer metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer chia-exporter Service: %v", req.NamespacedName, err)
 	}
 
@@ -96,11 +98,12 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&farmer, "Warning", "Failed", "Failed to create farmer Deployment -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer Deployment: %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
-	r.Recorder.Event(&farmer, "Info", "Created", "Successfully created ChiaFarmer resources.")
+	r.Recorder.Event(&farmer, "Normal", "Created", "Successfully created ChiaFarmer resources.")
 	farmer.Status.Ready = true
 	err = r.Status().Update(ctx, &farmer)
 	if err != nil {

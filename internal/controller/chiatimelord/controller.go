@@ -76,6 +76,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&tl, "Warning", "Failed", "Failed to create timelord Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node Service: %v", req.NamespacedName, err)
 	}
 
@@ -85,6 +86,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&tl, "Warning", "Failed", "Failed to create timelord metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node chia-exporter Service: %v", req.NamespacedName, err)
 	}
 
@@ -94,11 +96,12 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&tl, "Warning", "Failed", "Failed to create timelord Deployment -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node StatefulSet: %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
-	r.Recorder.Event(&tl, "Info", "Created", "Successfully created ChiaTimelord resources.")
+	r.Recorder.Event(&tl, "Normal", "Created", "Successfully created ChiaTimelord resources.")
 	tl.Status.Ready = true
 	err = r.Status().Update(ctx, &tl)
 	if err != nil {

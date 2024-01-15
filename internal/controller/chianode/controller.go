@@ -78,6 +78,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&node, "Warning", "Failed", "Failed to create node Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node Service: %v", req.NamespacedName, err)
 	}
 
@@ -87,6 +88,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&node, "Warning", "Failed", "Failed to create node internal Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node Local Service: %v", req.NamespacedName, err)
 	}
 
@@ -96,6 +98,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&node, "Warning", "Failed", "Failed to create node headless Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node headless Service: %v", req.NamespacedName, err)
 	}
 
@@ -105,6 +108,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&node, "Warning", "Failed", "Failed to create node metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node chia-exporter Service: %v", req.NamespacedName, err)
 	}
 
@@ -114,11 +118,12 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		r.Recorder.Event(&node, "Warning", "Failed", "Failed to create node Statefulset -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node StatefulSet: %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
-	r.Recorder.Event(&node, "Info", "Created", "Successfully created ChiaNode resources.")
+	r.Recorder.Event(&node, "Normal", "Created", "Successfully created ChiaNode resources.")
 	node.Status.Ready = true
 	err = r.Status().Update(ctx, &node)
 	if err != nil {
