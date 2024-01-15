@@ -99,3 +99,32 @@ spec:
     introducerAddress: "introducer.default.svc.cluster.local" # Sets the introducer address used in the chia config file.
     dnsIntroducerAddress: "dns-introducer.default.svc.cluster.local" # Sets the DNS introducer address used in the chia config file.
 ```
+
+### Configure Readiness, Liveness, and Startup probes
+
+By default, if chia-exporter is enabled it comes with its own readiness and liveness probes. But you can configure readiness, liveness, and startup probes for the chia container in your deployed Pods, too:
+
+```yaml
+spec:
+  chia:
+    livenessProbe:
+      exec:
+        command:
+          - /bin/sh
+          - '-c'
+          - /usr/local/bin/docker-healthcheck.sh || exit 1
+      initialDelaySeconds: 30
+    readinessProbe:
+      exec:
+        command:
+          - /bin/sh
+          - '-c'
+          - /usr/local/bin/docker-healthcheck.sh || exit 1
+      initialDelaySeconds: 30
+    startupProbe:
+      exec:
+        command:
+          - /bin/sh
+          - '-c'
+          - /usr/local/bin/docker-healthcheck.sh || exit 1
+```
