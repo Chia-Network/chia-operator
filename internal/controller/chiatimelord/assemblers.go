@@ -26,7 +26,7 @@ func (r *ChiaTimelordReconciler) assembleBaseService(ctx context.Context, tl k8s
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiatimelordNamePattern, tl.Name),
 			Namespace:       tl.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 			Annotations:     tl.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, tl),
 		},
@@ -52,7 +52,7 @@ func (r *ChiaTimelordReconciler) assembleBaseService(ctx context.Context, tl k8s
 					Name:       "rpc",
 				},
 			},
-			Selector: kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -63,7 +63,7 @@ func (r *ChiaTimelordReconciler) assembleChiaExporterService(ctx context.Context
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "metrics",
 			Namespace:       tl.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, tl.Spec.ChiaExporterConfig.ServiceLabels),
+			Labels:          kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, tl.Spec.ChiaExporterConfig.ServiceLabels),
 			Annotations:     tl.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, tl),
 		},
@@ -77,7 +77,7 @@ func (r *ChiaTimelordReconciler) assembleChiaExporterService(ctx context.Context
 					Name:       "metrics",
 				},
 			},
-			Selector: kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -88,17 +88,17 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiatimelordNamePattern, tl.Name),
 			Namespace:       tl.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 			Annotations:     tl.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, tl),
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: kube.GetCommonLabels(ctx, tl.ObjectMeta),
+				MatchLabels: kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta),
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(ctx, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 					Annotations: tl.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{

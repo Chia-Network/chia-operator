@@ -26,7 +26,7 @@ func (r *ChiaHarvesterReconciler) assembleBaseService(ctx context.Context, harve
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
 			Namespace:       harvester.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
 			Annotations:     harvester.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, harvester),
 		},
@@ -52,7 +52,7 @@ func (r *ChiaHarvesterReconciler) assembleBaseService(ctx context.Context, harve
 					Name:       "rpc",
 				},
 			},
-			Selector: kube.GetCommonLabels(ctx, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -63,7 +63,7 @@ func (r *ChiaHarvesterReconciler) assembleChiaExporterService(ctx context.Contex
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-metrics",
 			Namespace:       harvester.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, harvester.Spec.ChiaExporterConfig.ServiceLabels),
+			Labels:          kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, harvester.Spec.ChiaExporterConfig.ServiceLabels),
 			Annotations:     harvester.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, harvester),
 		},
@@ -77,7 +77,7 @@ func (r *ChiaHarvesterReconciler) assembleChiaExporterService(ctx context.Contex
 					Name:       "metrics",
 				},
 			},
-			Selector: kube.GetCommonLabels(ctx, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
+			Selector: kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
 		},
 	}
 }
@@ -88,17 +88,17 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
 			Namespace:       harvester.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
+			Labels:          kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
 			Annotations:     harvester.Spec.AdditionalMetadata.Annotations,
 			OwnerReferences: r.getOwnerReference(ctx, harvester),
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: kube.GetCommonLabels(ctx, harvester.ObjectMeta),
+				MatchLabels: kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta),
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(ctx, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
 					Annotations: harvester.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{

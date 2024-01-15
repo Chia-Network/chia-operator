@@ -6,6 +6,7 @@ package kube
 
 import (
 	"context"
+	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,7 +16,7 @@ import (
 )
 
 // GetCommonLabels gives some common labels for chia-operator related objects
-func GetCommonLabels(ctx context.Context, meta metav1.ObjectMeta, additionalLabels ...map[string]string) map[string]string {
+func GetCommonLabels(ctx context.Context, kind string, meta metav1.ObjectMeta, additionalLabels ...map[string]string) map[string]string {
 	var labels = make(map[string]string)
 	for _, addition := range additionalLabels {
 		for k, v := range addition {
@@ -25,6 +26,7 @@ func GetCommonLabels(ctx context.Context, meta metav1.ObjectMeta, additionalLabe
 	labels["app.kubernetes.io/instance"] = meta.Name
 	labels["app.kubernetes.io/name"] = meta.Name
 	labels["app.kubernetes.io/managed-by"] = "chia-operator"
+	labels["k8s.chia.net/provenance"] = fmt.Sprintf("%s.%s.%s", kind, meta.Namespace, meta.Name)
 	return labels
 }
 
