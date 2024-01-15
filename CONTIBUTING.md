@@ -1,14 +1,14 @@
-## Contributing
+# Contributing
 
-All commits should be signed using a key attached to your GitHub profile before creating a PR. 
+All commits should be signed using a key attached to your GitHub profile before creating a PR.
 
 When creating a pull request, have a clear summary of what the change does and why the change is useful. As an example of an acceptable PR message:
 
-```
+```markdown
 This pull request adds support for Chia Wallets. This would be useful for writing 3rd party apps to be deployed to kubernetes that need to communicate to a Chia wallet's RPCs.
 ```
 
-### API Contributions
+## API Contributions
 
 These rules/guidelines are meant to help keep a well defined style for accomplishing controller logic, and in some cases also helps persist controller-gen/kubebuilder defaults in comment tags because it can be easy to accidentally override the API default with a type's zero value on accident, for example.
 

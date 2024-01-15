@@ -66,3 +66,18 @@ jobs:
 
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v3
+
+  markdown-lint:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/igorshubovych/markdownlint-cli:latest
+      options: --entrypoint /bin/sh
+    steps:
+      - name: 'Install deps'
+        run: apk add git
+
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+
+      - name: 'Lint Markdown'
+        run: markdownlint --disable=MD013 **/*.md

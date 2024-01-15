@@ -18,7 +18,7 @@ spec:
       key: "key.txt"
 ```
 
-### Chia configuration
+## Chia configuration
 
 Some of Chia's configuration can be changed from within the CR.
 
@@ -38,10 +38,9 @@ spec:
     fullNodePeer: "node.default.svc.cluster.local:8444" # A local full_node using kubernetes DNS names
 ```
 
-### CHIA_ROOT storage
+## CHIA_ROOT storage
 
 `CHIA_ROOT` is an environment variable that tells chia services where to expect a data directory to be for local chia state. You can store your chia state persistently a couple of different ways: either with a host mount or a persistent volume claim.
-
 
 To use a persistent volume claim, first create one in the same namespace and then give its name in the CR like the following:
 
@@ -71,11 +70,11 @@ spec:
     kubernetes.io/hostname: "node-with-hostpath"
 ```
 
-### chia-exporter sidecar
+## chia-exporter sidecar
 
-[chia-exporter](https://github.com/chia-network/chia-exporter) is a Prometheus exporter that surfaces scrape-able metrics to a Prometheus server. chia-exporter runs as a sidecar container to all Chia services ran by this operator by default. 
+[chia-exporter](https://github.com/chia-network/chia-exporter) is a Prometheus exporter that surfaces scrape-able metrics to a Prometheus server. chia-exporter runs as a sidecar container to all Chia services ran by this operator by default.
 
-#### Add labels to chia-exporter service
+### Add labels to chia-exporter service
 
 You may want to add some labels to your chia-exporter Service that get added as labels to your Prometheus metrics.
 
@@ -86,7 +85,7 @@ spec:
       network: "mainnet"
 ```
 
-#### Disable chia-exporter
+### Disable chia-exporter
 
 ```yaml
 spec:
@@ -94,7 +93,7 @@ spec:
     enabled: false
 ```
 
-### Selecting a network
+## Selecting a network
 
 You can select a network from your chia configuration with the following options:
 
@@ -107,7 +106,7 @@ spec:
     dnsIntroducerAddress: "dns-introducer.default.svc.cluster.local" # Sets the DNS introducer address used in the chia config file.
 ```
 
-### Configure Readiness, Liveness, and Startup probes
+## Configure Readiness, Liveness, and Startup probes
 
 By default, if chia-exporter is enabled it comes with its own readiness and liveness probes. But you can configure readiness, liveness, and startup probes for the chia container in your deployed Pods, too:
 
