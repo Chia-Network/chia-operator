@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
@@ -78,7 +79,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		r.Recorder.Event(&wallet, "Warning", "Failed", "Failed to create harvester Service -- Check operator logs.")
+		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create harvester Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet Service: %v", req.NamespacedName, err)
 	}
 
@@ -88,7 +89,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		r.Recorder.Event(&wallet, "Warning", "Failed", "Failed to create harvester metrics Service -- Check operator logs.")
+		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create harvester metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet chia-exporter Service: %v", req.NamespacedName, err)
 	}
 
@@ -98,12 +99,12 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		r.Recorder.Event(&wallet, "Warning", "Failed", "Failed to create harvester Deployment -- Check operator logs.")
+		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create harvester Deployment -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet Deployment: %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
-	r.Recorder.Event(&wallet, "Normal", "Created", "Successfully created ChiaWallet resources.")
+	r.Recorder.Event(&wallet, corev1.EventTypeNormal, "Created", "Successfully created ChiaWallet resources.")
 	wallet.Status.Ready = true
 	err = r.Status().Update(ctx, &wallet)
 	if err != nil {

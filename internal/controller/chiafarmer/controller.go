@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
@@ -78,7 +79,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		r.Recorder.Event(&farmer, "Warning", "Failed", "Failed to create farmer Service -- Check operator logs.")
+		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer Service: %v", req.NamespacedName, err)
 	}
 
@@ -88,7 +89,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		r.Recorder.Event(&farmer, "Warning", "Failed", "Failed to create farmer metrics Service -- Check operator logs.")
+		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer chia-exporter Service: %v", req.NamespacedName, err)
 	}
 
@@ -98,12 +99,12 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		r.Recorder.Event(&farmer, "Warning", "Failed", "Failed to create farmer Deployment -- Check operator logs.")
+		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer Deployment -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer Deployment: %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
-	r.Recorder.Event(&farmer, "Normal", "Created", "Successfully created ChiaFarmer resources.")
+	r.Recorder.Event(&farmer, corev1.EventTypeNormal, "Created", "Successfully created ChiaFarmer resources.")
 	farmer.Status.Ready = true
 	err = r.Status().Update(ctx, &farmer)
 	if err != nil {

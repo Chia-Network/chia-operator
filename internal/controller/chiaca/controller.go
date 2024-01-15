@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
@@ -82,7 +83,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		r.Recorder.Event(&ca, "Warning", "Failed", "Failed to create ServiceAccount -- Check operator logs.")
+		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to create ServiceAccount -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator ServiceAccount: %v", req.NamespacedName, err)
 	}
 
@@ -92,7 +93,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		r.Recorder.Event(&ca, "Warning", "Failed", "Failed to create Role -- Check operator logs.")
+		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to create Role -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator Role: %v", req.NamespacedName, err)
 	}
 
@@ -102,7 +103,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		r.Recorder.Event(&ca, "Warning", "Failed", "Failed to create RoleBinding -- Check operator logs.")
+		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to create RoleBinding -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator RoleBinding: %v", req.NamespacedName, err)
 	}
 
@@ -120,7 +121,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			if res == nil {
 				res = &reconcile.Result{}
 			}
-			r.Recorder.Event(&ca, "Warning", "Failed", "Failed to create the CA generating Job -- Check operator logs.")
+			r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to create the CA generating Job -- Check operator logs.")
 			return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator Job: %v", req.NamespacedName, err)
 		}
 
@@ -135,7 +136,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			}
 
 			if !notFound {
-				r.Recorder.Event(&ca, "Normal", "Created",
+				r.Recorder.Event(&ca, corev1.EventTypeNormal, "Created",
 					fmt.Sprintf("Successfully created CA Secret in %s/%s", ca.Namespace, ca.Name))
 
 				ca.Status.Ready = true
