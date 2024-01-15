@@ -80,4 +80,5 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 'Lint Markdown'
+        # MD013 lints for long lines, ignoring because GitHub's markdown viewer wraps long lines anyway.
         run: markdownlint --disable=MD013 **/*.md
