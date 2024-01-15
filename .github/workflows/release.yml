@@ -1,0 +1,35 @@
+name: Release uploads
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  release-manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set Env
+        uses: Chia-Network/actions/setjobenv@main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate release manifests
+        run: make release
+
+      - name: Upload release manifests
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FILES=$(find ${{ github.workspace }}/release -type f -name '*.yaml')
+          while IFS= read -r file; do
+            gh release upload \
+              $RELEASE_TAG \
+              $file
+          done <<< "$FILES"
