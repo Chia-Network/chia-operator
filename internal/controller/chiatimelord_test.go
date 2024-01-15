@@ -6,6 +6,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -49,7 +50,7 @@ var _ = Describe("ChiaTimelord controller", func() {
 				Spec: apiv1.ChiaTimelordSpec{
 					ChiaConfig: apiv1.ChiaTimelordSpecChia{
 						CommonSpecChia: apiv1.CommonSpecChia{
-							Image:        "ghcr.io/chia-network/chia:latest",
+							Image:        fmt.Sprintf("ghcr.io/chia-network/chia:%s", defaultChiaImageTag),
 							CASecretName: "test-secret",
 						},
 						FullNodePeer: "node.default.svc.cluster.local:58444",
@@ -59,7 +60,7 @@ var _ = Describe("ChiaTimelord controller", func() {
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
 							Enabled: true,
-							Image:   "ghcr.io/chia-network/chia-exporter:latest",
+							Image:   fmt.Sprintf("ghcr.io/chia-network/chia-exporter:%s", defaultChiaExporterImageTag),
 						},
 					},
 				},
