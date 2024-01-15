@@ -42,6 +42,12 @@ var (
 	cancel    context.CancelFunc
 )
 
+const (
+	defaultChiaImageTag         = "latest"
+	defaultChiaExporterImageTag = "latest"
+	defaultChiaCAImageTag       = "latest"
+)
+
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
