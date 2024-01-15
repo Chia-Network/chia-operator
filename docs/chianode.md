@@ -75,7 +75,6 @@ spec:
 ```
 
 ### Disable chia-exporter
-
 ```yaml
 spec:
   chiaExporter:
