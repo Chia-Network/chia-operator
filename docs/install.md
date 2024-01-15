@@ -4,9 +4,16 @@ There are two parts to this Operator. The CRDs (ChiaCA, ChiaFarmer, ChiaNode, et
 
 ## Using the release manifests
 
+Install the CRDs:
+
 ```bash
-kubectl apply -f 
-kubectl apply -f
+kubectl apply -f https://github.com/Chia-Network/chia-operator/releases/latest/download/crd.yaml
+```
+
+Install the controller manager:
+
+```bash
+kubectl apply -f https://github.com/Chia-Network/chia-operator/releases/latest/download/manager.yaml
 ```
 
 ## Using kustomize

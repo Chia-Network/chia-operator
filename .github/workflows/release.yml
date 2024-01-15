@@ -20,6 +20,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: actions/setup-go@v4
+
       - name: Generate release manifests
         run: make release
 
