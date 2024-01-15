@@ -43,9 +43,9 @@ var (
 )
 
 const (
-	defaultChiaImageTag         = "latest"
-	defaultChiaExporterImageTag = "latest"
-	defaultChiaCAImageTag       = "latest"
+	defaultChiaImageTag         = "2.1.4"
+	defaultChiaExporterImageTag = "0.11.1"
+	defaultChiaCAImageTag       = "0.2.1"
 )
 
 func TestAPIs(t *testing.T) {
