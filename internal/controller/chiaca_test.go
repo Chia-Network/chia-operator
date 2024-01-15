@@ -42,7 +42,7 @@ var _ = Describe("ChiaCA controller", func() {
 			}
 			expect := &apiv1.ChiaCA{
 				Spec: apiv1.ChiaCASpec{
-					Image:  "ghcr.io/chia-network/chia-operator/ca-gen:latest",
+					Image:  "ghcr.io/chia-network/chia-operator/ca-gen:0.2.0",
 					Secret: "test-secret",
 				},
 			}
