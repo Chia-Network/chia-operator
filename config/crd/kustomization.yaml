@@ -8,7 +8,7 @@ resources:
 - bases/k8s.chia.net_chiacas.yaml
 - bases/k8s.chia.net_chiawallets.yaml
 - bases/k8s.chia.net_chiatimelords.yaml
-- bases/k8s.chia.net_chiadnsintroducers.yaml
+- bases/k8s.chia.net_chiaseeders.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

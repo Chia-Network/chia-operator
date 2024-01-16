@@ -18,7 +18,7 @@ limitations under the License.
 Copyright 2023 Chia Network Inc.
 */
 
-package chiadnsintroducer
+package chiaseeder
 
 import (
 	"context"
@@ -36,69 +36,69 @@ import (
 	"github.com/cisco-open/operator-tools/pkg/reconciler"
 )
 
-// ChiaDNSIntroducerReconciler reconciles a ChiaDNSIntroducer object
-type ChiaDNSIntroducerReconciler struct {
+// ChiaSeederReconciler reconciles a ChiaSeeder object
+type ChiaSeederReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=k8s.chia.net,resources=chiadnsintroducers,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=k8s.chia.net,resources=chiadnsintroducers/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=k8s.chia.net,resources=chiadnsintroducers/finalizers,verbs=update
+//+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaseeders,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaseeders/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaseeders/finalizers,verbs=update
 //+kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch
 
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
-func (r *ChiaDNSIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaDNSIntroducerReconciler ChiaDNSIntroducer=%s", req.NamespacedName.String()))
+	log.Info(fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s", req.NamespacedName.String()))
 
 	// Get the custom resource
-	var dnsIntro k8schianetv1.ChiaDNSIntroducer
-	err := r.Get(ctx, req.NamespacedName, &dnsIntro)
+	var seeder k8schianetv1.ChiaSeeder
+	err := r.Get(ctx, req.NamespacedName, &seeder)
 	if err != nil && errors.IsNotFound(err) {
 		// Return here, this can happen if the CR was deleted
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
-		log.Error(err, fmt.Sprintf("ChiaDNSIntroducerReconciler ChiaDNSIntroducer=%s unable to fetch ChiaDNSIntroducer resource", req.NamespacedName))
+		log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to fetch ChiaSeeder resource", req.NamespacedName))
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	srv := r.assembleBaseService(ctx, dnsIntro)
+	srv := r.assembleBaseService(ctx, seeder)
 	res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 	if err != nil {
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		return *res, fmt.Errorf("ChiaDNSIntroducerReconciler ChiaDNSIntroducer=%s encountered error reconciling Service: %v", req.NamespacedName, err)
+		return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling Service: %v", req.NamespacedName, err)
 	}
 
-	srv = r.assembleChiaExporterService(ctx, dnsIntro)
+	srv = r.assembleChiaExporterService(ctx, seeder)
 	res, err = kube.ReconcileService(ctx, resourceReconciler, srv)
 	if err != nil {
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		return *res, fmt.Errorf("ChiaDNSIntroducerReconciler ChiaDNSIntroducer=%s encountered error reconciling chia-exporter Service: %v", req.NamespacedName, err)
+		return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling chia-exporter Service: %v", req.NamespacedName, err)
 	}
 
-	deploy := r.assembleDeployment(ctx, dnsIntro)
+	deploy := r.assembleDeployment(ctx, seeder)
 	res, err = kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {
 		if res == nil {
 			res = &reconcile.Result{}
 		}
-		return *res, fmt.Errorf("ChiaDNSIntroducerReconciler ChiaDNSIntroducer=%s encountered error reconciling StatefulSet: %v", req.NamespacedName, err)
+		return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling StatefulSet: %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
-	dnsIntro.Status.Ready = true
-	err = r.Status().Update(ctx, &dnsIntro)
+	seeder.Status.Ready = true
+	err = r.Status().Update(ctx, &seeder)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("ChiaDNSIntroducerReconciler ChiaDNSIntroducer=%s unable to update ChiaDNSIntroducer status", req.NamespacedName))
+		log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to update ChiaSeeder status", req.NamespacedName))
 		return ctrl.Result{}, err
 	}
 
@@ -106,8 +106,8 @@ func (r *ChiaDNSIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Re
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *ChiaDNSIntroducerReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ChiaSeederReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&k8schianetv1.ChiaDNSIntroducer{}).
+		For(&k8schianetv1.ChiaSeeder{}).
 		Complete(r)
 }

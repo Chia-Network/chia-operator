@@ -1,13 +1,13 @@
 apiVersion: k8s.chia.net/v1
-kind: ChiaDNSIntroducer
+kind: ChiaSeeder
 metadata:
   labels:
-    app.kubernetes.io/name: chiadnsintroducer
-    app.kubernetes.io/instance: chiadnsintroducer-sample
+    app.kubernetes.io/name: chiaseeder
+    app.kubernetes.io/instance: chiaseeder-sample
     app.kubernetes.io/part-of: chia-operator
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: chia-operator
-  name: chiadnsintroducer-sample
+  name: chiaseeder-sample
 spec:
   chia:
     caSecretName: chiaca-secret
@@ -21,4 +21,4 @@ spec:
     rname: "admin.example.com"
   storage:
     chiaRoot:
-      claimName: "chiadnsintroducer-sample-chiaroot"
+      claimName: "chiaseeder-sample-chiaroot"

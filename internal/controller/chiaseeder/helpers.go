@@ -2,7 +2,7 @@
 Copyright 2023 Chia Network Inc.
 */
 
-package chiadnsintroducer
+package chiaseeder
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
-func (r *ChiaDNSIntroducerReconciler) getChiaVolumes(ctx context.Context, dnsintro k8schianetv1.ChiaDNSIntroducer) []corev1.Volume {
+func (r *ChiaSeederReconciler) getChiaVolumes(ctx context.Context, seeder k8schianetv1.ChiaSeeder) []corev1.Volume {
 	var v []corev1.Volume
 
 	// secret ca volume
@@ -24,7 +24,7 @@ func (r *ChiaDNSIntroducerReconciler) getChiaVolumes(ctx context.Context, dnsint
 		Name: "secret-ca",
 		VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
-				SecretName: dnsintro.Spec.ChiaConfig.CASecretName,
+				SecretName: seeder.Spec.ChiaConfig.CASecretName,
 			},
 		},
 	})
@@ -32,23 +32,23 @@ func (r *ChiaDNSIntroducerReconciler) getChiaVolumes(ctx context.Context, dnsint
 	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
 	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
 	var chiaRootAdded bool = false
-	if dnsintro.Spec.Storage != nil && dnsintro.Spec.Storage.ChiaRoot != nil {
-		if dnsintro.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+	if seeder.Spec.Storage != nil && seeder.Spec.Storage.ChiaRoot != nil {
+		if seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
 			v = append(v, corev1.Volume{
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: dnsintro.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
+						ClaimName: seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
 					},
 				},
 			})
 			chiaRootAdded = true
-		} else if dnsintro.Spec.Storage.ChiaRoot.HostPathVolume != nil {
+		} else if seeder.Spec.Storage.ChiaRoot.HostPathVolume != nil {
 			v = append(v, corev1.Volume{
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
-						Path: dnsintro.Spec.Storage.ChiaRoot.HostPathVolume.Path,
+						Path: seeder.Spec.Storage.ChiaRoot.HostPathVolume.Path,
 					},
 				},
 			})
@@ -68,7 +68,7 @@ func (r *ChiaDNSIntroducerReconciler) getChiaVolumes(ctx context.Context, dnsint
 }
 
 // getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct
-func (r *ChiaDNSIntroducerReconciler) getChiaVolumeMounts(ctx context.Context, dnsIntro k8schianetv1.ChiaDNSIntroducer) []corev1.VolumeMount {
+func (r *ChiaSeederReconciler) getChiaVolumeMounts(ctx context.Context, seeder k8schianetv1.ChiaSeeder) []corev1.VolumeMount {
 	var v []corev1.VolumeMount
 
 	// secret ca volume
@@ -87,7 +87,7 @@ func (r *ChiaDNSIntroducerReconciler) getChiaVolumeMounts(ctx context.Context, d
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func (r *ChiaDNSIntroducerReconciler) getChiaEnv(ctx context.Context, dnsIntro k8schianetv1.ChiaDNSIntroducer) []corev1.EnvVar {
+func (r *ChiaSeederReconciler) getChiaEnv(ctx context.Context, seeder k8schianetv1.ChiaSeeder) []corev1.EnvVar {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -102,7 +102,7 @@ func (r *ChiaDNSIntroducerReconciler) getChiaEnv(ctx context.Context, dnsIntro k
 		Value: "/chia-data",
 	})
 
-	// keys env var -- no keys required for a dnsIntro
+	// keys env var -- no keys required for a seeder
 	env = append(env, corev1.EnvVar{
 		Name:  "keys",
 		Value: "none",
@@ -115,7 +115,7 @@ func (r *ChiaDNSIntroducerReconciler) getChiaEnv(ctx context.Context, dnsIntro k
 	})
 
 	// testnet env var
-	if dnsIntro.Spec.ChiaConfig.Testnet != nil && *dnsIntro.Spec.ChiaConfig.Testnet {
+	if seeder.Spec.ChiaConfig.Testnet != nil && *seeder.Spec.ChiaConfig.Testnet {
 		env = append(env, corev1.EnvVar{
 			Name:  "testnet",
 			Value: "true",
@@ -123,72 +123,72 @@ func (r *ChiaDNSIntroducerReconciler) getChiaEnv(ctx context.Context, dnsIntro k
 	}
 
 	// network env var
-	if dnsIntro.Spec.ChiaConfig.Network != nil && *dnsIntro.Spec.ChiaConfig.Network != "" {
+	if seeder.Spec.ChiaConfig.Network != nil && *seeder.Spec.ChiaConfig.Network != "" {
 		env = append(env, corev1.EnvVar{
 			Name:  "network",
-			Value: *dnsIntro.Spec.ChiaConfig.Network,
+			Value: *seeder.Spec.ChiaConfig.Network,
 		})
 	}
 
 	// network_port env var
-	if dnsIntro.Spec.ChiaConfig.NetworkPort != nil && *dnsIntro.Spec.ChiaConfig.NetworkPort != 0 {
+	if seeder.Spec.ChiaConfig.NetworkPort != nil && *seeder.Spec.ChiaConfig.NetworkPort != 0 {
 		env = append(env, corev1.EnvVar{
 			Name:  "network_port",
-			Value: strconv.Itoa(int(*dnsIntro.Spec.ChiaConfig.NetworkPort)),
+			Value: strconv.Itoa(int(*seeder.Spec.ChiaConfig.NetworkPort)),
 		})
 	}
 
 	// introducer_address env var
-	if dnsIntro.Spec.ChiaConfig.IntroducerAddress != nil {
+	if seeder.Spec.ChiaConfig.IntroducerAddress != nil {
 		env = append(env, corev1.EnvVar{
 			Name:  "introducer_address",
-			Value: *dnsIntro.Spec.ChiaConfig.IntroducerAddress,
+			Value: *seeder.Spec.ChiaConfig.IntroducerAddress,
 		})
 	}
 
 	// dns_introducer_address env var
-	if dnsIntro.Spec.ChiaConfig.DNSIntroducerAddress != nil {
+	if seeder.Spec.ChiaConfig.DNSIntroducerAddress != nil {
 		env = append(env, corev1.EnvVar{
 			Name:  "dns_introducer_address",
-			Value: *dnsIntro.Spec.ChiaConfig.DNSIntroducerAddress,
+			Value: *seeder.Spec.ChiaConfig.DNSIntroducerAddress,
 		})
 	}
 
 	// TZ env var
-	if dnsIntro.Spec.ChiaConfig.Timezone != nil {
+	if seeder.Spec.ChiaConfig.Timezone != nil {
 		env = append(env, corev1.EnvVar{
 			Name:  "TZ",
-			Value: *dnsIntro.Spec.ChiaConfig.Timezone,
+			Value: *seeder.Spec.ChiaConfig.Timezone,
 		})
 	}
 
 	// log_level env var
-	if dnsIntro.Spec.ChiaConfig.LogLevel != nil {
+	if seeder.Spec.ChiaConfig.LogLevel != nil {
 		env = append(env, corev1.EnvVar{
 			Name:  "log_level",
-			Value: *dnsIntro.Spec.ChiaConfig.LogLevel,
+			Value: *seeder.Spec.ChiaConfig.LogLevel,
 		})
 	}
 
 	return env
 }
 
-// getOwnerReference gives the common owner reference spec for ChiaDNSIntroducer related objects
-func (r *ChiaDNSIntroducerReconciler) getOwnerReference(ctx context.Context, dnsIntro k8schianetv1.ChiaDNSIntroducer) []metav1.OwnerReference {
+// getOwnerReference gives the common owner reference spec for ChiaSeeder related objects
+func (r *ChiaSeederReconciler) getOwnerReference(ctx context.Context, seeder k8schianetv1.ChiaSeeder) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
 		{
-			APIVersion: dnsIntro.APIVersion,
-			Kind:       dnsIntro.Kind,
-			Name:       dnsIntro.Name,
-			UID:        dnsIntro.UID,
+			APIVersion: seeder.APIVersion,
+			Kind:       seeder.Kind,
+			Name:       seeder.Name,
+			UID:        seeder.UID,
 			Controller: &consts.ControllerOwner,
 		},
 	}
 }
 
 // getFullNodePort determines the correct full_node port to use
-func (r *ChiaDNSIntroducerReconciler) getFullNodePort(ctx context.Context, dnsIntro k8schianetv1.ChiaDNSIntroducer) int32 {
-	if dnsIntro.Spec.ChiaConfig.Testnet != nil && *dnsIntro.Spec.ChiaConfig.Testnet {
+func (r *ChiaSeederReconciler) getFullNodePort(ctx context.Context, seeder k8schianetv1.ChiaSeeder) int32 {
+	if seeder.Spec.ChiaConfig.Testnet != nil && *seeder.Spec.ChiaConfig.Testnet {
 		return consts.TestnetNodePort
 	}
 	return consts.MainnetNodePort

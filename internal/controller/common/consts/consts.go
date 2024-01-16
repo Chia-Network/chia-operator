@@ -32,6 +32,9 @@ const (
 	// NodeRPCPort defines the port for the full_node RPC
 	NodeRPCPort = 8555
 
+	// CrawlerRPCPort defines the port for the crawler RPC
+	CrawlerRPCPort = 8561
+
 	// TimelordPort defines the port for timelord
 	TimelordPort = 8446
 

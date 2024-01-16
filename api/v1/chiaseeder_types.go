@@ -20,16 +20,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ChiaDNSIntroducerSpec defines the desired state of ChiaDNSIntroducer
-type ChiaDNSIntroducerSpec struct {
+// ChiaSeederSpec defines the desired state of ChiaSeeder
+type ChiaSeederSpec struct {
 	CommonSpec `json:",inline"`
 
 	// ChiaConfig defines the configuration options available to Chia component containers
-	ChiaConfig ChiaDNSIntroducerSpecChia `json:"chia"`
+	ChiaConfig ChiaSeederSpecChia `json:"chia"`
 }
 
-// ChiaDNSIntroducerSpecChia defines the desired state of Chia component configuration
-type ChiaDNSIntroducerSpecChia struct {
+// ChiaSeederSpecChia defines the desired state of Chia component configuration
+type ChiaSeederSpecChia struct {
 	CommonSpecChia `json:",inline"`
 
 	// BootstrapPeer a peer to bootstrap the seeder's peer database
@@ -48,8 +48,8 @@ type ChiaDNSIntroducerSpecChia struct {
 	Rname string `json:"rname"`
 }
 
-// ChiaDNSIntroducerStatus defines the observed state of ChiaDNSIntroducer
-type ChiaDNSIntroducerStatus struct {
+// ChiaSeederStatus defines the observed state of ChiaSeeder
+type ChiaSeederStatus struct {
 	// Ready says whether the chia component is ready deployed
 	// +kubebuilder:default=false
 	Ready bool `json:"ready,omitempty"`
@@ -58,24 +58,24 @@ type ChiaDNSIntroducerStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// ChiaDNSIntroducer is the Schema for the chiadnsintroducers API
-type ChiaDNSIntroducer struct {
+// ChiaSeeder is the Schema for the chiaseeders API
+type ChiaSeeder struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ChiaDNSIntroducerSpec   `json:"spec,omitempty"`
-	Status ChiaDNSIntroducerStatus `json:"status,omitempty"`
+	Spec   ChiaSeederSpec   `json:"spec,omitempty"`
+	Status ChiaSeederStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// ChiaDNSIntroducerList contains a list of ChiaDNSIntroducer
-type ChiaDNSIntroducerList struct {
+// ChiaSeederList contains a list of ChiaSeeder
+type ChiaSeederList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []ChiaDNSIntroducer `json:"items"`
+	Items           []ChiaSeeder `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&ChiaDNSIntroducer{}, &ChiaDNSIntroducerList{})
+	SchemeBuilder.Register(&ChiaSeeder{}, &ChiaSeederList{})
 }
