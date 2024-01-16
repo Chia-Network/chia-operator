@@ -38,6 +38,14 @@ var (
 		},
 	)
 
+	// ChiaSeeders is a gauge metric that keeps a running total of deployed ChiaSeeders
+	ChiaSeeders = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "chia_operator_chiaseeder_total",
+			Help: "Number of ChiaSeeder objects controlled by this operator",
+		},
+	)
+
 	// ChiaTimelords is a gauge metric that keeps a running total of deployed ChiaTimelords
 	ChiaTimelords = prometheus.NewGauge(
 		prometheus.GaugeOpts{

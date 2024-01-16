@@ -35,6 +35,7 @@ import (
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
+	"github.com/chia-network/chia-operator/internal/metrics"
 	"github.com/cisco-open/operator-tools/pkg/reconciler"
 )
 
@@ -44,6 +45,8 @@ type ChiaSeederReconciler struct {
 	Scheme   *runtime.Scheme
 	Recorder record.EventRecorder
 }
+
+var chiaseeders map[string]bool = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaseeders,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaseeders/status,verbs=get;update;patch
@@ -63,12 +66,26 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	var seeder k8schianetv1.ChiaSeeder
 	err := r.Get(ctx, req.NamespacedName, &seeder)
 	if err != nil && errors.IsNotFound(err) {
+		// Remove this object from the map for tracking and subtract this CR's total metric by 1
+		_, exists := chiaseeders[req.NamespacedName.String()]
+		if exists {
+			delete(chiaseeders, req.NamespacedName.String())
+			metrics.ChiaSeeders.Sub(1.0)
+		}
+
 		// Return here, this can happen if the CR was deleted
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
 		log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to fetch ChiaSeeder resource", req.NamespacedName))
 		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
+	_, exists := chiaseeders[req.NamespacedName.String()]
+	if !exists {
+		chiaseeders[req.NamespacedName.String()] = true
+		metrics.ChiaSeeders.Add(1.0)
 	}
 
 	srv := r.assembleBaseService(ctx, seeder)
