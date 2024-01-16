@@ -11,6 +11,7 @@ permissions:
 jobs:
   release-manifests:
     runs-on: ubuntu-latest
+    container: ghcr.io/chia-network/build-images/ips:main
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,6 +20,9 @@ jobs:
         uses: Chia-Network/actions/setjobenv@main
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install kubectl
+        run: apk add kubectl
 
       - name: Generate release manifests
         run: make release

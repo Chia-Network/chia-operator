@@ -19,7 +19,7 @@ spec:
       key: "key.txt"
 ```
 
-### Chia configuration
+## Chia configuration
 
 Some of Chia's configuration can be changed from within the CR.
 
@@ -34,7 +34,6 @@ spec:
 ### CHIA_ROOT storage
 
 `CHIA_ROOT` is an environment variable that tells chia services where to expect a data directory to be for local chia state. You can store your chia state persistently a couple of different ways: either with a host mount or a persistent volume claim.
-
 
 To use a persistent volume claim, first create one in the same namespace and then give its name in the CR like the following:
 
@@ -66,7 +65,7 @@ spec:
 
 ### chia-exporter sidecar
 
-[chia-exporter](https://github.com/chia-network/chia-exporter) is a Prometheus exporter that surfaces scrape-able metrics to a Prometheus server. chia-exporter runs as a sidecar container to all Chia services ran by this operator by default. 
+[chia-exporter](https://github.com/chia-network/chia-exporter) is a Prometheus exporter that surfaces scrape-able metrics to a Prometheus server. chia-exporter runs as a sidecar container to all Chia services ran by this operator by default.
 
 #### Add labels to chia-exporter service
 
