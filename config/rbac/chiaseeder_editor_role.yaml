@@ -1,20 +1,20 @@
-# permissions for end users to edit chiadnsintroducers.
+# permissions for end users to edit chiaseeders.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: chiadnsintroducer-editor-role
+    app.kubernetes.io/instance: chiaseeder-editor-role
     app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: chia-operator
     app.kubernetes.io/part-of: chia-operator
     app.kubernetes.io/managed-by: kustomize
-  name: chiadnsintroducer-editor-role
+  name: chiaseeder-editor-role
 rules:
 - apiGroups:
   - k8s.chia.net
   resources:
-  - chiadnsintroducers
+  - chiaseeders
   verbs:
   - create
   - delete
@@ -26,6 +26,6 @@ rules:
 - apiGroups:
   - k8s.chia.net
   resources:
-  - chiadnsintroducers/status
+  - chiaseeders/status
   verbs:
   - get
