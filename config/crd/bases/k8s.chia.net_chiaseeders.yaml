@@ -58,7 +58,8 @@ spec:
                       a DNS Introducer server.
                     type: string
                   domainName:
-                    description: DomainName the domain name of the server
+                    description: DomainName the name of the NS record for your server
+                      with a trailing period. (ex. "seeder.example.com.")
                     type: string
                   image:
                     default: ghcr.io/chia-network/chia:latest
@@ -228,8 +229,8 @@ spec:
                     format: int64
                     type: integer
                   nameserver:
-                    description: Nameserver the adddress the dns server is running
-                      on
+                    description: Nameserver the name of the A record for your server
+                      with a trailing period. (ex. "seeder-us-west-2.example.com.")
                     type: string
                   network:
                     description: Network can be set to a network name in the chia

@@ -40,10 +40,10 @@ type ChiaSeederSpecChia struct {
 	// +optional
 	MinimumHeight *uint64 `json:"minimumHeight"`
 
-	// DomainName the domain name of the server
+	// DomainName the name of the NS record for your server with a trailing period. (ex. "seeder.example.com.")
 	DomainName string `json:"domainName"`
 
-	// Nameserver the adddress the dns server is running on
+	// Nameserver the name of the A record for your server with a trailing period. (ex. "seeder-us-west-2.example.com.")
 	Nameserver string `json:"nameserver"`
 
 	// TTL ttl setting in the seeder configuration
