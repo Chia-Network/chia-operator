@@ -22,6 +22,9 @@ var _ = Describe("ChiaSeeder controller", func() {
 	var (
 		timeout  = time.Second * 10
 		interval = time.Millisecond * 250
+
+		domainName = "seeder.example.com"
+		nameserver = "example.com"
 	)
 
 	Context("When creating ChiaSeeder", func() {
@@ -42,11 +45,8 @@ var _ = Describe("ChiaSeeder controller", func() {
 						CommonSpecChia: apiv1.CommonSpecChia{
 							CASecretName: "test-secret",
 						},
-						BootstrapPeer: "node.default.svc.cluster.local:58444",
-						MinimumHeight: uint64(100),
-						DomainName:    "seeder.example.com",
-						Nameserver:    "example.com",
-						Rname:         "admin.example.com",
+						DomainName: domainName,
+						Nameserver: nameserver,
 					},
 				},
 			}
@@ -57,11 +57,8 @@ var _ = Describe("ChiaSeeder controller", func() {
 							Image:        fmt.Sprintf("ghcr.io/chia-network/chia:%s", defaultChiaImageTag),
 							CASecretName: "test-secret",
 						},
-						BootstrapPeer: "node.default.svc.cluster.local:58444",
-						MinimumHeight: uint64(100),
-						DomainName:    "seeder.example.com",
-						Nameserver:    "example.com",
-						Rname:         "admin.example.com",
+						DomainName: domainName,
+						Nameserver: nameserver,
 					},
 					CommonSpec: apiv1.CommonSpec{
 						ServiceType:     "ClusterIP",

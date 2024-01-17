@@ -84,11 +84,11 @@ spec:
 					Timezone:             &timezone,
 					LogLevel:             &logLevel,
 				},
-				BootstrapPeer: bootstrapPeer,
-				MinimumHeight: minimumHeight,
+				BootstrapPeer: &bootstrapPeer,
+				MinimumHeight: &minimumHeight,
 				DomainName:    domainName,
 				Nameserver:    nameserver,
-				Rname:         rname,
+				Rname:         &rname,
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{

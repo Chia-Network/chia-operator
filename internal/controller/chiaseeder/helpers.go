@@ -6,6 +6,7 @@ package chiaseeder
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -167,6 +168,50 @@ func (r *ChiaSeederReconciler) getChiaEnv(ctx context.Context, seeder k8schianet
 		env = append(env, corev1.EnvVar{
 			Name:  "log_level",
 			Value: *seeder.Spec.ChiaConfig.LogLevel,
+		})
+	}
+
+	// seeder_bootstrap_peers env var
+	if seeder.Spec.ChiaConfig.BootstrapPeer != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "seeder_bootstrap_peers",
+			Value: *seeder.Spec.ChiaConfig.BootstrapPeer,
+		})
+	}
+
+	// seeder_minimum_height env var
+	if seeder.Spec.ChiaConfig.MinimumHeight != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "seeder_minimum_height",
+			Value: fmt.Sprintf("%d", *seeder.Spec.ChiaConfig.MinimumHeight),
+		})
+	}
+
+	// seeder_domain_name env var
+	env = append(env, corev1.EnvVar{
+		Name:  "seeder_domain_name",
+		Value: seeder.Spec.ChiaConfig.DomainName,
+	})
+
+	// seeder_nameserver env var
+	env = append(env, corev1.EnvVar{
+		Name:  "seeder_nameserver",
+		Value: seeder.Spec.ChiaConfig.Nameserver,
+	})
+
+	// seeder_ttl env var
+	if seeder.Spec.ChiaConfig.TTL != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "seeder_ttl",
+			Value: fmt.Sprintf("%d", *seeder.Spec.ChiaConfig.TTL),
+		})
+	}
+
+	// seeder_soa_rname env var
+	if seeder.Spec.ChiaConfig.Rname != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "seeder_soa_rname",
+			Value: *seeder.Spec.ChiaConfig.Rname,
 		})
 	}
 

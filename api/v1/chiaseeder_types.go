@@ -33,10 +33,12 @@ type ChiaSeederSpecChia struct {
 	CommonSpecChia `json:",inline"`
 
 	// BootstrapPeer a peer to bootstrap the seeder's peer database
-	BootstrapPeer string `json:"bootstrapPeer"`
+	// +optional
+	BootstrapPeer *string `json:"bootstrapPeer"`
 
 	// MinimumHeight only consider nodes synced at least to this height
-	MinimumHeight uint64 `json:"minimumHeight"`
+	// +optional
+	MinimumHeight *uint64 `json:"minimumHeight"`
 
 	// DomainName the domain name of the server
 	DomainName string `json:"domainName"`
@@ -44,8 +46,13 @@ type ChiaSeederSpecChia struct {
 	// Nameserver the adddress the dns server is running on
 	Nameserver string `json:"nameserver"`
 
+	// TTL ttl setting in the seeder configuration
+	// +optional
+	TTL *uint32 `json:"ttl"`
+
 	// Rname an administrator's email address with '@' replaced with '.'
-	Rname string `json:"rname"`
+	// +optional
+	Rname *string `json:"rname"`
 }
 
 // ChiaSeederStatus defines the observed state of ChiaSeeder

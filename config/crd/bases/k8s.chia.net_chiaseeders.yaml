@@ -766,13 +766,14 @@ spec:
                     description: Timezone can be set to your local timezone for accurate
                       timestamps. Defaults to UTC
                     type: string
+                  ttl:
+                    description: TTL ttl setting in the seeder configuration
+                    format: int32
+                    type: integer
                 required:
-                - bootstrapPeer
                 - caSecretName
                 - domainName
-                - minimumHeight
                 - nameserver
-                - rname
                 type: object
               chiaExporter:
                 description: ChiaExporterConfig defines the configuration options
