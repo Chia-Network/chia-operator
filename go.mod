@@ -7,13 +7,13 @@ toolchain go1.21.4
 require (
 	github.com/cisco-open/operator-tools v0.34.0
 	github.com/google/go-cmp v0.6.0
-	github.com/onsi/ginkgo/v2 v2.14.0
-	github.com/onsi/gomega v1.30.0
+	github.com/onsi/ginkgo/v2 v2.15.0
+	github.com/onsi/gomega v1.31.1
 	github.com/prometheus/client_golang v1.18.0
-	k8s.io/api v0.29.0
-	k8s.io/apimachinery v0.29.0
-	k8s.io/client-go v0.29.0
-	sigs.k8s.io/controller-runtime v0.16.3
+	k8s.io/api v0.29.1
+	k8s.io/apimachinery v0.29.1
+	k8s.io/client-go v0.29.1
+	sigs.k8s.io/controller-runtime v0.17.0
 	sigs.k8s.io/yaml v1.4.0
 )
 
