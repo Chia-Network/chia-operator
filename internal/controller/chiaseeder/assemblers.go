@@ -149,6 +149,13 @@ func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8
 								},
 							},
 							VolumeMounts: r.getChiaVolumeMounts(ctx, seeder),
+							SecurityContext: &corev1.SecurityContext{
+								Capabilities: &corev1.Capabilities{
+									Add: []corev1.Capability{
+										"NET_BIND_SERVICE",
+									},
+								},
+							},
 						},
 					},
 					NodeSelector: seeder.Spec.NodeSelector,
