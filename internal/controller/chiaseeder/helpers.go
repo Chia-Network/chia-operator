@@ -199,19 +199,17 @@ func (r *ChiaSeederReconciler) getChiaEnv(ctx context.Context, seeder k8schianet
 		Value: seeder.Spec.ChiaConfig.Nameserver,
 	})
 
+	// seeder_soa_rname env var
+	env = append(env, corev1.EnvVar{
+		Name:  "seeder_soa_rname",
+		Value: seeder.Spec.ChiaConfig.Rname,
+	})
+
 	// seeder_ttl env var
 	if seeder.Spec.ChiaConfig.TTL != nil {
 		env = append(env, corev1.EnvVar{
 			Name:  "seeder_ttl",
 			Value: fmt.Sprintf("%d", *seeder.Spec.ChiaConfig.TTL),
-		})
-	}
-
-	// seeder_soa_rname env var
-	if seeder.Spec.ChiaConfig.Rname != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "seeder_soa_rname",
-			Value: *seeder.Spec.ChiaConfig.Rname,
 		})
 	}
 

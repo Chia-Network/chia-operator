@@ -775,6 +775,7 @@ spec:
                 - caSecretName
                 - domainName
                 - nameserver
+                - rname
                 type: object
               chiaExporter:
                 description: ChiaExporterConfig defines the configuration options

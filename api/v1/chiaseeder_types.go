@@ -34,13 +34,12 @@ type ChiaSeederSpecChia struct {
 	// Nameserver the name of the A record for your server with a trailing period. (ex. "seeder-us-west-2.example.com.")
 	Nameserver string `json:"nameserver"`
 
+	// Rname an administrator's email address with '@' replaced with '.'
+	Rname string `json:"rname"`
+
 	// TTL ttl setting in the seeder configuration
 	// +optional
 	TTL *uint32 `json:"ttl"`
-
-	// Rname an administrator's email address with '@' replaced with '.'
-	// +optional
-	Rname *string `json:"rname"`
 }
 
 // ChiaSeederStatus defines the observed state of ChiaSeeder

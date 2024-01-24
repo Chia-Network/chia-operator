@@ -88,7 +88,7 @@ spec:
 				MinimumHeight: &minimumHeight,
 				DomainName:    domainName,
 				Nameserver:    nameserver,
-				Rname:         &rname,
+				Rname:         rname,
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{
