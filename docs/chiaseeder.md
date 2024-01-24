@@ -6,10 +6,10 @@ The majority of people do not need to run a seeder. Seeders in Chia serve the pu
 
 Seeders have some pre-requisites that you will normally configure outside of a kubernetes cluster. This operator doesn't do any of that configuration on your behalf, so in short you will need:
 
- * A DNS `A` record that points to your server's IP address. In this instance the A record will probably be your public IP address if you intend on the DNS server to be reachable publicly, or an internal address if you're reserving the seeder's DNS server for your use.
- * A DNS `AAAA` record is not strictly needed, but is often preferred if your network is IPv6 enabled.
- * A DNS `NS` record that points to your `A`/`AAAA` record(s).
- * Networking fixtures between the public internet and your seeder server. This may be a NodePort Service that points to your ChiaSeeder kubernetes Pod. And port forwards on your firewall for port 53 to your NodePort Service. Seeder servers respond to queries on both TCP and UDP, but other full_nodes will only make contact using the UDP protocol.
+* A DNS `A` record that points to your server's IP address. In this instance the A record will probably be your public IP address if you intend on the DNS server to be reachable publicly, or an internal address if you're reserving the seeder's DNS server for your use.
+* A DNS `AAAA` record is not strictly needed, but is often preferred if your network is IPv6 enabled.
+* A DNS `NS` record that points to your `A`/`AAAA` record(s).
+* Networking fixtures between the public internet and your seeder server. This may be a NodePort Service that points to your ChiaSeeder kubernetes Pod. And port forwards on your firewall for port 53 to your NodePort Service. Seeder servers respond to queries on both TCP and UDP, but other full_nodes will only make contact using the UDP protocol.
 
 ChiaSeeder Deployments add the `NET_BIND_SERVICE` linux capability to bind to privileged ports, as is typical of any DNS server ran on linux. See the [linux man pages](https://man7.org/linux/man-pages/man7/capabilities.7.html) for more information.
 
