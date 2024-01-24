@@ -187,6 +187,32 @@ rules:
 - apiGroups:
   - k8s.chia.net
   resources:
+  - chiaseeders
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiaseeders/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiaseeders/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - k8s.chia.net
+  resources:
   - chiatimelords
   verbs:
   - create

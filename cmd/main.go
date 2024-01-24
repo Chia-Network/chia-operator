@@ -23,6 +23,7 @@ import (
 	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
 	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
 	"github.com/chia-network/chia-operator/internal/controller/chianode"
+	"github.com/chia-network/chia-operator/internal/controller/chiaseeder"
 	"github.com/chia-network/chia-operator/internal/controller/chiatimelord"
 	"github.com/chia-network/chia-operator/internal/controller/chiawallet"
 	//+kubebuilder:scaffold:imports
@@ -128,6 +129,14 @@ func main() {
 		Recorder: mgr.GetEventRecorderFor("chiatimelord-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaTimelord")
+		os.Exit(1)
+	}
+	if err = (&chiaseeder.ChiaSeederReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("chiaseeder-controller"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ChiaSeeder")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

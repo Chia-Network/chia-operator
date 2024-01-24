@@ -1,0 +1,24 @@
+apiVersion: k8s.chia.net/v1
+kind: ChiaSeeder
+metadata:
+  labels:
+    app.kubernetes.io/name: chiaseeder
+    app.kubernetes.io/instance: chiaseeder-sample
+    app.kubernetes.io/part-of: chia-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: chia-operator
+  name: chiaseeder-sample
+spec:
+  chia:
+    caSecretName: chiaca-secret
+    testnet: true
+    timezone: "UTC"
+    logLevel: "INFO"
+    bootstrapPeer: "node.default.svc.cluster.local"
+    minimumHeight: 100
+    domainName: "seeder.default.svc.cluster.local"
+    nameserver: "dns-introducer.example.com"
+    rname: "admin.example.com"
+  storage:
+    chiaRoot:
+      claimName: "chiaseeder-sample-chiaroot"

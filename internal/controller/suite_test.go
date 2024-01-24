@@ -26,6 +26,7 @@ import (
 	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
 	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
 	"github.com/chia-network/chia-operator/internal/controller/chianode"
+	"github.com/chia-network/chia-operator/internal/controller/chiaseeder"
 	"github.com/chia-network/chia-operator/internal/controller/chiatimelord"
 	"github.com/chia-network/chia-operator/internal/controller/chiawallet"
 	//+kubebuilder:scaffold:imports
@@ -109,6 +110,13 @@ var _ = BeforeSuite(func() {
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
 		Recorder: k8sManager.GetEventRecorderFor("chianode-controller"),
+	}).SetupWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&chiaseeder.ChiaSeederReconciler{
+		Client:   k8sManager.GetClient(),
+		Scheme:   k8sManager.GetScheme(),
+		Recorder: k8sManager.GetEventRecorderFor("chiaseeder-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
