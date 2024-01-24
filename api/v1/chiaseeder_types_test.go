@@ -33,11 +33,11 @@ spec:
     dnsIntroducerAddress: dns-introducer.svc.cluster.local
     timezone: "UTC"
     logLevel: "INFO"
-    bootstrapPeer: "node.default.svc.cluster.local:58444"
+    bootstrapPeer: "node.default.svc.cluster.local"
     minimumHeight: 100
-    domainName: seeder.example.com
-    nameserver: example.com
-    rname: admin.example.com
+    domainName: seeder.example.com.
+    nameserver: example.com.
+    rname: admin.example.com.
   chiaExporter:
     enabled: true
     serviceLabels:
@@ -52,11 +52,11 @@ spec:
 		networkPort          uint16 = 8080
 		introducerAddress           = "introducer.svc.cluster.local"
 		dnsIntroducerAddress        = "dns-introducer.svc.cluster.local"
-		bootstrapPeer               = "node.default.svc.cluster.local:58444"
+		bootstrapPeer               = "node.default.svc.cluster.local"
 		minimumHeight        uint64 = 100
-		domainName                  = "seeder.example.com"
-		nameserver                  = "example.com"
-		rname                       = "admin.example.com"
+		domainName                  = "seeder.example.com."
+		nameserver                  = "example.com."
+		rname                       = "admin.example.com."
 	)
 	expect := ChiaSeeder{
 		TypeMeta: metav1.TypeMeta{

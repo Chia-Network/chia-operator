@@ -23,15 +23,15 @@ var _ = Describe("ChiaSeeder controller", func() {
 		timeout  = time.Second * 10
 		interval = time.Millisecond * 250
 
-		domainName = "seeder.example.com"
-		nameserver = "example.com"
+		domainName = "seeder.example.com."
+		nameserver = "example.com."
 	)
 
 	Context("When creating ChiaSeeder", func() {
 		It("should update its Spec with API defaults", func() {
 			By("By creating a new ChiaSeeder")
 			ctx := context.Background()
-			testFarmer := &apiv1.ChiaSeeder{
+			testSeeder := &apiv1.ChiaSeeder{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: "k8s.chia.net/v1",
 					Kind:       "ChiaSeeder",
@@ -72,10 +72,10 @@ var _ = Describe("ChiaSeeder controller", func() {
 			}
 
 			// Create ChiaSeeder
-			Expect(k8sClient.Create(ctx, testFarmer)).Should(Succeed())
+			Expect(k8sClient.Create(ctx, testSeeder)).Should(Succeed())
 
 			// Look up the created ChiaSeeder
-			lookupKey := types.NamespacedName{Name: testFarmer.Name, Namespace: testFarmer.Namespace}
+			lookupKey := types.NamespacedName{Name: testSeeder.Name, Namespace: testSeeder.Namespace}
 			createdChiaSeeder := &apiv1.ChiaSeeder{}
 			Eventually(func() bool {
 				err := k8sClient.Get(ctx, lookupKey, createdChiaSeeder)
