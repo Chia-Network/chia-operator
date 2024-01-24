@@ -768,7 +768,8 @@ spec:
                       timestamps. Defaults to UTC
                     type: string
                   ttl:
-                    description: TTL ttl setting in the seeder configuration
+                    description: TTL field on DNS records that controls the length
+                      of time that a record is considered valid
                     format: int32
                     type: integer
                 required:

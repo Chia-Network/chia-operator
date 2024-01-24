@@ -37,7 +37,7 @@ type ChiaSeederSpecChia struct {
 	// Rname an administrator's email address with '@' replaced with '.'
 	Rname string `json:"rname"`
 
-	// TTL ttl setting in the seeder configuration
+	// TTL field on DNS records that controls the length of time that a record is considered valid
 	// +optional
 	TTL *uint32 `json:"ttl"`
 }
