@@ -31,7 +31,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FILES=$(find ${{ github.workspace }}/release -type f -name '*.yaml')
+          FILES=$(find ${GITHUB_WORKSPACE}/release -type f -name '*.yaml')
           while IFS= read -r file; do
             gh release upload \
               $RELEASE_TAG \
