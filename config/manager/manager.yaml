@@ -57,7 +57,7 @@ spec:
         - /manager
         args:
         - --leader-elect
-        image: ghcr.io/chia-network/chia-operator:0.3.1
+        image: ghcr.io/chia-network/chia-operator:latest
         name: manager
         securityContext:
           allowPrivilegeEscalation: false
