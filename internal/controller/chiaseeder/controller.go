@@ -72,11 +72,10 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			delete(chiaseeders, req.NamespacedName.String())
 			metrics.ChiaSeeders.Sub(1.0)
 		}
-
-		// Return here, this can happen if the CR was deleted
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to fetch ChiaSeeder resource", req.NamespacedName))
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -94,6 +93,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling Service: %v", req.NamespacedName, err)
 	}
@@ -104,6 +104,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling chia-exporter Service: %v", req.NamespacedName, err)
 	}
@@ -114,6 +115,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder Deployment -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling Deployment: %v", req.NamespacedName, err)
 	}
@@ -123,6 +125,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	seeder.Status.Ready = true
 	err = r.Status().Update(ctx, &seeder)
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to update ChiaSeeder status", req.NamespacedName))
 		return ctrl.Result{}, err
 	}

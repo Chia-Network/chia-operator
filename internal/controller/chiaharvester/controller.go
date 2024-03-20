@@ -56,11 +56,10 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 			delete(chiaharvesters, req.NamespacedName.String())
 			metrics.ChiaHarvesters.Sub(1.0)
 		}
-
-		// Return here, this can happen if the CR was deleted
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s unable to fetch ChiaHarvester resource", req.NamespacedName))
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -79,6 +78,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester Service: %v", req.NamespacedName, err)
 	}
@@ -89,6 +89,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester chia-exporter Service: %v", req.NamespacedName, err)
 	}
@@ -99,6 +100,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester Deployment -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester Deployment: %v", req.NamespacedName, err)
 	}
@@ -108,6 +110,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	harvester.Status.Ready = true
 	err = r.Status().Update(ctx, &harvester)
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s unable to update ChiaHarvester status", req.NamespacedName))
 		return ctrl.Result{}, err
 	}

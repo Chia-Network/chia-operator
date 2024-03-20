@@ -56,11 +56,10 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			delete(chianodes, req.NamespacedName.String())
 			metrics.ChiaNodes.Sub(1.0)
 		}
-
-		// Return here, this can happen if the CR was deleted
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to fetch ChiaNode resource", req.NamespacedName))
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -79,6 +78,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node Service: %v", req.NamespacedName, err)
 	}
@@ -89,6 +89,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node internal Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node Local Service: %v", req.NamespacedName, err)
 	}
@@ -99,6 +100,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node headless Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node headless Service: %v", req.NamespacedName, err)
 	}
@@ -109,6 +111,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node chia-exporter Service: %v", req.NamespacedName, err)
 	}
@@ -119,6 +122,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node Statefulset -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node StatefulSet: %v", req.NamespacedName, err)
 	}
@@ -128,6 +132,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	node.Status.Ready = true
 	err = r.Status().Update(ctx, &node)
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to update ChiaNode status", req.NamespacedName))
 		return ctrl.Result{}, err
 	}

@@ -60,11 +60,10 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			delete(chiacas, req.NamespacedName.String())
 			metrics.ChiaCAs.Sub(1.0)
 		}
-
-		// Return here, this can happen if the CR was deleted so we also subtract 1 from the ChiaCA gauge
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaCAReconciler ChiaCA=%s unable to fetch ChiaCA resource", req.NamespacedName))
 		return ctrl.Result{}, err
 	}
@@ -83,6 +82,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to create ServiceAccount -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator ServiceAccount: %v", req.NamespacedName, err)
 	}
@@ -93,6 +93,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to create Role -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator Role: %v", req.NamespacedName, err)
 	}
@@ -103,6 +104,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to create RoleBinding -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator RoleBinding: %v", req.NamespacedName, err)
 	}
@@ -110,6 +112,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Query CA Secret
 	_, notFound, err := r.getCASecret(ctx, ca)
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaCAReconciler ChiaCA=%s unable to query for ChiaCA secret", req.NamespacedName))
 		return ctrl.Result{}, err
 	}
@@ -121,6 +124,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			if res == nil {
 				res = &reconcile.Result{}
 			}
+			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to create the CA generating Job -- Check operator logs.")
 			return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator Job: %v", req.NamespacedName, err)
 		}
@@ -131,6 +135,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 			_, notFound, err := r.getCASecret(ctx, ca)
 			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
 				log.Error(err, fmt.Sprintf("ChiaCAReconciler ChiaCA=%s unable to query for ChiaCA secret", req.NamespacedName))
 				return ctrl.Result{}, err
 			}
@@ -142,6 +147,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 				ca.Status.Ready = true
 				err = r.Status().Update(ctx, &ca)
 				if err != nil {
+					metrics.OperatorErrors.Add(1.0)
 					log.Error(err, fmt.Sprintf("ChiaCAReconciler ChiaCA=%s unable to update ChiaCA status", req.NamespacedName))
 					return ctrl.Result{}, err
 				}
