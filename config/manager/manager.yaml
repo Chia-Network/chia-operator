@@ -59,6 +59,8 @@ spec:
         - --leader-elect
         image: ghcr.io/chia-network/chia-operator:latest
         name: manager
+        ports:
+        - containerPort: 8081
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
