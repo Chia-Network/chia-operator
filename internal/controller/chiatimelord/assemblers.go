@@ -178,8 +178,8 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 		deploy.Spec.Template.Spec.SecurityContext = tl.Spec.PodSecurityContext
 	}
 
-	if len(tl.Spec.SidecarContainers) > 0 {
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, tl.Spec.SidecarContainers...)
+	if len(tl.Spec.Sidecars.Containers) > 0 {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, tl.Spec.Sidecars.Containers...)
 	}
 
 	// TODO add pod affinity, tolerations

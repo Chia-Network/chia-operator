@@ -14,9 +14,9 @@ type CommonSpec struct {
 	// +optional
 	ChiaExporterConfig SpecChiaExporter `json:"chiaExporter,omitempty"`
 
-	// SidecarContainers allows defining a list of containers that will share the kubernetes Pod alongside Chia containers
+	// Sidecars allows defining a list of containers and volumes that will share the kubernetes Pod alongside Chia containers
 	// +optional
-	SidecarContainers []corev1.Container `json:"sidecarContainers,omitempty"`
+	Sidecars Sidecars `json:"sidecars,omitempty"`
 
 	//StorageConfig defines the Chia container's CHIA_ROOT storage config
 	// +optional
@@ -39,6 +39,17 @@ type CommonSpec struct {
 	// PodSecurityContext defines the security context for the pod
 	// +optional
 	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
+}
+
+// Sidecars allows defining a list of containers that will share the kubernetes Pod alongside Chia containers
+type Sidecars struct {
+	// Containers allows defining a list of containers that will share the kubernetes Pod alongside Chia containers
+	// +optional
+	Containers []corev1.Container `json:"containers,omitempty"`
+
+	// Volumes allows defining a list of volumes that can be mounted by sidecar containers
+	// +optional
+	Volumes []corev1.Volume `json:"volumes,omitempty"`
 }
 
 // CommonSpecChia represents the common configuration options for a chia spec

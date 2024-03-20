@@ -64,6 +64,11 @@ func (r *ChiaTimelordReconciler) getChiaVolumes(ctx context.Context, tl k8schian
 		})
 	}
 
+	// Add sidecar volumes if any exist
+	if len(tl.Spec.Sidecars.Volumes) > 0 {
+		v = append(v, tl.Spec.Sidecars.Volumes...)
+	}
+
 	return v
 }
 

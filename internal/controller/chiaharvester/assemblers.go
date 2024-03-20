@@ -169,8 +169,8 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 		deploy.Spec.Template.Spec.SecurityContext = harvester.Spec.PodSecurityContext
 	}
 
-	if len(harvester.Spec.SidecarContainers) > 0 {
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, harvester.Spec.SidecarContainers...)
+	if len(harvester.Spec.Sidecars.Containers) > 0 {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, harvester.Spec.Sidecars.Containers...)
 	}
 
 	// TODO add pod affinity, tolerations

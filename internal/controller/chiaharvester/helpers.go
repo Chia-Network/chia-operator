@@ -102,6 +102,11 @@ func (r *ChiaHarvesterReconciler) getChiaVolumes(ctx context.Context, harvester 
 		}
 	}
 
+	// Add sidecar volumes if any exist
+	if len(harvester.Spec.Sidecars.Volumes) > 0 {
+		v = append(v, harvester.Spec.Sidecars.Volumes...)
+	}
+
 	return v
 }
 

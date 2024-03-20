@@ -72,6 +72,11 @@ func (r *ChiaNodeReconciler) getChiaVolumesAndTemplates(ctx context.Context, nod
 		})
 	}
 
+	// Add sidecar volumes if any exist
+	if len(node.Spec.Sidecars.Volumes) > 0 {
+		v = append(v, node.Spec.Sidecars.Volumes...)
+	}
+
 	return v, vcts
 }
 

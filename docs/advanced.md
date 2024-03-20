@@ -29,18 +29,24 @@ spec:
     [...]
   chiaExporter:
     [...]
-  sidecarContainers:
-    - name: nginx
+  sidecars:
+    containers:
+    - name: sidecar
       image: nginx:latest
       ports:
       - containerPort: 80
         name: http
       env:
-      - name: SIDECAR_VAR
-        value: "sidecar_value"
+      - name: SIDECAR_CONTAINER_VAR
+        value: "sidecar_container_value"
       volumeMounts:
       - name: chiaroot
         mountPath: /data
+      - name: sidecar-data
+        mountPath: /usr/share/nginx/html
+    volumes:
+    - name: sidecar-data
+      emptyDir: {}
 ```
 
-If you were to apply this to a cluster, it would create a Statefulset with 3 containers per Pod replica. The container names would be `chia`, `chia-exporter`, and `nginx`. The `nginx` container would expose containerPort 80, an environment variable named `SIDECAR_VAR`, and it would mount the main CHIA_ROOT volume.
+If you were to apply this to a cluster, it would create a Statefulset with 3 containers per Pod replica. The container names would be `chia`, `chia-exporter`, and `nginx`. The `nginx` container would expose containerPort 80, an environment variable named `SIDECAR_VAR`, and it would mount the main CHIA_ROOT volume as well as an emptydir volume that we specified for this sidecar that neither the `chia` or `chia-exporter` containers would mount.

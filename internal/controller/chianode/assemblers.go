@@ -251,8 +251,8 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 		stateful.Spec.Template.Spec.SecurityContext = node.Spec.PodSecurityContext
 	}
 
-	if len(node.Spec.SidecarContainers) > 0 {
-		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, node.Spec.SidecarContainers...)
+	if len(node.Spec.Sidecars.Containers) > 0 {
+		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, node.Spec.Sidecars.Containers...)
 	}
 
 	// TODO add pod affinity, tolerations

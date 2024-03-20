@@ -75,6 +75,11 @@ func (r *ChiaWalletReconciler) getChiaVolumes(ctx context.Context, wallet k8schi
 		})
 	}
 
+	// Add sidecar volumes if any exist
+	if len(wallet.Spec.Sidecars.Volumes) > 0 {
+		v = append(v, wallet.Spec.Sidecars.Volumes...)
+	}
+
 	return v
 }
 

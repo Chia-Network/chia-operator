@@ -182,8 +182,8 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 		deploy.Spec.Template.Spec.SecurityContext = wallet.Spec.PodSecurityContext
 	}
 
-	if len(wallet.Spec.SidecarContainers) > 0 {
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, wallet.Spec.SidecarContainers...)
+	if len(wallet.Spec.Sidecars.Containers) > 0 {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, wallet.Spec.Sidecars.Containers...)
 	}
 
 	// TODO add pod affinity, tolerations
