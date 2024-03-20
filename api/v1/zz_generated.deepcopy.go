@@ -847,6 +847,13 @@ func (in *CommonSpec) DeepCopyInto(out *CommonSpec) {
 	*out = *in
 	in.AdditionalMetadata.DeepCopyInto(&out.AdditionalMetadata)
 	in.ChiaExporterConfig.DeepCopyInto(&out.ChiaExporterConfig)
+	if in.SidecarContainers != nil {
+		in, out := &in.SidecarContainers, &out.SidecarContainers
+		*out = make([]corev1.Container, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	if in.Storage != nil {
 		in, out := &in.Storage, &out.Storage
 		*out = new(StorageConfig)

@@ -14,6 +14,10 @@ type CommonSpec struct {
 	// +optional
 	ChiaExporterConfig SpecChiaExporter `json:"chiaExporter,omitempty"`
 
+	// SidecarContainers allows defining a list of containers that will share the kubernetes Pod alongside Chia containers
+	// +optional
+	SidecarContainers []corev1.Container `json:"sidecarContainers,omitempty"`
+
 	//StorageConfig defines the Chia container's CHIA_ROOT storage config
 	// +optional
 	Storage *StorageConfig `json:"storage,omitempty"`
