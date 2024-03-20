@@ -2,7 +2,7 @@
 
 This documentation describes some advanced (or uncommon) usages of chia-operator. "Advanced" or "uncommon" will be defined as not necessary to run chia, and more for running services that utilize chia installations in some manner (via network requests or otherwise.)
 
-# Sidecar containers
+## Sidecar containers
 
 You can run a container in the same kubernetes Pod as your chia components utilizing the `sidecarContainer` segment of most of the custom resources managed by this operator.
 
@@ -15,11 +15,11 @@ Supported custom resources (CRs):
 - ChiaTimelord
 - ChiaWallet
 
-## Usage
+### Usage
 
 To create a Chia component that runs some sidecar container, do something like the following:
 
-```
+```yaml
 apiVersion: k8s.chia.net/v1
 kind: ChiaNode
 metadata:
