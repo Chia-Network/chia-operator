@@ -61,8 +61,24 @@ var (
 			Help: "Number of ChiaWallet objects controlled by this operator",
 		},
 	)
+
+	// OperatorErrors is a counter of the number of errors this exporter has encountered since it started
+	OperatorErrors = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "chia_operator_errors_total",
+			Help: "Number of errors this exporter has encountered since it started",
+		},
+	)
 )
 
 func init() {
-	metrics.Registry.MustRegister(ChiaCAs, ChiaFarmers, ChiaHarvesters, ChiaNodes, ChiaTimelords, ChiaWallets)
+	metrics.Registry.MustRegister(
+		ChiaCAs,
+		ChiaFarmers,
+		ChiaHarvesters,
+		ChiaNodes,
+		ChiaTimelords,
+		ChiaWallets,
+		OperatorErrors,
+	)
 }

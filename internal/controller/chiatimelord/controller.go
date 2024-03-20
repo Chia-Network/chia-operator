@@ -54,11 +54,10 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			delete(chiatimelords, req.NamespacedName.String())
 			metrics.ChiaTimelords.Sub(1.0)
 		}
-
-		// Return here, this can happen if the CR was deleted
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaTimelordController ChiaTimelord=%s unable to fetch ChiaTimelord resource", req.NamespacedName))
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -77,6 +76,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node Service: %v", req.NamespacedName, err)
 	}
@@ -87,6 +87,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node chia-exporter Service: %v", req.NamespacedName, err)
 	}
@@ -97,6 +98,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord Deployment -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node StatefulSet: %v", req.NamespacedName, err)
 	}
@@ -106,6 +108,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	tl.Status.Ready = true
 	err = r.Status().Update(ctx, &tl)
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaTimelordController ChiaTimelord=%s unable to update ChiaNode status", req.NamespacedName))
 		return ctrl.Result{}, err
 	}

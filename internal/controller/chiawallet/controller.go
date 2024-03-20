@@ -56,11 +56,10 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			delete(chiawallets, req.NamespacedName.String())
 			metrics.ChiaWallets.Sub(1.0)
 		}
-
-		// Return here, this can happen if the CR was deleted
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s unable to fetch ChiaWallet resource", req.NamespacedName))
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -79,6 +78,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create harvester Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet Service: %v", req.NamespacedName, err)
 	}
@@ -89,6 +89,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create harvester metrics Service -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet chia-exporter Service: %v", req.NamespacedName, err)
 	}
@@ -99,6 +100,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if res == nil {
 			res = &reconcile.Result{}
 		}
+		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create harvester Deployment -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet Deployment: %v", req.NamespacedName, err)
 	}
@@ -108,6 +110,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	wallet.Status.Ready = true
 	err = r.Status().Update(ctx, &wallet)
 	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s unable to update ChiaWallet status", req.NamespacedName))
 		return ctrl.Result{}, err
 	}

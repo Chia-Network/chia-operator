@@ -49,7 +49,4 @@ const (
 
 	// ChiaExporterPort defines the port for Chia Exporter instances
 	ChiaExporterPort = 9914
-
-	// DefaultChiaExporterImage is the default image name and tag of the chia-exporter image
-	DefaultChiaExporterImage = "ghcr.io/chia-network/chia-exporter:latest"
 )
