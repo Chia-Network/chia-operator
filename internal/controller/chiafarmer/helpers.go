@@ -75,6 +75,11 @@ func (r *ChiaFarmerReconciler) getChiaVolumes(ctx context.Context, farmer k8schi
 		})
 	}
 
+	// Add sidecar volumes if any exist
+	if len(farmer.Spec.Sidecars.Volumes) > 0 {
+		v = append(v, farmer.Spec.Sidecars.Volumes...)
+	}
+
 	return v
 }
 

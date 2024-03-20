@@ -198,6 +198,10 @@ func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8
 		deploy.Spec.Template.Spec.SecurityContext = seeder.Spec.PodSecurityContext
 	}
 
+	if len(seeder.Spec.Sidecars.Containers) > 0 {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, seeder.Spec.Sidecars.Containers...)
+	}
+
 	// TODO add pod affinity, tolerations
 
 	return deploy

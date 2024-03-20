@@ -65,6 +65,11 @@ func (r *ChiaSeederReconciler) getChiaVolumes(ctx context.Context, seeder k8schi
 		})
 	}
 
+	// Add sidecar volumes if any exist
+	if len(seeder.Spec.Sidecars.Volumes) > 0 {
+		v = append(v, seeder.Spec.Sidecars.Volumes...)
+	}
+
 	return v
 }
 

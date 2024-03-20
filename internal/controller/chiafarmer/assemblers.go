@@ -182,6 +182,10 @@ func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8
 		deploy.Spec.Template.Spec.SecurityContext = farmer.Spec.PodSecurityContext
 	}
 
+	if len(farmer.Spec.Sidecars.Containers) > 0 {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, farmer.Spec.Sidecars.Containers...)
+	}
+
 	// TODO add pod affinity, tolerations
 
 	return deploy
