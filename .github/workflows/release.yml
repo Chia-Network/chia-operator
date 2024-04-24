@@ -11,7 +11,6 @@ permissions:
 jobs:
   release-manifests:
     runs-on: ubuntu-latest
-    container: ghcr.io/chia-network/build-images/ips:main
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,7 +21,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install kubectl
-        run: apk add kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
 
       - name: Generate release manifests
         run: make release
