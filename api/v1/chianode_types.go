@@ -24,6 +24,11 @@ type ChiaNodeSpec struct {
 // ChiaNodeSpecChia defines the desired state of Chia component configuration
 type ChiaNodeSpecChia struct {
 	CommonSpecChia `json:",inline"`
+
+	// TrustedCIDRs is a list of CIDRs that this chia component should trust peers from
+	// See: https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them
+	// +optional
+	TrustedCIDRs *[]string `json:"trustedCIDRs,omitempty"`
 }
 
 // ChiaNodeStatus defines the observed state of ChiaNode

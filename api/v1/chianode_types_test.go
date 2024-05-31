@@ -33,6 +33,9 @@ spec:
     dnsIntroducerAddress: dns-introducer.svc.cluster.local
     timezone: "UTC"
     logLevel: "INFO"
+    trustedCIDRs:
+      - "192.168.0.0/16"
+      - "10.0.0.0/8"
   chiaExporter:
     enabled: true
     serviceLabels:
@@ -48,6 +51,10 @@ spec:
 		introducerAddress           = "introducer.svc.cluster.local"
 		dnsIntroducerAddress        = "dns-introducer.svc.cluster.local"
 	)
+	expectCIDRs := []string{
+		"192.168.0.0/16",
+		"10.0.0.0/8",
+	}
 	expect := ChiaNode{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "k8s.chia.net/v1",
@@ -74,6 +81,7 @@ spec:
 					Timezone:             &timezone,
 					LogLevel:             &logLevel,
 				},
+				TrustedCIDRs: &expectCIDRs,
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{

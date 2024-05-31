@@ -6,6 +6,9 @@ package chianode
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -101,6 +104,7 @@ func (r *ChiaNodeReconciler) getChiaVolumeMounts(ctx context.Context, node k8sch
 
 // getChiaNodeEnv retrieves the environment variables from the Chia config struct
 func (r *ChiaNodeReconciler) getChiaNodeEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar {
+	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 
 	// service env var
@@ -165,6 +169,20 @@ func (r *ChiaNodeReconciler) getChiaNodeEnv(ctx context.Context, node k8schianet
 			Name:  "dns_introducer_address",
 			Value: *node.Spec.ChiaConfig.DNSIntroducerAddress,
 		})
+	}
+
+	// trusted_cidrs env var
+	if node.Spec.ChiaConfig.TrustedCIDRs != nil {
+		// TODO should any special CIDR input checking happen here
+		cidrs, err := json.Marshal(*node.Spec.ChiaConfig.TrustedCIDRs)
+		if err != nil {
+			logr.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s given CIDRs could not be marshalled to json. Peer connections that you would expect to be trusted might not be trusted.", node.Name))
+		} else {
+			env = append(env, corev1.EnvVar{
+				Name:  "trusted_cidrs",
+				Value: string(cidrs),
+			})
+		}
 	}
 
 	// TZ env var

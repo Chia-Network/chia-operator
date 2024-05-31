@@ -6,7 +6,9 @@ package chiawallet
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -85,6 +87,7 @@ func (r *ChiaWalletReconciler) getChiaVolumes(ctx context.Context, wallet k8schi
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
 func (r *ChiaWalletReconciler) getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.EnvVar {
+	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 
 	// service env var
@@ -143,6 +146,20 @@ func (r *ChiaWalletReconciler) getChiaEnv(ctx context.Context, wallet k8schianet
 			Name:  "dns_introducer_address",
 			Value: *wallet.Spec.ChiaConfig.DNSIntroducerAddress,
 		})
+	}
+
+	// trusted_cidrs env var
+	if wallet.Spec.ChiaConfig.TrustedCIDRs != nil {
+		// TODO should any special CIDR input checking happen here
+		cidrs, err := json.Marshal(*wallet.Spec.ChiaConfig.TrustedCIDRs)
+		if err != nil {
+			logr.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s given CIDRs could not be marshalled to json. Peer connections that you would expect to be trusted might not be trusted.", wallet.Name))
+		} else {
+			env = append(env, corev1.EnvVar{
+				Name:  "trusted_cidrs",
+				Value: string(cidrs),
+			})
+		}
 	}
 
 	// TZ env var
