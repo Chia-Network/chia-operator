@@ -799,6 +799,13 @@ spec:
                     description: Timezone can be set to your local timezone for accurate
                       timestamps. Defaults to UTC
                     type: string
+                  trustedCIDRs:
+                    description: |-
+                      TrustedCIDRs is a list of CIDRs that this chia component should trust peers from
+                      See: https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them
+                    items:
+                      type: string
+                    type: array
                 required:
                 - caSecretName
                 - farmerAddress

@@ -70,6 +70,11 @@ type CommonSpecChia struct {
 	// +optional
 	Network *string `json:"network,omitempty"`
 
+	// TrustedCIDRs is a list of CIDRs that this chia component should trust peers from
+	// See: https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them
+	// +optional
+	TrustedCIDRs *[]string `json:"trustedCIDRs,omitempty"`
+
 	// NetworkPort can be set to the port that full_nodes will use in the selected network.
 	// This implies specification of the Network setting.
 	// +optional

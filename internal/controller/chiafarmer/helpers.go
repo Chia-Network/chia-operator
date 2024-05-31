@@ -6,7 +6,9 @@ package chiafarmer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -85,6 +87,7 @@ func (r *ChiaFarmerReconciler) getChiaVolumes(ctx context.Context, farmer k8schi
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
 func (r *ChiaFarmerReconciler) getChiaEnv(ctx context.Context, farmer k8schianetv1.ChiaFarmer) []corev1.EnvVar {
+	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 
 	// service env var
@@ -143,6 +146,20 @@ func (r *ChiaFarmerReconciler) getChiaEnv(ctx context.Context, farmer k8schianet
 			Name:  "dns_introducer_address",
 			Value: *farmer.Spec.ChiaConfig.DNSIntroducerAddress,
 		})
+	}
+
+	// trusted_cidrs env var
+	if farmer.Spec.ChiaConfig.TrustedCIDRs != nil {
+		// TODO should any special CIDR input checking happen here? Chia might also do that for me.
+		cidrs, err := json.Marshal(*farmer.Spec.ChiaConfig.TrustedCIDRs)
+		if err != nil {
+			logr.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s given CIDRs could not be marshalled to json. Peer connections that you would expect to be trusted might not be trusted.", farmer.Name))
+		} else {
+			env = append(env, corev1.EnvVar{
+				Name:  "trusted_cidrs",
+				Value: string(cidrs),
+			})
+		}
 	}
 
 	// TZ env var

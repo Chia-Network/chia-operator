@@ -890,6 +890,15 @@ func (in *CommonSpecChia) DeepCopyInto(out *CommonSpecChia) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.TrustedCIDRs != nil {
+		in, out := &in.TrustedCIDRs, &out.TrustedCIDRs
+		*out = new([]string)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make([]string, len(*in))
+			copy(*out, *in)
+		}
+	}
 	if in.NetworkPort != nil {
 		in, out := &in.NetworkPort, &out.NetworkPort
 		*out = new(uint16)
