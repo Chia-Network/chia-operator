@@ -6,9 +6,6 @@ package chiatimelord
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -77,7 +74,6 @@ func (r *ChiaTimelordReconciler) getChiaVolumes(ctx context.Context, tl k8schian
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
 func (r *ChiaTimelordReconciler) getChiaEnv(ctx context.Context, tl k8schianetv1.ChiaTimelord) []corev1.EnvVar {
-	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 
 	// service env var
@@ -136,20 +132,6 @@ func (r *ChiaTimelordReconciler) getChiaEnv(ctx context.Context, tl k8schianetv1
 			Name:  "dns_introducer_address",
 			Value: *tl.Spec.ChiaConfig.DNSIntroducerAddress,
 		})
-	}
-
-	// trusted_cidrs env var
-	if tl.Spec.ChiaConfig.TrustedCIDRs != nil {
-		// TODO should any special CIDR input checking happen here? Chia might also do that for me.
-		cidrs, err := json.Marshal(*tl.Spec.ChiaConfig.TrustedCIDRs)
-		if err != nil {
-			logr.Error(err, fmt.Sprintf("ChiaTimelordReconciler ChiaTimelord=%s given CIDRs could not be marshalled to json. Peer connections that you would expect to be trusted might not be trusted.", tl.Name))
-		} else {
-			env = append(env, corev1.EnvVar{
-				Name:  "trusted_cidrs",
-				Value: string(cidrs),
-			})
-		}
 	}
 
 	// TZ env var

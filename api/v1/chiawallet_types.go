@@ -27,6 +27,11 @@ type ChiaWalletSpecChia struct {
 	// In Kubernetes this is likely to be <node service name>.<namespace>.svc.cluster.local:8555
 	// +optional
 	FullNodePeer string `json:"fullNodePeer,omitempty"`
+
+	// TrustedCIDRs is a list of CIDRs that this chia component should trust peers from
+	// See: https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them
+	// +optional
+	TrustedCIDRs *[]string `json:"trustedCIDRs,omitempty"`
 }
 
 // ChiaWalletStatus defines the observed state of ChiaWallet

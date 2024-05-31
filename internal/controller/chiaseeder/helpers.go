@@ -6,11 +6,9 @@ package chiaseeder
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"strconv"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
@@ -95,7 +93,6 @@ func (r *ChiaSeederReconciler) getChiaVolumeMounts(ctx context.Context, seeder k
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
 func (r *ChiaSeederReconciler) getChiaEnv(ctx context.Context, seeder k8schianetv1.ChiaSeeder) []corev1.EnvVar {
-	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 
 	// service env var
@@ -160,20 +157,6 @@ func (r *ChiaSeederReconciler) getChiaEnv(ctx context.Context, seeder k8schianet
 			Name:  "dns_introducer_address",
 			Value: *seeder.Spec.ChiaConfig.DNSIntroducerAddress,
 		})
-	}
-
-	// trusted_cidrs env var
-	if seeder.Spec.ChiaConfig.TrustedCIDRs != nil {
-		// TODO should any special CIDR input checking happen here? Chia might also do that for me.
-		cidrs, err := json.Marshal(*seeder.Spec.ChiaConfig.TrustedCIDRs)
-		if err != nil {
-			logr.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s given CIDRs could not be marshalled to json. Peer connections that you would expect to be trusted might not be trusted.", seeder.Name))
-		} else {
-			env = append(env, corev1.EnvVar{
-				Name:  "trusted_cidrs",
-				Value: string(cidrs),
-			})
-		}
 	}
 
 	// TZ env var
