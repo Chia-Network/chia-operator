@@ -173,7 +173,7 @@ func (r *ChiaNodeReconciler) getChiaNodeEnv(ctx context.Context, node k8schianet
 
 	// trusted_cidrs env var
 	if node.Spec.ChiaConfig.TrustedCIDRs != nil {
-		// TODO should any special CIDR input checking happen here? Chia might also do that for me.
+		// TODO should any special CIDR input checking happen here
 		cidrs, err := json.Marshal(*node.Spec.ChiaConfig.TrustedCIDRs)
 		if err != nil {
 			logr.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s given CIDRs could not be marshalled to json. Peer connections that you would expect to be trusted might not be trusted.", node.Name))

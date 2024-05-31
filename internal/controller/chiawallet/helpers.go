@@ -150,7 +150,7 @@ func (r *ChiaWalletReconciler) getChiaEnv(ctx context.Context, wallet k8schianet
 
 	// trusted_cidrs env var
 	if wallet.Spec.ChiaConfig.TrustedCIDRs != nil {
-		// TODO should any special CIDR input checking happen here? Chia might also do that for me.
+		// TODO should any special CIDR input checking happen here
 		cidrs, err := json.Marshal(*wallet.Spec.ChiaConfig.TrustedCIDRs)
 		if err != nil {
 			logr.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s given CIDRs could not be marshalled to json. Peer connections that you would expect to be trusted might not be trusted.", wallet.Name))
