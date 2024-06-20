@@ -106,6 +106,7 @@ spec:
 You can set a custom update strategy using [kubernetes Statefulset update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) definitions.
 
 Example:
+
 ```yaml
 spec:
   updateStrategy:

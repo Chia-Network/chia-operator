@@ -124,6 +124,7 @@ spec:
 You can set a custom update strategy using [kubernetes Deployment update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) definitions.
 
 Example:
+
 ```yaml
 spec:
   strategy:
