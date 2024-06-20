@@ -40,7 +40,7 @@ type ChiaIntroducerSpec struct {
 type ChiaIntroducerSpecChia struct {
 	CommonSpecChia `json:",inline"`
 
-	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
+	// CASecretName is the name of the secret that contains the CA crt and key. Not required for introducers.
 	// +optional
 	CASecretName *string `json:"caSecretName"`
 }
