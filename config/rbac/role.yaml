@@ -160,6 +160,32 @@ rules:
 - apiGroups:
   - k8s.chia.net
   resources:
+  - chiaintroducers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiaintroducers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiaintroducers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - k8s.chia.net
+  resources:
   - chianodes
   verbs:
   - create

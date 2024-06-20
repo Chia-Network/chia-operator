@@ -1,0 +1,23 @@
+# permissions for end users to view chiaintroducers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: chia-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: chiaintroducer-viewer-role
+rules:
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiaintroducers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiaintroducers/status
+  verbs:
+  - get

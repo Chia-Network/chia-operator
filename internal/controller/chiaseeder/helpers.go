@@ -79,10 +79,12 @@ func (r *ChiaSeederReconciler) getChiaVolumeMounts(ctx context.Context, seeder k
 	var v []corev1.VolumeMount
 
 	// secret ca volume
-	v = append(v, corev1.VolumeMount{
-		Name:      "secret-ca",
-		MountPath: "/chia-ca",
-	})
+	if seeder.Spec.ChiaConfig.CASecretName != nil {
+		v = append(v, corev1.VolumeMount{
+			Name:      "secret-ca",
+			MountPath: "/chia-ca",
+		})
+	}
 
 	// CHIA_ROOT volume
 	v = append(v, corev1.VolumeMount{
