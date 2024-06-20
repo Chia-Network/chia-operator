@@ -70,29 +70,6 @@ spec:
     kubernetes.io/hostname: "node-with-hostpath"
 ```
 
-## chia-exporter sidecar
-
-[chia-exporter](https://github.com/chia-network/chia-exporter) is a Prometheus exporter that surfaces scrape-able metrics to a Prometheus server. chia-exporter runs as a sidecar container to all Chia services ran by this operator by default.
-
-### Add labels to chia-exporter service
-
-You may want to add some labels to your chia-exporter Service that get added as labels to your Prometheus metrics.
-
-```yaml
-spec:
-  chiaExporter:
-    serviceLabels:
-      network: "mainnet"
-```
-
-### Disable chia-exporter
-
-```yaml
-spec:
-  chiaExporter:
-    enabled: false
-```
-
 ## Selecting a network
 
 You can select a network from your chia configuration with the following options:
