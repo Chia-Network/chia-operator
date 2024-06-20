@@ -61,6 +61,10 @@ func (r *ChiaCAReconciler) assembleJob(ctx context.Context, ca k8schianetv1.Chia
 		}
 	}
 
+	// Set backoff limit to 3, which is he maximum number of retries for ChiaCA Jobs
+	backoff := int32(3)
+	job.Spec.BackoffLimit = &backoff
+
 	return job
 }
 

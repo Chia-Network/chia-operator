@@ -20,14 +20,16 @@ func (r *ChiaSeederReconciler) getChiaVolumes(ctx context.Context, seeder k8schi
 	var v []corev1.Volume
 
 	// secret ca volume
-	v = append(v, corev1.Volume{
-		Name: "secret-ca",
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: seeder.Spec.ChiaConfig.CASecretName,
+	if seeder.Spec.ChiaConfig.CASecretName != nil {
+		v = append(v, corev1.Volume{
+			Name: "secret-ca",
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: *seeder.Spec.ChiaConfig.CASecretName,
+				},
 			},
-		},
-	})
+		})
+	}
 
 	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
 	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT

@@ -5,6 +5,7 @@ Copyright 2023 Chia Network Inc.
 package v1
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -19,11 +20,18 @@ type ChiaNodeSpec struct {
 	// +optional
 	// +kubebuilder:default=1
 	Replicas int32 `json:"replicas,omitempty"`
+
+	// UpdateStrategy indicates the strategy that the StatefulSet controller will use to perform updates.
+	// +optional
+	UpdateStrategy *appsv1.StatefulSetUpdateStrategy `json:"updateStrategy,omitempty"`
 }
 
 // ChiaNodeSpecChia defines the desired state of Chia component configuration
 type ChiaNodeSpecChia struct {
 	CommonSpecChia `json:",inline"`
+
+	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
+	CASecretName string `json:"caSecretName"`
 
 	// TrustedCIDRs is a list of CIDRs that this chia component should trust peers from
 	// See: https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them

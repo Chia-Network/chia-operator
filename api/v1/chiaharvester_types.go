@@ -5,6 +5,7 @@ Copyright 2023 Chia Network Inc.
 package v1
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -14,11 +15,18 @@ type ChiaHarvesterSpec struct {
 
 	// ChiaConfig defines the configuration options available to Chia component containers
 	ChiaConfig ChiaHarvesterSpecChia `json:"chia"`
+
+	// Strategy describes how to replace existing pods with new ones.
+	// +optional
+	Strategy *appsv1.DeploymentStrategy `json:"strategy,omitempty"`
 }
 
 // ChiaHarvesterSpecChia defines the desired state of Chia component configuration
 type ChiaHarvesterSpecChia struct {
 	CommonSpecChia `json:",inline"`
+
+	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
+	CASecretName string `json:"caSecretName"`
 
 	// FarmerAddress defines the harvester's farmer peer's hostname. The farmer's port is inferred.
 	// In Kubernetes this is likely to be <farmer service name>.<namespace>.svc.cluster.local

@@ -22,7 +22,6 @@ metadata:
   name: my-seeder
 spec:
   chia:
-    caSecretName: chiaca-secret # A kubernetes Secret containing certificate authority files
     domainName: "seeder.example.com." # name of the NS record for your server with a trailing period. (ex. "seeder.example.com.")
     nameserver: "seeder-mainnet-1.example.com." # name of the A record for your server with a trailing period. (ex. "seeder-us-west-2.example.com.")
     rname: "admin.example.com." # an administrator's email address with '@' replaced with '.' and a trailing period.
@@ -77,29 +76,6 @@ spec:
     kubernetes.io/hostname: "node-with-hostpath"
 ```
 
-## chia-exporter sidecar
-
-[chia-exporter](https://github.com/chia-network/chia-exporter) is a Prometheus exporter that surfaces scrape-able metrics to a Prometheus server. chia-exporter runs as a sidecar container to all Chia services ran by this operator by default.
-
-### Add labels to chia-exporter service
-
-You may want to add some labels to your chia-exporter Service that get added as labels to your Prometheus metrics.
-
-```yaml
-spec:
-  chiaExporter:
-    serviceLabels:
-      network: "mainnet"
-```
-
-### Disable chia-exporter
-
-```yaml
-spec:
-  chiaExporter:
-    enabled: false
-```
-
 ## Selecting a network
 
 You can select a network from your chia configuration with the following options:
@@ -140,4 +116,19 @@ spec:
           - /bin/sh
           - '-c'
           - /usr/local/bin/docker-healthcheck.sh || exit 1
+```
+
+## Update Strategy
+
+You can set a custom update strategy using [kubernetes Deployment update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) definitions.
+
+Example:
+
+```yaml
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
 ```

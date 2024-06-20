@@ -5,6 +5,7 @@ Copyright 2023 Chia Network Inc.
 package v1
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -14,11 +15,18 @@ type ChiaTimelordSpec struct {
 
 	// ChiaConfig defines the configuration options available to Chia component containers
 	ChiaConfig ChiaTimelordSpecChia `json:"chia"`
+
+	// Strategy describes how to replace existing pods with new ones.
+	// +optional
+	Strategy *appsv1.DeploymentStrategy `json:"strategy,omitempty"`
 }
 
 // ChiaTimelordSpecChia defines the desired state of Chia component configuration
 type ChiaTimelordSpecChia struct {
 	CommonSpecChia `json:",inline"`
+
+	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
+	CASecretName string `json:"caSecretName"`
 
 	// FullNodePeer defines the timelord's full_node peer in host:port format.
 	// In Kubernetes this is likely to be <node service name>.<namespace>.svc.cluster.local:8555

@@ -7,6 +7,7 @@ package chiatimelord
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -70,30 +71,134 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Reconcile ChiaTimelord owned objects
-	srv := r.assembleBaseService(ctx, tl)
-	res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
+	if kube.ShouldMakeService(tl.Spec.ChiaConfig.PeerService) {
+		srv := r.assemblePeerService(ctx, tl)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord peer Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling timelord peer Service: %v", req.NamespacedName, err)
 		}
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord Service -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node Service: %v", req.NamespacedName, err)
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiatimelordNamePattern, tl.Name),
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Error(err, fmt.Sprintf("ChiaTimelordReconciler ChiaTimelord=%s unable to GET ChiaTimelord peer Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				log.Error(err, fmt.Sprintf("ChiaTimelordReconciler ChiaTimelord=%s unable to DELETE ChiaTimelord peer Service resource", req.NamespacedName))
+			}
+		}
 	}
 
-	srv = r.assembleChiaExporterService(ctx, tl)
-	res, err = kube.ReconcileService(ctx, resourceReconciler, srv)
-	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
+	if kube.ShouldMakeService(tl.Spec.ChiaConfig.DaemonService) {
+		srv := r.assembleDaemonService(ctx, tl)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord daemon Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling timelord daemon Service: %v", req.NamespacedName, err)
 		}
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord metrics Service -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node chia-exporter Service: %v", req.NamespacedName, err)
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-daemon",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaTimelordReconciler ChiaTimelord=%s unable to GET ChiaTimelord daemon Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaTimelordReconciler ChiaTimelord=%s unable to DELETE ChiaTimelord daemon Service resource", req.NamespacedName))
+			}
+		}
+	}
+
+	if kube.ShouldMakeService(tl.Spec.ChiaConfig.RPCService) {
+		srv := r.assembleRPCService(ctx, tl)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord RPC Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling timelord RPC Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-rpc",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaTimelordReconciler ChiaTimelord=%s unable to GET ChiaTimelord RPC Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaTimelordReconciler ChiaTimelord=%s unable to DELETE ChiaTimelord RPC Service resource", req.NamespacedName))
+			}
+		}
+	}
+
+	if kube.ShouldMakeService(tl.Spec.ChiaExporterConfig.Service) {
+		srv := r.assembleChiaExporterService(ctx, tl)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord metrics Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling timelord chia-exporter Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-metrics",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaTimelordReconciler ChiaTimelord=%s unable to GET ChiaTimelord metrics Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaTimelordReconciler ChiaTimelord=%s unable to DELETE ChiaTimelord metrics Service resource", req.NamespacedName))
+			}
+		}
 	}
 
 	deploy := r.assembleDeployment(ctx, tl)
-	res, err = kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
+	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {
 		if res == nil {
 			res = &reconcile.Result{}

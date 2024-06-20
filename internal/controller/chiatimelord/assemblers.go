@@ -20,66 +20,180 @@ import (
 
 const chiatimelordNamePattern = "%s-timelord"
 
-// assembleBaseService assembles the main Service resource for a Chiatl CR
-func (r *ChiaTimelordReconciler) assembleBaseService(ctx context.Context, tl k8schianetv1.ChiaTimelord) corev1.Service {
-	return corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiatimelordNamePattern, tl.Name),
-			Namespace:       tl.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
-			Annotations:     tl.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, tl),
-		},
-		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceType(tl.Spec.ServiceType),
-			Ports: []corev1.ServicePort{
-				{
-					Port:       consts.DaemonPort,
-					TargetPort: intstr.FromString("daemon"),
-					Protocol:   "TCP",
-					Name:       "daemon",
-				},
-				{
-					Port:       consts.TimelordPort,
-					TargetPort: intstr.FromString("peers"),
-					Protocol:   "TCP",
-					Name:       "peers",
-				},
-				{
-					Port:       consts.TimelordRPCPort,
-					TargetPort: intstr.FromString("rpc"),
-					Protocol:   "TCP",
-					Name:       "rpc",
-				},
-			},
-			Selector: kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
+// assemblePeerService assembles the peer Service resource for a ChiaTimelord CR
+func (r *ChiaTimelordReconciler) assemblePeerService(ctx context.Context, tl k8schianetv1.ChiaTimelord) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiatimelordNamePattern, tl.Name)
+	inputs.Namespace = tl.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, tl)
+
+	// Service Type
+	if tl.Spec.ChiaConfig.PeerService != nil && tl.Spec.ChiaConfig.PeerService.ServiceType != nil {
+		inputs.ServiceType = *tl.Spec.ChiaConfig.PeerService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if tl.Spec.ChiaConfig.PeerService != nil && tl.Spec.ChiaConfig.PeerService.Labels != nil {
+		additionalServiceLabels = tl.Spec.ChiaConfig.PeerService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if tl.Spec.ChiaConfig.PeerService != nil && tl.Spec.ChiaConfig.PeerService.Annotations != nil {
+		additionalServiceAnnotations = tl.Spec.ChiaConfig.PeerService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(tl.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.TimelordPort,
+			TargetPort: intstr.FromString("peers"),
+			Protocol:   "TCP",
+			Name:       "peers",
 		},
 	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
+// assembleDaemonService assembles the daemon Service resource for a ChiaTimelord CR
+func (r *ChiaTimelordReconciler) assembleDaemonService(ctx context.Context, tl k8schianetv1.ChiaTimelord) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-daemon"
+	inputs.Namespace = tl.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, tl)
+
+	// Service Type
+	if tl.Spec.ChiaConfig.DaemonService != nil && tl.Spec.ChiaConfig.DaemonService.ServiceType != nil {
+		inputs.ServiceType = *tl.Spec.ChiaConfig.DaemonService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if tl.Spec.ChiaConfig.DaemonService != nil && tl.Spec.ChiaConfig.DaemonService.Labels != nil {
+		additionalServiceLabels = tl.Spec.ChiaConfig.DaemonService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if tl.Spec.ChiaConfig.DaemonService != nil && tl.Spec.ChiaConfig.DaemonService.Annotations != nil {
+		additionalServiceAnnotations = tl.Spec.ChiaConfig.DaemonService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(tl.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.DaemonPort,
+			TargetPort: intstr.FromString("daemon"),
+			Protocol:   "TCP",
+			Name:       "daemon",
+		},
+	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
+// assembleRPCService assembles the RPC Service resource for a ChiaTimelord CR
+func (r *ChiaTimelordReconciler) assembleRPCService(ctx context.Context, tl k8schianetv1.ChiaTimelord) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-rpc"
+	inputs.Namespace = tl.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, tl)
+
+	// Service Type
+	if tl.Spec.ChiaConfig.RPCService != nil && tl.Spec.ChiaConfig.RPCService.ServiceType != nil {
+		inputs.ServiceType = *tl.Spec.ChiaConfig.RPCService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if tl.Spec.ChiaConfig.RPCService != nil && tl.Spec.ChiaConfig.RPCService.Labels != nil {
+		additionalServiceLabels = tl.Spec.ChiaConfig.RPCService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if tl.Spec.ChiaConfig.RPCService != nil && tl.Spec.ChiaConfig.RPCService.Annotations != nil {
+		additionalServiceAnnotations = tl.Spec.ChiaConfig.RPCService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(tl.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.TimelordRPCPort,
+			TargetPort: intstr.FromString("rpc"),
+			Protocol:   "TCP",
+			Name:       "rpc",
+		},
+	}
+
+	return kube.AssembleCommonService(inputs)
 }
 
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaTimelord CR
 func (r *ChiaTimelordReconciler) assembleChiaExporterService(ctx context.Context, tl k8schianetv1.ChiaTimelord) corev1.Service {
-	return corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "metrics",
-			Namespace:       tl.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, tl.Spec.ChiaExporterConfig.ServiceLabels),
-			Annotations:     tl.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, tl),
-		},
-		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceType("ClusterIP"),
-			Ports: []corev1.ServicePort{
-				{
-					Port:       consts.ChiaExporterPort,
-					TargetPort: intstr.FromString("metrics"),
-					Protocol:   "TCP",
-					Name:       "metrics",
-				},
-			},
-			Selector: kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-metrics"
+	inputs.Namespace = tl.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, tl)
+
+	// Service Type
+	if tl.Spec.ChiaExporterConfig.Service != nil && tl.Spec.ChiaExporterConfig.Service.ServiceType != nil {
+		inputs.ServiceType = *tl.Spec.ChiaExporterConfig.Service.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if tl.Spec.ChiaExporterConfig.Service != nil && tl.Spec.ChiaExporterConfig.Service.Labels != nil {
+		additionalServiceLabels = tl.Spec.ChiaExporterConfig.Service.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if tl.Spec.ChiaExporterConfig.Service != nil && tl.Spec.ChiaExporterConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = tl.Spec.ChiaExporterConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(tl.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.ChiaExporterPort,
+			TargetPort: intstr.FromString("metrics"),
+			Protocol:   "TCP",
+			Name:       "metrics",
 		},
 	}
+
+	return kube.AssembleCommonService(inputs)
 }
 
 // assembleDeployment assembles the tl Deployment resource for a ChiaTimelord CR
@@ -143,6 +257,10 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 				},
 			},
 		},
+	}
+
+	if tl.Spec.Strategy != nil {
+		deploy.Spec.Strategy = *tl.Spec.Strategy
 	}
 
 	var containerSecurityContext *corev1.SecurityContext

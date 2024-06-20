@@ -66,7 +66,6 @@ spec:
 		Spec: ChiaHarvesterSpec{
 			ChiaConfig: ChiaHarvesterSpecChia{
 				CommonSpecChia: CommonSpecChia{
-					CASecretName:         "chiaca-secret",
 					Testnet:              &testnet,
 					Network:              &network,
 					NetworkPort:          &networkPort,
@@ -75,14 +74,12 @@ spec:
 					Timezone:             &timezone,
 					LogLevel:             &logLevel,
 				},
+				CASecretName:  "chiaca-secret",
 				FarmerAddress: "farmer.default.svc.cluster.local:58444",
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{
 					Enabled: true,
-					ServiceLabels: map[string]string{
-						"network": "testnet",
-					},
 				},
 			},
 		},

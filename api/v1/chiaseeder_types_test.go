@@ -57,6 +57,7 @@ spec:
 		domainName                  = "seeder.example.com."
 		nameserver                  = "example.com."
 		rname                       = "admin.example.com."
+		caSecret                    = "chiaca-secret"
 	)
 	expect := ChiaSeeder{
 		TypeMeta: metav1.TypeMeta{
@@ -75,7 +76,6 @@ spec:
 		Spec: ChiaSeederSpec{
 			ChiaConfig: ChiaSeederSpecChia{
 				CommonSpecChia: CommonSpecChia{
-					CASecretName:         "chiaca-secret",
 					Testnet:              &testnet,
 					Network:              &network,
 					NetworkPort:          &networkPort,
@@ -84,6 +84,7 @@ spec:
 					Timezone:             &timezone,
 					LogLevel:             &logLevel,
 				},
+				CASecretName:  &caSecret,
 				BootstrapPeer: &bootstrapPeer,
 				MinimumHeight: &minimumHeight,
 				DomainName:    domainName,
@@ -93,9 +94,6 @@ spec:
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{
 					Enabled: true,
-					ServiceLabels: map[string]string{
-						"network": "testnet",
-					},
 				},
 			},
 		},

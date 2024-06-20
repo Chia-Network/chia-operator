@@ -7,6 +7,7 @@ package chianode
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -72,52 +73,194 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Reconcile ChiaNode owned objects
-	srv := r.assembleBaseService(ctx, node)
-	res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
+	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
+		srv := r.assemblePeerService(ctx, node)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node peer Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node peer Service: %v", req.NamespacedName, err)
 		}
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node Service -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node Service: %v", req.NamespacedName, err)
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chianodeNamePattern, node.Name),
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to GET ChiaNode peer Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to DELETE ChiaNode peer Service resource", req.NamespacedName))
+			}
+		}
 	}
 
-	srv = r.assembleInternalService(ctx, node)
-	res, err = kube.ReconcileService(ctx, resourceReconciler, srv)
-	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
+	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
+		srv := r.assembleHeadlessPeerService(ctx, node)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node peer headless Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node peer headless Service: %v", req.NamespacedName, err)
 		}
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node internal Service -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node Local Service: %v", req.NamespacedName, err)
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-headless",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to GET ChiaNode peer headless Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to DELETE ChiaNode peer headless Service resource", req.NamespacedName))
+			}
+		}
 	}
 
-	srv = r.assembleHeadlessService(ctx, node)
-	res, err = kube.ReconcileService(ctx, resourceReconciler, srv)
-	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
+	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
+		srv := r.assembleLocalPeerService(ctx, node)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node peer internal Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node peer internal Service: %v", req.NamespacedName, err)
 		}
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node headless Service -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node headless Service: %v", req.NamespacedName, err)
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-internal",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to GET ChiaNode peer internal Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to DELETE ChiaNode peer internal Service resource", req.NamespacedName))
+			}
+		}
 	}
 
-	srv = r.assembleChiaExporterService(ctx, node)
-	res, err = kube.ReconcileService(ctx, resourceReconciler, srv)
-	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
+	if kube.ShouldMakeService(node.Spec.ChiaConfig.DaemonService) {
+		srv := r.assembleDaemonService(ctx, node)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node daemon Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node daemon Service: %v", req.NamespacedName, err)
 		}
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node metrics Service -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node chia-exporter Service: %v", req.NamespacedName, err)
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-daemon",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to GET ChiaNode daemon Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to DELETE ChiaNode daemon Service resource", req.NamespacedName))
+			}
+		}
+	}
+
+	if kube.ShouldMakeService(node.Spec.ChiaConfig.RPCService) {
+		srv := r.assembleRPCService(ctx, node)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node RPC Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node RPC Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-rpc",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to GET ChiaNode RPC Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to DELETE ChiaNode RPC Service resource", req.NamespacedName))
+			}
+		}
+	}
+
+	if kube.ShouldMakeService(node.Spec.ChiaExporterConfig.Service) {
+		srv := r.assembleChiaExporterService(ctx, node)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node metrics Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node metrics Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-metrics",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to GET ChiaNode metrics Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to DELETE ChiaNode metrics Service resource", req.NamespacedName))
+			}
+		}
 	}
 
 	stateful := r.assembleStatefulset(ctx, node)
-	res, err = kube.ReconcileStatefulset(ctx, resourceReconciler, stateful)
+	res, err := kube.ReconcileStatefulset(ctx, resourceReconciler, stateful)
 	if err != nil {
 		if res == nil {
 			res = &reconcile.Result{}

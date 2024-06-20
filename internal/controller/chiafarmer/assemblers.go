@@ -20,66 +20,180 @@ import (
 
 const chiafarmerNamePattern = "%s-farmer"
 
-// assembleBaseService assembles the main Service resource for a Chiafarmer CR
-func (r *ChiaFarmerReconciler) assembleBaseService(ctx context.Context, farmer k8schianetv1.ChiaFarmer) corev1.Service {
-	return corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
-			Namespace:       farmer.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
-			Annotations:     farmer.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, farmer),
-		},
-		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceType(farmer.Spec.ServiceType),
-			Ports: []corev1.ServicePort{
-				{
-					Port:       consts.DaemonPort,
-					TargetPort: intstr.FromString("daemon"),
-					Protocol:   "TCP",
-					Name:       "daemon",
-				},
-				{
-					Port:       consts.FarmerPort,
-					TargetPort: intstr.FromString("peers"),
-					Protocol:   "TCP",
-					Name:       "peers",
-				},
-				{
-					Port:       consts.FarmerRPCPort,
-					TargetPort: intstr.FromString("rpc"),
-					Protocol:   "TCP",
-					Name:       "rpc",
-				},
-			},
-			Selector: kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
+// assemblePeerService assembles the peer Service resource for a Chiafarmer CR
+func (r *ChiaFarmerReconciler) assemblePeerService(ctx context.Context, farmer k8schianetv1.ChiaFarmer) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiafarmerNamePattern, farmer.Name)
+	inputs.Namespace = farmer.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, farmer)
+
+	// Service Type
+	if farmer.Spec.ChiaConfig.PeerService != nil && farmer.Spec.ChiaConfig.PeerService.ServiceType != nil {
+		inputs.ServiceType = *farmer.Spec.ChiaConfig.PeerService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if farmer.Spec.ChiaConfig.PeerService != nil && farmer.Spec.ChiaConfig.PeerService.Labels != nil {
+		additionalServiceLabels = farmer.Spec.ChiaConfig.PeerService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if farmer.Spec.ChiaConfig.PeerService != nil && farmer.Spec.ChiaConfig.PeerService.Annotations != nil {
+		additionalServiceAnnotations = farmer.Spec.ChiaConfig.PeerService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(farmer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.FarmerPort,
+			TargetPort: intstr.FromString("peers"),
+			Protocol:   "TCP",
+			Name:       "peers",
 		},
 	}
+
+	return kube.AssembleCommonService(inputs)
 }
 
-// assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaFarmer CR
-func (r *ChiaFarmerReconciler) assembleChiaExporterService(ctx context.Context, farmer k8schianetv1.ChiaFarmer) corev1.Service {
-	return corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-metrics",
-			Namespace:       farmer.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, farmer.Spec.ChiaExporterConfig.ServiceLabels),
-			Annotations:     farmer.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, farmer),
-		},
-		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceType("ClusterIP"),
-			Ports: []corev1.ServicePort{
-				{
-					Port:       consts.ChiaExporterPort,
-					TargetPort: intstr.FromString("metrics"),
-					Protocol:   "TCP",
-					Name:       "metrics",
-				},
-			},
-			Selector: kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
+// assembleDaemonService assembles the daemon Service resource for a Chiafarmer CR
+func (r *ChiaFarmerReconciler) assembleDaemonService(ctx context.Context, farmer k8schianetv1.ChiaFarmer) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-daemon"
+	inputs.Namespace = farmer.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, farmer)
+
+	// Service Type
+	if farmer.Spec.ChiaConfig.DaemonService != nil && farmer.Spec.ChiaConfig.DaemonService.ServiceType != nil {
+		inputs.ServiceType = *farmer.Spec.ChiaConfig.DaemonService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if farmer.Spec.ChiaConfig.DaemonService != nil && farmer.Spec.ChiaConfig.DaemonService.Labels != nil {
+		additionalServiceLabels = farmer.Spec.ChiaConfig.DaemonService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if farmer.Spec.ChiaConfig.DaemonService != nil && farmer.Spec.ChiaConfig.DaemonService.Annotations != nil {
+		additionalServiceAnnotations = farmer.Spec.ChiaConfig.DaemonService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(farmer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.DaemonPort,
+			TargetPort: intstr.FromString("daemon"),
+			Protocol:   "TCP",
+			Name:       "daemon",
 		},
 	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
+// assembleRPCService assembles the RPC Service resource for a Chiafarmer CR
+func (r *ChiaFarmerReconciler) assembleRPCService(ctx context.Context, farmer k8schianetv1.ChiaFarmer) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-rpc"
+	inputs.Namespace = farmer.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, farmer)
+
+	// Service Type
+	if farmer.Spec.ChiaConfig.RPCService != nil && farmer.Spec.ChiaConfig.RPCService.ServiceType != nil {
+		inputs.ServiceType = *farmer.Spec.ChiaConfig.RPCService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if farmer.Spec.ChiaConfig.RPCService != nil && farmer.Spec.ChiaConfig.RPCService.Labels != nil {
+		additionalServiceLabels = farmer.Spec.ChiaConfig.RPCService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if farmer.Spec.ChiaConfig.RPCService != nil && farmer.Spec.ChiaConfig.RPCService.Annotations != nil {
+		additionalServiceAnnotations = farmer.Spec.ChiaConfig.RPCService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(farmer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.FarmerRPCPort,
+			TargetPort: intstr.FromString("rpc"),
+			Protocol:   "TCP",
+			Name:       "rpc",
+		},
+	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
+// assembleChiaExporterService assembles the chia-exporter Service resource for a Chiafarmer CR
+func (r *ChiaFarmerReconciler) assembleChiaExporterService(ctx context.Context, farmer k8schianetv1.ChiaFarmer) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-metrics"
+	inputs.Namespace = farmer.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, farmer)
+
+	// Service Type
+	if farmer.Spec.ChiaExporterConfig.Service != nil && farmer.Spec.ChiaExporterConfig.Service.ServiceType != nil {
+		inputs.ServiceType = *farmer.Spec.ChiaExporterConfig.Service.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if farmer.Spec.ChiaExporterConfig.Service != nil && farmer.Spec.ChiaExporterConfig.Service.Labels != nil {
+		additionalServiceLabels = farmer.Spec.ChiaExporterConfig.Service.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if farmer.Spec.ChiaExporterConfig.Service != nil && farmer.Spec.ChiaExporterConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = farmer.Spec.ChiaExporterConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(farmer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.ChiaExporterPort,
+			TargetPort: intstr.FromString("metrics"),
+			Protocol:   "TCP",
+			Name:       "metrics",
+		},
+	}
+
+	return kube.AssembleCommonService(inputs)
 }
 
 // assembleDeployment assembles the farmer Deployment resource for a ChiaFarmer CR

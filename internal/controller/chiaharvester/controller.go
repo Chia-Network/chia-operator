@@ -7,6 +7,7 @@ package chiaharvester
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -72,30 +73,134 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Reconcile ChiaHarvester owned objects
-	srv := r.assembleBaseService(ctx, harvester)
-	res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
+	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.PeerService) {
+		srv := r.assemblePeerService(ctx, harvester)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester peer Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester peer Service: %v", req.NamespacedName, err)
 		}
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester Service -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester Service: %v", req.NamespacedName, err)
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Error(err, fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s unable to GET ChiaHarvester peer Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				log.Error(err, fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s unable to DELETE ChiaHarvester peer Service resource", req.NamespacedName))
+			}
+		}
 	}
 
-	srv = r.assembleChiaExporterService(ctx, harvester)
-	res, err = kube.ReconcileService(ctx, resourceReconciler, srv)
-	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
+	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.DaemonService) {
+		srv := r.assembleDaemonService(ctx, harvester)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester daemon Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester daemon Service: %v", req.NamespacedName, err)
 		}
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester metrics Service -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester chia-exporter Service: %v", req.NamespacedName, err)
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-daemon",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s unable to GET ChiaHarvester daemon Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s unable to DELETE ChiaHarvester daemon Service resource", req.NamespacedName))
+			}
+		}
+	}
+
+	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.RPCService) {
+		srv := r.assembleRPCService(ctx, harvester)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester RPC Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester RPC Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-rpc",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s unable to GET ChiaHarvester RPC Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s unable to DELETE ChiaHarvester RPC Service resource", req.NamespacedName))
+			}
+		}
+	}
+
+	if kube.ShouldMakeService(harvester.Spec.ChiaExporterConfig.Service) {
+		srv := r.assembleChiaExporterService(ctx, harvester)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester metrics Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling harvester metrics Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-metrics",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s unable to GET ChiaHarvester metrics Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s unable to DELETE ChiaHarvester metrics Service resource", req.NamespacedName))
+			}
+		}
 	}
 
 	deploy := r.assembleDeployment(ctx, harvester)
-	res, err = kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
+	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {
 		if res == nil {
 			res = &reconcile.Result{}
