@@ -6,6 +6,7 @@ package main
 
 import (
 	"flag"
+	"github.com/chia-network/chia-operator/internal/controller/chiaintroducer"
 	"os"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -137,6 +138,13 @@ func main() {
 		Recorder: mgr.GetEventRecorderFor("chiaseeder-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaSeeder")
+		os.Exit(1)
+	}
+	if err = (&chiaintroducer.ChiaIntroducerReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ChiaIntroducer")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

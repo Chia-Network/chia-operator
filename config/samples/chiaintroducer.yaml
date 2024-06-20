@@ -1,0 +1,15 @@
+apiVersion: k8s.chia.net.k8s.chia.net/v1
+kind: ChiaIntroducer
+metadata:
+  labels:
+    app.kubernetes.io/name: chia-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: chiaintroducer-sample
+spec:
+  chia:
+    testnet: true
+    timezone: "UTC"
+    logLevel: "INFO"
+  storage:
+    chiaRoot:
+      claimName: "chiaintroducer-sample-chiaroot"

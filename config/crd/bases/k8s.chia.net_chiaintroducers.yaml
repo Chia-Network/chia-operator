@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  name: chiaseeders.k8s.chia.net
+  name: chiaintroducers.k8s.chia.net
 spec:
   group: k8s.chia.net
   names:
-    kind: ChiaSeeder
-    listKind: ChiaSeederList
-    plural: chiaseeders
-    singular: chiaseeder
+    kind: ChiaIntroducer
+    listKind: ChiaIntroducerList
+    plural: chiaintroducers
+    singular: chiaintroducer
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: ChiaSeeder is the Schema for the chiaseeders API
+        description: ChiaIntroducer is the Schema for the chiaintroducers API
         properties:
           apiVersion:
             description: |-
@@ -37,7 +37,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ChiaSeederSpec defines the desired state of ChiaSeeder
+            description: ChiaIntroducerSpec defines the desired state of ChiaIntroducer
             properties:
               annotations:
                 additionalProperties:
@@ -49,10 +49,6 @@ spec:
                 description: ChiaConfig defines the configuration options available
                   to Chia component containers
                 properties:
-                  bootstrapPeer:
-                    description: BootstrapPeer a peer to bootstrap the seeder's peer
-                      database
-                    type: string
                   caSecretName:
                     description: CASecretName is the name of the secret that contains
                       the CA crt and key. Not required for seeders.
@@ -87,10 +83,6 @@ spec:
                   dnsIntroducerAddress:
                     description: DNSIntroducerAddress can be set to a hostname to
                       a DNS Introducer server.
-                    type: string
-                  domainName:
-                    description: DomainName the name of the NS record for your server
-                      with a trailing period. (ex. "seeder.example.com.")
                     type: string
                   image:
                     default: ghcr.io/chia-network/chia:latest
@@ -256,15 +248,6 @@ spec:
                     type: object
                   logLevel:
                     description: LogLevel is set to the desired chia config log_level
-                    type: string
-                  minimumHeight:
-                    description: MinimumHeight only consider nodes synced at least
-                      to this height
-                    format: int64
-                    type: integer
-                  nameserver:
-                    description: Nameserver the name of the A record for your server
-                      with a trailing period. (ex. "seeder-us-west-2.example.com.")
                     type: string
                   network:
                     description: Network can be set to a network name in the chia
@@ -510,10 +493,6 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                         type: object
                     type: object
-                  rname:
-                    description: Rname an administrator's email address with '@' replaced
-                      with '.'
-                    type: string
                   rpcService:
                     description: |-
                       RPCService defines settings for the RPC Service installed with any Chia component resource.
@@ -896,15 +875,6 @@ spec:
                     description: Timezone can be set to your local timezone for accurate
                       timestamps. Defaults to UTC
                     type: string
-                  ttl:
-                    description: TTL field on DNS records that controls the length
-                      of time that a record is considered valid
-                    format: int32
-                    type: integer
-                required:
-                - domainName
-                - nameserver
-                - rname
                 type: object
               chiaExporter:
                 description: ChiaExporterConfig defines the configuration options
@@ -4506,11 +4476,12 @@ spec:
             - chia
             type: object
           status:
-            description: ChiaSeederStatus defines the observed state of ChiaSeeder
+            description: ChiaIntroducerStatus defines the observed state of ChiaIntroducer
             properties:
               ready:
                 default: false
-                description: Ready says whether the chia component is ready deployed
+                description: Ready says whether the node is ready, this should be
+                  true when the node statefulset is in the target namespace
                 type: boolean
             type: object
         type: object

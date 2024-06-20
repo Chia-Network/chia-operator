@@ -30,6 +30,14 @@ var (
 		},
 	)
 
+	// ChiaIntroducers is a gauge metric that keeps a running total of deployed ChiaIntroducers
+	ChiaIntroducers = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "chia_operator_chiaintroducer_total",
+			Help: "Number of ChiaIntroducer objects controlled by this operator",
+		},
+	)
+
 	// ChiaNodes is a gauge metric that keeps a running total of deployed ChiaNodes
 	ChiaNodes = prometheus.NewGauge(
 		prometheus.GaugeOpts{
@@ -76,6 +84,7 @@ func init() {
 		ChiaCAs,
 		ChiaFarmers,
 		ChiaHarvesters,
+		ChiaIntroducers,
 		ChiaNodes,
 		ChiaTimelords,
 		ChiaWallets,

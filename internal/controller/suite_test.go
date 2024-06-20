@@ -6,6 +6,7 @@ package controller
 
 import (
 	"context"
+	"github.com/chia-network/chia-operator/internal/controller/chiaintroducer"
 	"log"
 	"path/filepath"
 	"testing"
@@ -22,6 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	apiv1 "github.com/chia-network/chia-operator/api/v1"
+	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/chiaca"
 	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
 	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
@@ -74,6 +76,9 @@ var _ = BeforeSuite(func() {
 	err = apiv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
+	err = k8schianetv1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
 	//+kubebuilder:scaffold:scheme
 
 	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
@@ -103,6 +108,13 @@ var _ = BeforeSuite(func() {
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
 		Recorder: k8sManager.GetEventRecorderFor("chiaharvester-controller"),
+	}).SetupWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&chiaintroducer.ChiaIntroducerReconciler{
+		Client:   k8sManager.GetClient(),
+		Scheme:   k8sManager.GetScheme(),
+		Recorder: k8sManager.GetEventRecorderFor("chiaintroducer-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
