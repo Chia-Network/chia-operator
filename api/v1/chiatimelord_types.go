@@ -25,6 +25,9 @@ type ChiaTimelordSpec struct {
 type ChiaTimelordSpecChia struct {
 	CommonSpecChia `json:",inline"`
 
+	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
+	CASecretName string `json:"caSecretName"`
+
 	// FullNodePeer defines the timelord's full_node peer in host:port format.
 	// In Kubernetes this is likely to be <node service name>.<namespace>.svc.cluster.local:8555
 	FullNodePeer string `json:"fullNodePeer"`

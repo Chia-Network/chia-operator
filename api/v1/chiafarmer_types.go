@@ -25,6 +25,9 @@ type ChiaFarmerSpec struct {
 type ChiaFarmerSpecChia struct {
 	CommonSpecChia `json:",inline"`
 
+	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
+	CASecretName string `json:"caSecretName"`
+
 	// SecretKey defines the k8s Secret name and key for a Chia mnemonic
 	SecretKey ChiaSecretKey `json:"secretKey"`
 

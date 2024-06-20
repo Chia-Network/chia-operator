@@ -76,7 +76,6 @@ spec:
 		Spec: ChiaWalletSpec{
 			ChiaConfig: ChiaWalletSpecChia{
 				CommonSpecChia: CommonSpecChia{
-					CASecretName:         "chiaca-secret",
 					Testnet:              &testnet,
 					Timezone:             &timezone,
 					LogLevel:             &logLevel,
@@ -85,6 +84,7 @@ spec:
 					IntroducerAddress:    &introducerAddress,
 					DNSIntroducerAddress: &dnsIntroducerAddress,
 				},
+				CASecretName: "chiaca-secret",
 				FullNodePeer: "node.default.svc.cluster.local:58444",
 				SecretKey: ChiaSecretKey{
 					Name: "chiakey-secret",

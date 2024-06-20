@@ -42,6 +42,9 @@ type ChiaSeederSpecChia struct {
 	// Rname an administrator's email address with '@' replaced with '.'
 	Rname string `json:"rname"`
 
+	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
+	CASecretName *string `json:"caSecretName"`
+
 	// TTL field on DNS records that controls the length of time that a record is considered valid
 	// +optional
 	TTL *uint32 `json:"ttl"`

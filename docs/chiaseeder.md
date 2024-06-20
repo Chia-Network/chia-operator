@@ -22,7 +22,6 @@ metadata:
   name: my-seeder
 spec:
   chia:
-    caSecretName: chiaca-secret # A kubernetes Secret containing certificate authority files
     domainName: "seeder.example.com." # name of the NS record for your server with a trailing period. (ex. "seeder.example.com.")
     nameserver: "seeder-mainnet-1.example.com." # name of the A record for your server with a trailing period. (ex. "seeder-us-west-2.example.com.")
     rname: "admin.example.com." # an administrator's email address with '@' replaced with '.' and a trailing period.

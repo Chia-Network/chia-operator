@@ -625,6 +625,11 @@ func (in *ChiaSeederSpecChia) DeepCopyInto(out *ChiaSeederSpecChia) {
 		*out = new(uint64)
 		**out = **in
 	}
+	if in.CASecretName != nil {
+		in, out := &in.CASecretName, &out.CASecretName
+		*out = new(string)
+		**out = **in
+	}
 	if in.TTL != nil {
 		in, out := &in.TTL, &out.TTL
 		*out = new(uint32)

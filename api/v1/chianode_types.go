@@ -30,6 +30,9 @@ type ChiaNodeSpec struct {
 type ChiaNodeSpecChia struct {
 	CommonSpecChia `json:",inline"`
 
+	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
+	CASecretName string `json:"caSecretName"`
+
 	// TrustedCIDRs is a list of CIDRs that this chia component should trust peers from
 	// See: https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them
 	// +optional

@@ -54,9 +54,6 @@ type CommonSpecChia struct {
 	// +optional
 	Image string `json:"image,omitempty"`
 
-	// CASecretName is the name of the secret that contains the CA crt and key.
-	CASecretName string `json:"caSecretName"`
-
 	// Testnet is set to true if the Chia container should switch to the latest default testnet's settings
 	// +optional
 	Testnet *bool `json:"testnet,omitempty"`

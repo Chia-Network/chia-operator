@@ -72,7 +72,6 @@ spec:
 		Spec: ChiaNodeSpec{
 			ChiaConfig: ChiaNodeSpecChia{
 				CommonSpecChia: CommonSpecChia{
-					CASecretName:         "chiaca-secret",
 					Testnet:              &testnet,
 					Network:              &network,
 					NetworkPort:          &networkPort,
@@ -81,6 +80,7 @@ spec:
 					Timezone:             &timezone,
 					LogLevel:             &logLevel,
 				},
+				CASecretName: "chiaca-secret",
 				TrustedCIDRs: &expectCIDRs,
 			},
 			CommonSpec: CommonSpec{

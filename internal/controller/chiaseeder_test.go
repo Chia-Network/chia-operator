@@ -25,6 +25,7 @@ var _ = Describe("ChiaSeeder controller", func() {
 
 		domainName = "seeder.example.com."
 		nameserver = "example.com."
+		caSecret   = "test-secret"
 	)
 
 	Context("When creating ChiaSeeder", func() {
@@ -42,11 +43,9 @@ var _ = Describe("ChiaSeeder controller", func() {
 				},
 				Spec: apiv1.ChiaSeederSpec{
 					ChiaConfig: apiv1.ChiaSeederSpecChia{
-						CommonSpecChia: apiv1.CommonSpecChia{
-							CASecretName: "test-secret",
-						},
-						DomainName: domainName,
-						Nameserver: nameserver,
+						CASecretName: &caSecret,
+						DomainName:   domainName,
+						Nameserver:   nameserver,
 					},
 				},
 			}
@@ -54,11 +53,11 @@ var _ = Describe("ChiaSeeder controller", func() {
 				Spec: apiv1.ChiaSeederSpec{
 					ChiaConfig: apiv1.ChiaSeederSpecChia{
 						CommonSpecChia: apiv1.CommonSpecChia{
-							Image:        fmt.Sprintf("ghcr.io/chia-network/chia:%s", defaultChiaImageTag),
-							CASecretName: "test-secret",
+							Image: fmt.Sprintf("ghcr.io/chia-network/chia:%s", defaultChiaImageTag),
 						},
-						DomainName: domainName,
-						Nameserver: nameserver,
+						CASecretName: &caSecret,
+						DomainName:   domainName,
+						Nameserver:   nameserver,
 					},
 					CommonSpec: apiv1.CommonSpec{
 						ImagePullPolicy: "Always",

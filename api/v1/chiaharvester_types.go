@@ -25,6 +25,9 @@ type ChiaHarvesterSpec struct {
 type ChiaHarvesterSpecChia struct {
 	CommonSpecChia `json:",inline"`
 
+	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
+	CASecretName string `json:"caSecretName"`
+
 	// FarmerAddress defines the harvester's farmer peer's hostname. The farmer's port is inferred.
 	// In Kubernetes this is likely to be <farmer service name>.<namespace>.svc.cluster.local
 	FarmerAddress string `json:"farmerAddress"`
