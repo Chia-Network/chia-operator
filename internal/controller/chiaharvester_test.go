@@ -56,7 +56,6 @@ var _ = Describe("ChiaHarvester controller", func() {
 						FarmerAddress: "farmer.default.svc.cluster.local",
 					},
 					CommonSpec: apiv1.CommonSpec{
-						ServiceType:     "ClusterIP",
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
 							Enabled: true,

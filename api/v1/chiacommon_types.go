@@ -22,11 +22,6 @@ type CommonSpec struct {
 	// +optional
 	Storage *StorageConfig `json:"storage,omitempty"`
 
-	// ServiceType is the type of the service that governs this ChiaNode StatefulSet.
-	// +optional
-	// +kubebuilder:default="ClusterIP"
-	ServiceType string `json:"serviceType,omitempty"`
-
 	// ImagePullPolicy is the pull policy for containers in the pod
 	// +optional
 	// +kubebuilder:default="Always"
@@ -92,6 +87,24 @@ type CommonSpecChia struct {
 	// +optional
 	LogLevel *string `json:"logLevel,omitempty"`
 
+	// PeerService defines settings for the default Service installed with any Chia component resource.
+	// This Service usually contains ports for peer connections, or in the case of seeders port 53.
+	// This Service will default to being enabled with a ClusterIP Service type.
+	// +optional
+	PeerService *Service `json:"peerService,omitempty"`
+
+	// DaemonService defines settings for the daemon Service installed with any Chia component resource.
+	// This Service usually contains the port for the Chia daemon that runs alongside any Chia instance.
+	// This Service will default to being enabled with a ClusterIP Service type.
+	// +optional
+	DaemonService *Service `json:"daemonService,omitempty"`
+
+	// RPCService defines settings for the RPC Service installed with any Chia component resource.
+	// This Service contains the port for the Chia RPC API.
+	// This Service will default to being enabled with a ClusterIP Service type.
+	// +optional
+	RPCService *Service `json:"rpcService,omitempty"`
+
 	// Periodic probe of container liveness.
 	// +optional
 	LivenessProbe *corev1.Probe `json:"livenessProbe,omitempty"`
@@ -125,9 +138,11 @@ type SpecChiaExporter struct {
 	// +optional
 	Image string `json:"image,omitempty"`
 
-	// Labels is a map of string keys and values to attach to the chia exporter k8s Service
+	// Service defines settings for the Service installed with any chia-exporter resource.
+	// This Service contains the port for chia-exporter's web exporter.
+	// This Service will default to being enabled with a ClusterIP Service type if chia-exporter is enabled.
 	// +optional
-	ServiceLabels map[string]string `json:"serviceLabels,omitempty"`
+	Service *Service `json:"service,omitempty"`
 }
 
 // ChiaSecretKey defines the name of a kubernetes secret and key in that namespace that contains the Chia mnemonic
@@ -179,6 +194,19 @@ type StorageConfig struct {
 	// Storage configuration for harvester plots
 	// +optional
 	Plots *PlotsConfig `json:"plots,omitempty"`
+}
+
+// Service contains kubernetes Service related configuration options
+type Service struct {
+	AdditionalMetadata `json:",inline"`
+
+	// Enabled is a boolean selector for a Service if it should be generated.
+	// +optional
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// ServiceType is the Type of the Service. Defaults to ClusterIP
+	// +optional
+	ServiceType *corev1.ServiceType `json:"type,omitempty"`
 }
 
 // ChiaRootConfig optional config for CHIA_ROOT persistent storage, likely only needed for Chia full_nodes, but may help in startup time for other components.

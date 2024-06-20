@@ -53,6 +53,33 @@ spec:
                     description: CASecretName is the name of the secret that contains
                       the CA crt and key.
                     type: string
+                  daemonService:
+                    description: |-
+                      DaemonService defines settings for the daemon Service installed with any Chia component resource.
+                      This Service usually contains the port for the Chia daemon that runs alongside any Chia instance.
+                      This Service will default to being enabled with a ClusterIP Service type.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations is a map of string keys and values
+                          to attach to created objects
+                        type: object
+                      enabled:
+                        description: Enabled is a boolean selector for a Service if
+                          it should be generated.
+                        type: boolean
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels is a map of string keys and values to
+                          attach to created objects
+                        type: object
+                      type:
+                        description: ServiceType is the Type of the Service. Defaults
+                          to ClusterIP
+                        type: string
+                    type: object
                   dnsIntroducerAddress:
                     description: DNSIntroducerAddress can be set to a hostname to
                       a DNS Introducer server.
@@ -236,6 +263,33 @@ spec:
                       NetworkPort can be set to the port that full_nodes will use in the selected network.
                       This implies specification of the Network setting.
                     type: integer
+                  peerService:
+                    description: |-
+                      PeerService defines settings for the default Service installed with any Chia component resource.
+                      This Service usually contains ports for peer connections, or in the case of seeders port 53.
+                      This Service will default to being enabled with a ClusterIP Service type.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations is a map of string keys and values
+                          to attach to created objects
+                        type: object
+                      enabled:
+                        description: Enabled is a boolean selector for a Service if
+                          it should be generated.
+                        type: boolean
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels is a map of string keys and values to
+                          attach to created objects
+                        type: object
+                      type:
+                        description: ServiceType is the Type of the Service. Defaults
+                          to ClusterIP
+                        type: string
+                    type: object
                   readinessProbe:
                     description: Periodic probe of container service readiness.
                     properties:
@@ -443,6 +497,33 @@ spec:
                           otherwise to an implementation-defined value. Requests cannot exceed Limits.
                           More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                         type: object
+                    type: object
+                  rpcService:
+                    description: |-
+                      RPCService defines settings for the RPC Service installed with any Chia component resource.
+                      This Service contains the port for the Chia RPC API.
+                      This Service will default to being enabled with a ClusterIP Service type.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations is a map of string keys and values
+                          to attach to created objects
+                        type: object
+                      enabled:
+                        description: Enabled is a boolean selector for a Service if
+                          it should be generated.
+                        type: boolean
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels is a map of string keys and values to
+                          attach to created objects
+                        type: object
+                      type:
+                        description: ServiceType is the Type of the Service. Defaults
+                          to ClusterIP
+                        type: string
                     type: object
                   secretKey:
                     description: SecretKey defines the k8s Secret name and key for
@@ -839,11 +920,32 @@ spec:
                     description: Image defines the image to use for the chia exporter
                       containers
                     type: string
-                  serviceLabels:
-                    additionalProperties:
-                      type: string
-                    description: Labels is a map of string keys and values to attach
-                      to the chia exporter k8s Service
+                  service:
+                    description: |-
+                      Service defines settings for the Service installed with any chia-exporter resource.
+                      This Service contains the port for chia-exporter's web exporter.
+                      This Service will default to being enabled with a ClusterIP Service type if chia-exporter is enabled.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations is a map of string keys and values
+                          to attach to created objects
+                        type: object
+                      enabled:
+                        description: Enabled is a boolean selector for a Service if
+                          it should be generated.
+                        type: boolean
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels is a map of string keys and values to
+                          attach to created objects
+                        type: object
+                      type:
+                        description: ServiceType is the Type of the Service. Defaults
+                          to ClusterIP
+                        type: string
                     type: object
                 type: object
               imagePullPolicy:
@@ -1062,11 +1164,6 @@ spec:
                         type: string
                     type: object
                 type: object
-              serviceType:
-                default: ClusterIP
-                description: ServiceType is the type of the service that governs this
-                  ChiaNode StatefulSet.
-                type: string
               sidecars:
                 description: Sidecars allows defining a list of containers and volumes
                   that will share the kubernetes Pod alongside Chia containers

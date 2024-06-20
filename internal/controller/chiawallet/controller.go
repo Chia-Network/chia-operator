@@ -7,6 +7,7 @@ package chiawallet
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -72,36 +73,140 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Reconcile ChiaWallet owned objects
-	service := r.assembleBaseService(ctx, wallet)
-	res, err := kube.ReconcileService(ctx, resourceReconciler, service)
-	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
+	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.PeerService) {
+		srv := r.assemblePeerService(ctx, wallet)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create wallet peer Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet peer Service: %v", req.NamespacedName, err)
 		}
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create harvester Service -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet Service: %v", req.NamespacedName, err)
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiawalletNamePattern, wallet.Name),
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s unable to GET ChiaWallet peer Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				log.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s unable to DELETE ChiaWallet peer Service resource", req.NamespacedName))
+			}
+		}
 	}
 
-	service = r.assembleChiaExporterService(ctx, wallet)
-	res, err = kube.ReconcileService(ctx, resourceReconciler, service)
-	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
+	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.DaemonService) {
+		srv := r.assembleDaemonService(ctx, wallet)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create wallet daemon Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet daemon Service: %v", req.NamespacedName, err)
 		}
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create harvester metrics Service -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet chia-exporter Service: %v", req.NamespacedName, err)
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-daemon",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s unable to GET ChiaWallet daemon Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s unable to DELETE ChiaWallet daemon Service resource", req.NamespacedName))
+			}
+		}
+	}
+
+	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.RPCService) {
+		srv := r.assembleRPCService(ctx, wallet)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create wallet RPC Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet RPC Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-rpc",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s unable to GET ChiaWallet RPC Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s unable to DELETE ChiaWallet RPC Service resource", req.NamespacedName))
+			}
+		}
+	}
+
+	if kube.ShouldMakeService(wallet.Spec.ChiaExporterConfig.Service) {
+		srv := r.assembleChiaExporterService(ctx, wallet)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create wallet metrics Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet chia-exporter Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-metrics",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s unable to GET ChiaWallet metrics Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s unable to DELETE ChiaWallet metrics Service resource", req.NamespacedName))
+			}
+		}
 	}
 
 	deploy := r.assembleDeployment(ctx, wallet)
-	res, err = kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
+	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {
 		if res == nil {
 			res = &reconcile.Result{}
 		}
 		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create harvester Deployment -- Check operator logs.")
+		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create wallet Deployment -- Check operator logs.")
 		return *res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error reconciling wallet Deployment: %v", req.NamespacedName, err)
 	}
 

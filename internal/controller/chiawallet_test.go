@@ -64,7 +64,6 @@ var _ = Describe("ChiaWallet controller", func() {
 						},
 					},
 					CommonSpec: apiv1.CommonSpec{
-						ServiceType:     "ClusterIP",
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
 							Enabled: true,

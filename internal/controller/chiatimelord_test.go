@@ -56,7 +56,6 @@ var _ = Describe("ChiaTimelord controller", func() {
 						FullNodePeer: "node.default.svc.cluster.local:58444",
 					},
 					CommonSpec: apiv1.CommonSpec{
-						ServiceType:     "ClusterIP",
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
 							Enabled: true,

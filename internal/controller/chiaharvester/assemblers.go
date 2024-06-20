@@ -20,66 +20,180 @@ import (
 
 const chiaharvesterNamePattern = "%s-harvester"
 
-// assembleBaseService reconciles the main Service resource for a ChiaHarvester CR
-func (r *ChiaHarvesterReconciler) assembleBaseService(ctx context.Context, harvester k8schianetv1.ChiaHarvester) corev1.Service {
-	return corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
-			Namespace:       harvester.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
-			Annotations:     harvester.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, harvester),
-		},
-		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceType(harvester.Spec.ServiceType),
-			Ports: []corev1.ServicePort{
-				{
-					Port:       consts.DaemonPort,
-					TargetPort: intstr.FromString("daemon"),
-					Protocol:   "TCP",
-					Name:       "daemon",
-				},
-				{
-					Port:       consts.HarvesterPort,
-					TargetPort: intstr.FromString("peers"),
-					Protocol:   "TCP",
-					Name:       "peers",
-				},
-				{
-					Port:       consts.HarvesterRPCPort,
-					TargetPort: intstr.FromString("rpc"),
-					Protocol:   "TCP",
-					Name:       "rpc",
-				},
-			},
-			Selector: kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
+// assemblePeerService assembles the peer Service resource for a ChiaHarvester CR
+func (r *ChiaHarvesterReconciler) assemblePeerService(ctx context.Context, harvester k8schianetv1.ChiaHarvester) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiaharvesterNamePattern, harvester.Name)
+	inputs.Namespace = harvester.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, harvester)
+
+	// Service Type
+	if harvester.Spec.ChiaConfig.PeerService != nil && harvester.Spec.ChiaConfig.PeerService.ServiceType != nil {
+		inputs.ServiceType = *harvester.Spec.ChiaConfig.PeerService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if harvester.Spec.ChiaConfig.PeerService != nil && harvester.Spec.ChiaConfig.PeerService.Labels != nil {
+		additionalServiceLabels = harvester.Spec.ChiaConfig.PeerService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if harvester.Spec.ChiaConfig.PeerService != nil && harvester.Spec.ChiaConfig.PeerService.Annotations != nil {
+		additionalServiceAnnotations = harvester.Spec.ChiaConfig.PeerService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(harvester.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.HarvesterPort,
+			TargetPort: intstr.FromString("peers"),
+			Protocol:   "TCP",
+			Name:       "peers",
 		},
 	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
+// assembleDaemonService assembles the daemon Service resource for a ChiaHarvester CR
+func (r *ChiaHarvesterReconciler) assembleDaemonService(ctx context.Context, harvester k8schianetv1.ChiaHarvester) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-daemon"
+	inputs.Namespace = harvester.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, harvester)
+
+	// Service Type
+	if harvester.Spec.ChiaConfig.DaemonService != nil && harvester.Spec.ChiaConfig.DaemonService.ServiceType != nil {
+		inputs.ServiceType = *harvester.Spec.ChiaConfig.DaemonService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if harvester.Spec.ChiaConfig.DaemonService != nil && harvester.Spec.ChiaConfig.DaemonService.Labels != nil {
+		additionalServiceLabels = harvester.Spec.ChiaConfig.DaemonService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if harvester.Spec.ChiaConfig.DaemonService != nil && harvester.Spec.ChiaConfig.DaemonService.Annotations != nil {
+		additionalServiceAnnotations = harvester.Spec.ChiaConfig.DaemonService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(harvester.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.DaemonPort,
+			TargetPort: intstr.FromString("daemon"),
+			Protocol:   "TCP",
+			Name:       "daemon",
+		},
+	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
+// assembleRPCService assembles the RPC Service resource for a ChiaHarvester CR
+func (r *ChiaHarvesterReconciler) assembleRPCService(ctx context.Context, harvester k8schianetv1.ChiaHarvester) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-rpc"
+	inputs.Namespace = harvester.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, harvester)
+
+	// Service Type
+	if harvester.Spec.ChiaConfig.RPCService != nil && harvester.Spec.ChiaConfig.RPCService.ServiceType != nil {
+		inputs.ServiceType = *harvester.Spec.ChiaConfig.RPCService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if harvester.Spec.ChiaConfig.RPCService != nil && harvester.Spec.ChiaConfig.RPCService.Labels != nil {
+		additionalServiceLabels = harvester.Spec.ChiaConfig.RPCService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if harvester.Spec.ChiaConfig.RPCService != nil && harvester.Spec.ChiaConfig.RPCService.Annotations != nil {
+		additionalServiceAnnotations = harvester.Spec.ChiaConfig.RPCService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(harvester.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.HarvesterRPCPort,
+			TargetPort: intstr.FromString("rpc"),
+			Protocol:   "TCP",
+			Name:       "rpc",
+		},
+	}
+
+	return kube.AssembleCommonService(inputs)
 }
 
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaHarvester CR
 func (r *ChiaHarvesterReconciler) assembleChiaExporterService(ctx context.Context, harvester k8schianetv1.ChiaHarvester) corev1.Service {
-	return corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-metrics",
-			Namespace:       harvester.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, harvester.Spec.ChiaExporterConfig.ServiceLabels),
-			Annotations:     harvester.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, harvester),
-		},
-		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceType("ClusterIP"),
-			Ports: []corev1.ServicePort{
-				{
-					Port:       consts.ChiaExporterPort,
-					TargetPort: intstr.FromString("metrics"),
-					Protocol:   "TCP",
-					Name:       "metrics",
-				},
-			},
-			Selector: kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-metrics"
+	inputs.Namespace = harvester.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, harvester)
+
+	// Service Type
+	if harvester.Spec.ChiaExporterConfig.Service != nil && harvester.Spec.ChiaExporterConfig.Service.ServiceType != nil {
+		inputs.ServiceType = *harvester.Spec.ChiaExporterConfig.Service.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if harvester.Spec.ChiaExporterConfig.Service != nil && harvester.Spec.ChiaExporterConfig.Service.Labels != nil {
+		additionalServiceLabels = harvester.Spec.ChiaExporterConfig.Service.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if harvester.Spec.ChiaExporterConfig.Service != nil && harvester.Spec.ChiaExporterConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = harvester.Spec.ChiaExporterConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(harvester.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.ChiaExporterPort,
+			TargetPort: intstr.FromString("metrics"),
+			Protocol:   "TCP",
+			Name:       "metrics",
 		},
 	}
+
+	return kube.AssembleCommonService(inputs)
 }
 
 // assembleDeployment assembles the harvester Deployment resource for a ChiaHarvester CR

@@ -20,78 +20,192 @@ import (
 
 const chiaseederNamePattern = "%s-seeder"
 
-// assembleBaseService assembles the main Service resource for a ChiaSeeder CR
-func (r *ChiaSeederReconciler) assembleBaseService(ctx context.Context, seeder k8schianetv1.ChiaSeeder) corev1.Service {
-	return corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiaseederNamePattern, seeder.Name),
-			Namespace:       seeder.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels),
-			Annotations:     seeder.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, seeder),
+// assemblePeerService assembles the peer Service resource for a ChiaSeeder CR
+func (r *ChiaSeederReconciler) assemblePeerService(ctx context.Context, seeder k8schianetv1.ChiaSeeder) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiaseederNamePattern, seeder.Name)
+	inputs.Namespace = seeder.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
+
+	// Service Type
+	if seeder.Spec.ChiaConfig.PeerService != nil && seeder.Spec.ChiaConfig.PeerService.ServiceType != nil {
+		inputs.ServiceType = *seeder.Spec.ChiaConfig.PeerService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if seeder.Spec.ChiaConfig.PeerService != nil && seeder.Spec.ChiaConfig.PeerService.Labels != nil {
+		additionalServiceLabels = seeder.Spec.ChiaConfig.PeerService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if seeder.Spec.ChiaConfig.PeerService != nil && seeder.Spec.ChiaConfig.PeerService.Annotations != nil {
+		additionalServiceAnnotations = seeder.Spec.ChiaConfig.PeerService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       53,
+			TargetPort: intstr.FromString("dns"),
+			Protocol:   "UDP",
+			Name:       "dns",
 		},
-		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceType(seeder.Spec.ServiceType),
-			Ports: []corev1.ServicePort{
-				{
-					Port:       consts.DaemonPort,
-					TargetPort: intstr.FromString("daemon"),
-					Protocol:   "TCP",
-					Name:       "daemon",
-				},
-				{
-					Port:       53,
-					TargetPort: intstr.FromString("dns"),
-					Protocol:   "UDP",
-					Name:       "dns",
-				},
-				{
-					Port:       53,
-					TargetPort: intstr.FromString("dns-tcp"),
-					Protocol:   "TCP",
-					Name:       "dns-tcp",
-				},
-				{
-					Port:       r.getFullNodePort(ctx, seeder),
-					TargetPort: intstr.FromString("peers"),
-					Protocol:   "TCP",
-					Name:       "peers",
-				},
-				{
-					Port:       consts.CrawlerRPCPort,
-					TargetPort: intstr.FromString("rpc"),
-					Protocol:   "TCP",
-					Name:       "rpc",
-				},
-			},
-			Selector: kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels),
+		{
+			Port:       53,
+			TargetPort: intstr.FromString("dns-tcp"),
+			Protocol:   "TCP",
+			Name:       "dns-tcp",
+		},
+		{
+			Port:       r.getFullNodePort(ctx, seeder),
+			TargetPort: intstr.FromString("peers"),
+			Protocol:   "TCP",
+			Name:       "peers",
 		},
 	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
+// assembleDaemonService assembles the daemon Service resource for a ChiaSeeder CR
+func (r *ChiaSeederReconciler) assembleDaemonService(ctx context.Context, seeder k8schianetv1.ChiaSeeder) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-daemon"
+	inputs.Namespace = seeder.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
+
+	// Service Type
+	if seeder.Spec.ChiaConfig.DaemonService != nil && seeder.Spec.ChiaConfig.DaemonService.ServiceType != nil {
+		inputs.ServiceType = *seeder.Spec.ChiaConfig.DaemonService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if seeder.Spec.ChiaConfig.DaemonService != nil && seeder.Spec.ChiaConfig.DaemonService.Labels != nil {
+		additionalServiceLabels = seeder.Spec.ChiaConfig.DaemonService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if seeder.Spec.ChiaConfig.DaemonService != nil && seeder.Spec.ChiaConfig.DaemonService.Annotations != nil {
+		additionalServiceAnnotations = seeder.Spec.ChiaConfig.DaemonService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.DaemonPort,
+			TargetPort: intstr.FromString("daemon"),
+			Protocol:   "TCP",
+			Name:       "daemon",
+		},
+	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
+// assembleRPCService assembles the RPC Service resource for a ChiaSeeder CR
+func (r *ChiaSeederReconciler) assembleRPCService(ctx context.Context, seeder k8schianetv1.ChiaSeeder) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-rpc"
+	inputs.Namespace = seeder.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
+
+	// Service Type
+	if seeder.Spec.ChiaConfig.RPCService != nil && seeder.Spec.ChiaConfig.RPCService.ServiceType != nil {
+		inputs.ServiceType = *seeder.Spec.ChiaConfig.RPCService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if seeder.Spec.ChiaConfig.RPCService != nil && seeder.Spec.ChiaConfig.RPCService.Labels != nil {
+		additionalServiceLabels = seeder.Spec.ChiaConfig.RPCService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if seeder.Spec.ChiaConfig.RPCService != nil && seeder.Spec.ChiaConfig.RPCService.Annotations != nil {
+		additionalServiceAnnotations = seeder.Spec.ChiaConfig.RPCService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.CrawlerRPCPort,
+			TargetPort: intstr.FromString("rpc"),
+			Protocol:   "TCP",
+			Name:       "rpc",
+		},
+	}
+
+	return kube.AssembleCommonService(inputs)
 }
 
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaSeeder CR
 func (r *ChiaSeederReconciler) assembleChiaExporterService(ctx context.Context, seeder k8schianetv1.ChiaSeeder) corev1.Service {
-	return corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-metrics",
-			Namespace:       seeder.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, seeder.Spec.ChiaExporterConfig.ServiceLabels),
-			Annotations:     seeder.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, seeder),
-		},
-		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceType("ClusterIP"),
-			Ports: []corev1.ServicePort{
-				{
-					Port:       consts.ChiaExporterPort,
-					TargetPort: intstr.FromString("metrics"),
-					Protocol:   "TCP",
-					Name:       "metrics",
-				},
-			},
-			Selector: kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels),
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-metrics"
+	inputs.Namespace = seeder.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
+
+	// Service Type
+	if seeder.Spec.ChiaExporterConfig.Service != nil && seeder.Spec.ChiaExporterConfig.Service.ServiceType != nil {
+		inputs.ServiceType = *seeder.Spec.ChiaExporterConfig.Service.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if seeder.Spec.ChiaExporterConfig.Service != nil && seeder.Spec.ChiaExporterConfig.Service.Labels != nil {
+		additionalServiceLabels = seeder.Spec.ChiaExporterConfig.Service.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if seeder.Spec.ChiaExporterConfig.Service != nil && seeder.Spec.ChiaExporterConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = seeder.Spec.ChiaExporterConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.ChiaExporterPort,
+			TargetPort: intstr.FromString("metrics"),
+			Protocol:   "TCP",
+			Name:       "metrics",
 		},
 	}
+
+	return kube.AssembleCommonService(inputs)
 }
 
 // assembleDeployment assembles the Deployment resource for a ChiaSeeder CR

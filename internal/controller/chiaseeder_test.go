@@ -61,7 +61,6 @@ var _ = Describe("ChiaSeeder controller", func() {
 						Nameserver: nameserver,
 					},
 					CommonSpec: apiv1.CommonSpec{
-						ServiceType:     "ClusterIP",
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
 							Enabled: true,

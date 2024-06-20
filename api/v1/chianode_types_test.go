@@ -86,9 +86,6 @@ spec:
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{
 					Enabled: true,
-					ServiceLabels: map[string]string{
-						"network": "testnet",
-					},
 				},
 			},
 		},

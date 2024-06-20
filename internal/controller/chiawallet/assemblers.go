@@ -7,79 +7,192 @@ package chiawallet
 import (
 	"context"
 	"fmt"
-
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const chiawalletNamePattern = "%s-wallet"
 
-// assembleBaseService reconciles the main Service resource for a ChiaWallet CR
-func (r *ChiaWalletReconciler) assembleBaseService(ctx context.Context, wallet k8schianetv1.ChiaWallet) corev1.Service {
-	return corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiawalletNamePattern, wallet.Name),
-			Namespace:       wallet.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
-			Annotations:     wallet.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, wallet),
-		},
-		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceType(wallet.Spec.ServiceType),
-			Ports: []corev1.ServicePort{
-				{
-					Port:       consts.DaemonPort,
-					TargetPort: intstr.FromString("daemon"),
-					Protocol:   "TCP",
-					Name:       "daemon",
-				},
-				{
-					Port:       consts.WalletPort,
-					TargetPort: intstr.FromString("peers"),
-					Protocol:   "TCP",
-					Name:       "peers",
-				},
-				{
-					Port:       consts.WalletRPCPort,
-					TargetPort: intstr.FromString("rpc"),
-					Protocol:   "TCP",
-					Name:       "rpc",
-				},
-			},
-			Selector: kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
+// assemblePeerService assembles the peer Service resource for a ChiaWallet CR
+func (r *ChiaWalletReconciler) assemblePeerService(ctx context.Context, wallet k8schianetv1.ChiaWallet) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiawalletNamePattern, wallet.Name)
+	inputs.Namespace = wallet.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, wallet)
+
+	// Service Type
+	if wallet.Spec.ChiaConfig.PeerService != nil && wallet.Spec.ChiaConfig.PeerService.ServiceType != nil {
+		inputs.ServiceType = *wallet.Spec.ChiaConfig.PeerService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if wallet.Spec.ChiaConfig.PeerService != nil && wallet.Spec.ChiaConfig.PeerService.Labels != nil {
+		additionalServiceLabels = wallet.Spec.ChiaConfig.PeerService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if wallet.Spec.ChiaConfig.PeerService != nil && wallet.Spec.ChiaConfig.PeerService.Annotations != nil {
+		additionalServiceAnnotations = wallet.Spec.ChiaConfig.PeerService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(wallet.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.WalletPort,
+			TargetPort: intstr.FromString("peers"),
+			Protocol:   "TCP",
+			Name:       "peers",
 		},
 	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
+// assembleDaemonService assembles the daemon Service resource for a ChiaWallet CR
+func (r *ChiaWalletReconciler) assembleDaemonService(ctx context.Context, wallet k8schianetv1.ChiaWallet) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-daemon"
+	inputs.Namespace = wallet.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, wallet)
+
+	// Service Type
+	if wallet.Spec.ChiaConfig.DaemonService != nil && wallet.Spec.ChiaConfig.DaemonService.ServiceType != nil {
+		inputs.ServiceType = *wallet.Spec.ChiaConfig.DaemonService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if wallet.Spec.ChiaConfig.DaemonService != nil && wallet.Spec.ChiaConfig.DaemonService.Labels != nil {
+		additionalServiceLabels = wallet.Spec.ChiaConfig.DaemonService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if wallet.Spec.ChiaConfig.DaemonService != nil && wallet.Spec.ChiaConfig.DaemonService.Annotations != nil {
+		additionalServiceAnnotations = wallet.Spec.ChiaConfig.DaemonService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(wallet.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.DaemonPort,
+			TargetPort: intstr.FromString("daemon"),
+			Protocol:   "TCP",
+			Name:       "daemon",
+		},
+	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
+// assembleRPCService assembles the RPC Service resource for a ChiaWallet CR
+func (r *ChiaWalletReconciler) assembleRPCService(ctx context.Context, wallet k8schianetv1.ChiaWallet) corev1.Service {
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-rpc"
+	inputs.Namespace = wallet.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, wallet)
+
+	// Service Type
+	if wallet.Spec.ChiaConfig.RPCService != nil && wallet.Spec.ChiaConfig.RPCService.ServiceType != nil {
+		inputs.ServiceType = *wallet.Spec.ChiaConfig.RPCService.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if wallet.Spec.ChiaConfig.RPCService != nil && wallet.Spec.ChiaConfig.RPCService.Labels != nil {
+		additionalServiceLabels = wallet.Spec.ChiaConfig.RPCService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if wallet.Spec.ChiaConfig.RPCService != nil && wallet.Spec.ChiaConfig.RPCService.Annotations != nil {
+		additionalServiceAnnotations = wallet.Spec.ChiaConfig.RPCService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(wallet.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.WalletRPCPort,
+			TargetPort: intstr.FromString("rpc"),
+			Protocol:   "TCP",
+			Name:       "rpc",
+		},
+	}
+
+	return kube.AssembleCommonService(inputs)
 }
 
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaWallet CR
 func (r *ChiaWalletReconciler) assembleChiaExporterService(ctx context.Context, wallet k8schianetv1.ChiaWallet) corev1.Service {
-	return corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-metrics",
-			Namespace:       wallet.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, wallet.Spec.ChiaExporterConfig.ServiceLabels),
-			Annotations:     wallet.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, wallet),
-		},
-		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceType("ClusterIP"),
-			Ports: []corev1.ServicePort{
-				{
-					Port:       consts.ChiaExporterPort,
-					TargetPort: intstr.FromString("metrics"),
-					Protocol:   "TCP",
-					Name:       "metrics",
-				},
-			},
-			Selector: kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
+	var inputs kube.AssembleCommonServiceInputs
+
+	// Service Metadata
+	inputs.Name = fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-metrics"
+	inputs.Namespace = wallet.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, wallet)
+
+	// Service Type
+	if wallet.Spec.ChiaExporterConfig.Service != nil && wallet.Spec.ChiaExporterConfig.Service.ServiceType != nil {
+		inputs.ServiceType = *wallet.Spec.ChiaExporterConfig.Service.ServiceType
+	} else {
+		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	}
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if wallet.Spec.ChiaExporterConfig.Service != nil && wallet.Spec.ChiaExporterConfig.Service.Labels != nil {
+		additionalServiceLabels = wallet.Spec.ChiaExporterConfig.Service.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if wallet.Spec.ChiaExporterConfig.Service != nil && wallet.Spec.ChiaExporterConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = wallet.Spec.ChiaExporterConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(wallet.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	// Ports
+	inputs.Ports = []corev1.ServicePort{
+		{
+			Port:       consts.ChiaExporterPort,
+			TargetPort: intstr.FromString("metrics"),
+			Protocol:   "TCP",
+			Name:       "metrics",
 		},
 	}
+
+	return kube.AssembleCommonService(inputs)
 }
 
 // assembleDeployment reconciles the wallet Deployment resource for a ChiaWallet CR
