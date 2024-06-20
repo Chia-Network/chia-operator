@@ -250,6 +250,10 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 		},
 	}
 
+	if harvester.Spec.Strategy != nil {
+		deploy.Spec.Strategy = *harvester.Spec.Strategy
+	}
+
 	var containerSecurityContext *corev1.SecurityContext
 	if harvester.Spec.ChiaConfig.SecurityContext != nil {
 		containerSecurityContext = harvester.Spec.ChiaConfig.SecurityContext

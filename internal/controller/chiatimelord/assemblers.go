@@ -259,6 +259,10 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 		},
 	}
 
+	if tl.Spec.Strategy != nil {
+		deploy.Spec.Strategy = *tl.Spec.Strategy
+	}
+
 	var containerSecurityContext *corev1.SecurityContext
 	if tl.Spec.ChiaConfig.SecurityContext != nil {
 		containerSecurityContext = tl.Spec.ChiaConfig.SecurityContext

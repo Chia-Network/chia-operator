@@ -279,6 +279,10 @@ func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8
 		},
 	}
 
+	if seeder.Spec.Strategy != nil {
+		deploy.Spec.Strategy = *seeder.Spec.Strategy
+	}
+
 	var containerSecurityContext *corev1.SecurityContext
 	if seeder.Spec.ChiaConfig.SecurityContext != nil {
 		containerSecurityContext = seeder.Spec.ChiaConfig.SecurityContext

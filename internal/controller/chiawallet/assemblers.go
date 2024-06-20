@@ -262,6 +262,10 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 		},
 	}
 
+	if wallet.Spec.Strategy != nil {
+		deploy.Spec.Strategy = *wallet.Spec.Strategy
+	}
+
 	var containerSecurityContext *corev1.SecurityContext
 	if wallet.Spec.ChiaConfig.SecurityContext != nil {
 		containerSecurityContext = wallet.Spec.ChiaConfig.SecurityContext

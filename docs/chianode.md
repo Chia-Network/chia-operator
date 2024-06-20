@@ -100,3 +100,16 @@ spec:
           - '-c'
           - /usr/local/bin/docker-healthcheck.sh || exit 1
 ```
+
+## Update Strategy
+
+You can set a custom update strategy using [kubernetes Statefulset update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) definitions.
+
+Example:
+```yaml
+spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
+```

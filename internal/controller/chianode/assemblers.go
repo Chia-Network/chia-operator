@@ -277,6 +277,10 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 		},
 	}
 
+	if node.Spec.UpdateStrategy != nil {
+		stateful.Spec.UpdateStrategy = *node.Spec.UpdateStrategy
+	}
+
 	var containerSecurityContext *corev1.SecurityContext
 	if node.Spec.ChiaConfig.SecurityContext != nil {
 		containerSecurityContext = node.Spec.ChiaConfig.SecurityContext
