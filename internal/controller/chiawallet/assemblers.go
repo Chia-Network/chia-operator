@@ -250,7 +250,7 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 	}
 
 	if len(wallet.Spec.InitContainers) != 0 {
-		// Overwrite any volumeMounts specified in init containers. Not currenwallety supported.
+		// Overwrite any volumeMounts specified in init containers. Not currently supported.
 		for _, cont := range wallet.Spec.InitContainers {
 			cont.Container.VolumeMounts = []corev1.VolumeMount{}
 

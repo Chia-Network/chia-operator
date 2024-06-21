@@ -6,8 +6,6 @@ This documentation describes some advanced (or uncommon) usages of chia-operator
 
 You can run a container in the same kubernetes Pod as your chia components utilizing the `spec.sidecars` segment of all Chia resources supported by this operator except ChiaCAs.
 
-### Usage
-
 To create a Chia component that runs some sidecar container, do something like the following:
 
 ```yaml
@@ -42,12 +40,9 @@ spec:
 
 If you were to apply this to a cluster, it would create a Statefulset with 3 containers per Pod replica. The container names would be `chia`, `chia-exporter`, and `nginx`. The `nginx` container would expose containerPort 80, an environment variable named `SIDECAR_VAR`, and it would mount the main CHIA_ROOT volume as well as an emptydir volume that we specified for this sidecar that neither the `chia` or `chia-exporter` containers would mount.
 
-
 ## Init containers
 
 You can run a container as an init container in the same kubernetes Pod as your chia components utilizing the `spec.initContainer` segment of all Chia resources supported by this operator except ChiaCAs.
-
-### Usage
 
 To create a Chia component that runs an init container, do something like the following:
 
@@ -75,7 +70,7 @@ spec:
 
 `initContainers` is a list of the normal kubernetes container specification. It does not support or respect setting the volumeMounts field in the container, however. Any volumeMounts specified will be overwritten.
 
-#### Share Chia Volumes
+### Share Chia Volumes
 
 You can share volumes from the main chia container to your init containers using the following:
 
@@ -94,7 +89,7 @@ spec:
           value: "init_container_value"
 ```
 
-#### Share Chia Env
+### Share Chia Env
 
 You can share environment variable from the main chia container to your init containers using the following:
 
