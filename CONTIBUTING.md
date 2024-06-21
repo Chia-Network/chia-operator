@@ -38,3 +38,7 @@ Kubebuilder scaffolds a lot of files for us, but its defaults are a bit undesira
 - In `internal/controller` two files were created for the controller and controller's test. I usually find it simpler to delete these, and copy one of the existing controller directories and start editing that one. All of the existing controllers are contained in their own packages in this directory, a pretty simple example would be ChiaWallet. Each of their tests are just contained in the `internal/controller` directory though. 
 
 - In `cmd/main.go` we previously moved the reconciler function for the controller to its own directory, so we need to change where the reconciler function is here.
+
+- Run `make` to re-generate many of the manifests in the `config/` directory. You will need to do this every time you change the API struct types.
+
+- Run `make test` often to check the test suite for issues.

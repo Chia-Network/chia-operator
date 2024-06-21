@@ -10,8 +10,9 @@ Kubernetes operator for managing Chia components in kubernetes. Currently suppor
 - wallets
 - timelords
 - seeders
+- crawlers
 
-Applying a CR for each component allows you to instantiate a configured instance of that component that is able to communicate to other requisite components in the cluster. A whole farm can be ran with each component isolated in its own pod, with a chia-exporter sidecar to scrape Prometheus metrics.
+Easily run Chia components in Kubernetes by applying simple manifests. A whole farm can be ran with each component isolated in its own pod, with a chia-exporter sidecar to scrape Prometheus metrics.
 
 ChiaCA is an additional CRD that generates a certificate authority for Chia components and places it in a kubernetes Secret as a convenience. Alternatively, users can pre-generate their own CA Secret with data keys for: `chia_ca.crt`, `chia_ca.key`, `private_ca.crt`, and `private_ca.key`.
 
@@ -174,8 +175,6 @@ Finally, apply this ChiaWallet with `kubectl apply -f wallet.yaml`
 
 ## TODO
 
-- Add to examples in `config/samples`. The full API for all of this operator's CRDs are shown in Go structs in `api/v1`
-- Add support for other Chia components (dns-introducer, etc)
 - Additional controller tests for CRs with all options set to something non-default, currently all the tests use fairly minimal implementations to test overlaying CRD defaults on top of the submitted CR
 - Add ability to configure a custom testnet for Chia components to switch to
 
