@@ -201,6 +201,25 @@ func (r *ChiaIntroducerReconciler) assembleDeployment(ctx context.Context, intro
 		},
 	}
 
+	if len(introducer.Spec.InitContainers) != 0 {
+		// Overwrite any volumeMounts specified in init containers. Not currently supported.
+		for _, cont := range introducer.Spec.InitContainers {
+			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+
+			// Share chia volume mounts if enabled
+			if cont.ShareVolumeMounts {
+				cont.Container.VolumeMounts = r.getChiaVolumeMounts(ctx, introducer)
+			}
+
+			// Share chia env if enabled
+			if cont.ShareEnv {
+				cont.Container.Env = append(cont.Container.Env, r.getChiaEnv(ctx, introducer)...)
+			}
+
+			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
+		}
+	}
+
 	if introducer.Spec.Strategy != nil {
 		deploy.Spec.Strategy = *introducer.Spec.Strategy
 	}

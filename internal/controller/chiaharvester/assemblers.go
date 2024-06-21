@@ -250,6 +250,25 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 		},
 	}
 
+	if len(harvester.Spec.InitContainers) != 0 {
+		// Overwrite any volumeMounts specified in init containers. Not currently supported.
+		for _, cont := range harvester.Spec.InitContainers {
+			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+
+			// Share chia volume mounts if enabled
+			if cont.ShareVolumeMounts {
+				cont.Container.VolumeMounts = r.getChiaVolumeMounts(ctx, harvester)
+			}
+
+			// Share chia env if enabled
+			if cont.ShareEnv {
+				cont.Container.Env = append(cont.Container.Env, r.getChiaEnv(ctx, harvester)...)
+			}
+
+			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
+		}
+	}
+
 	if harvester.Spec.Strategy != nil {
 		deploy.Spec.Strategy = *harvester.Spec.Strategy
 	}

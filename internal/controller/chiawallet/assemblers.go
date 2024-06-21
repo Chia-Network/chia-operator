@@ -239,20 +239,7 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 									Protocol:      "TCP",
 								},
 							},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      "secret-ca",
-									MountPath: "/chia-ca",
-								},
-								{
-									Name:      "key",
-									MountPath: "/key",
-								},
-								{
-									Name:      "chiaroot",
-									MountPath: "/chia-data",
-								},
-							},
+							VolumeMounts: r.getChiaVolumeMounts(ctx, wallet),
 						},
 					},
 					NodeSelector: wallet.Spec.NodeSelector,
@@ -260,6 +247,25 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 				},
 			},
 		},
+	}
+
+	if len(wallet.Spec.InitContainers) != 0 {
+		// Overwrite any volumeMounts specified in init containers. Not currenwallety supported.
+		for _, cont := range wallet.Spec.InitContainers {
+			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+
+			// Share chia volume mounts if enabled
+			if cont.ShareVolumeMounts {
+				cont.Container.VolumeMounts = r.getChiaVolumeMounts(ctx, wallet)
+			}
+
+			// Share chia env if enabled
+			if cont.ShareEnv {
+				cont.Container.Env = append(cont.Container.Env, r.getChiaEnv(ctx, wallet)...)
+			}
+
+			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
+		}
 	}
 
 	if wallet.Spec.Strategy != nil {

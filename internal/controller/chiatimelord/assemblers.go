@@ -240,16 +240,7 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 									Protocol:      "TCP",
 								},
 							},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      "secret-ca",
-									MountPath: "/chia-ca",
-								},
-								{
-									Name:      "chiaroot",
-									MountPath: "/chia-data",
-								},
-							},
+							VolumeMounts: r.getChiaVolumeMounts(ctx, tl),
 						},
 					},
 					NodeSelector: tl.Spec.NodeSelector,
@@ -257,6 +248,25 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 				},
 			},
 		},
+	}
+
+	if len(tl.Spec.InitContainers) != 0 {
+		// Overwrite any volumeMounts specified in init containers. Not currently supported.
+		for _, cont := range tl.Spec.InitContainers {
+			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+
+			// Share chia volume mounts if enabled
+			if cont.ShareVolumeMounts {
+				cont.Container.VolumeMounts = r.getChiaVolumeMounts(ctx, tl)
+			}
+
+			// Share chia env if enabled
+			if cont.ShareEnv {
+				cont.Container.Env = append(cont.Container.Env, r.getChiaEnv(ctx, tl)...)
+			}
+
+			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
+		}
 	}
 
 	if tl.Spec.Strategy != nil {

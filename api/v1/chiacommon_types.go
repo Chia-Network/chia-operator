@@ -14,6 +14,10 @@ type CommonSpec struct {
 	// +optional
 	ChiaExporterConfig SpecChiaExporter `json:"chiaExporter,omitempty"`
 
+	// InitContainers allows defining a list of containers that will run as init containers in the kubernetes Pods this resource creates
+	// +optional
+	InitContainers []InitContainer `json:"initContainers,omitempty"`
+
 	// Sidecars allows defining a list of containers and volumes that will share the kubernetes Pod alongside Chia containers
 	// +optional
 	Sidecars Sidecars `json:"sidecars,omitempty"`
@@ -34,6 +38,21 @@ type CommonSpec struct {
 	// PodSecurityContext defines the security context for the pod
 	// +optional
 	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
+}
+
+// InitContainer allows defining a container that will run as an init container for a kubernetes resource
+type InitContainer struct {
+	// Container allows defining a container that will share the kubernetes Pod alongside Chia containers.
+	// +optional
+	Container corev1.Container `json:"container,omitempty"`
+
+	// ShareVolumeMounts if set to true, shares any volume mounts from the main chia container to this init container
+	// +optional
+	ShareVolumeMounts bool `json:"shareVolumeMounts,omitempty"`
+
+	// ShareEnv if set to true, shares the environment variables from the main chia container. Useful if the init container's image is a derivative of the chia-docker image.
+	// +optional
+	ShareEnv bool `json:"shareEnv,omitempty"`
 }
 
 // Sidecars allows defining a list of containers that will share the kubernetes Pod alongside Chia containers

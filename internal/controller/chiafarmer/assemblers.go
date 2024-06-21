@@ -240,20 +240,7 @@ func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8
 									Protocol:      "TCP",
 								},
 							},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      "secret-ca",
-									MountPath: "/chia-ca",
-								},
-								{
-									Name:      "key",
-									MountPath: "/key",
-								},
-								{
-									Name:      "chiaroot",
-									MountPath: "/chia-data",
-								},
-							},
+							VolumeMounts: r.getChiaVolumeMounts(ctx, farmer),
 						},
 					},
 					NodeSelector: farmer.Spec.NodeSelector,
@@ -261,6 +248,25 @@ func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8
 				},
 			},
 		},
+	}
+
+	if len(farmer.Spec.InitContainers) != 0 {
+		// Overwrite any volumeMounts specified in init containers. Not currently supported.
+		for _, cont := range farmer.Spec.InitContainers {
+			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+
+			// Share chia volume mounts if enabled
+			if cont.ShareVolumeMounts {
+				cont.Container.VolumeMounts = r.getChiaVolumeMounts(ctx, farmer)
+			}
+
+			// Share chia env if enabled
+			if cont.ShareEnv {
+				cont.Container.Env = append(cont.Container.Env, r.getChiaEnv(ctx, farmer)...)
+			}
+
+			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
+		}
 	}
 
 	var containerSecurityContext *corev1.SecurityContext
