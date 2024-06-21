@@ -14,6 +14,14 @@ var (
 		},
 	)
 
+	// ChiaCrawlers is a gauge metric that keeps a running total of deployed ChiaCrawlers
+	ChiaCrawlers = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "chia_operator_chiacrawler_total",
+			Help: "Number of ChiaCrawlers objects controlled by this operator",
+		},
+	)
+
 	// ChiaFarmers is a gauge metric that keeps a running total of deployed ChiaFarmers
 	ChiaFarmers = prometheus.NewGauge(
 		prometheus.GaugeOpts{
@@ -82,6 +90,7 @@ var (
 func init() {
 	metrics.Registry.MustRegister(
 		ChiaCAs,
+		ChiaCrawlers,
 		ChiaFarmers,
 		ChiaHarvesters,
 		ChiaIntroducers,
