@@ -1,0 +1,15 @@
+apiVersion: k8s.chia.net.k8s.chia.net/v1
+kind: ChiaCrawler
+metadata:
+  labels:
+    app.kubernetes.io/name: chia-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: chiacrawler-sample
+spec:
+  chia:
+    testnet: true
+    timezone: "UTC"
+    logLevel: "INFO"
+  storage:
+    chiaRoot:
+      claimName: "chiacrawler-sample-chiaroot"
