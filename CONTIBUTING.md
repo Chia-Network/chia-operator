@@ -21,19 +21,15 @@ These rules/guidelines are meant to help keep a well defined style for accomplis
 
 You will need Golang, Make, and Kubebuilder CLI. See the [Kubebuilder book](https://book.kubebuilder.io/quick-start) for installing the CLI.
 
-You can then create a new API and controller with `kubebuilder create api --group k8s.chia.net --version v1 --kind ChiaSomething` 
+You can then create a new API and controller with `kubebuilder create api --group k8s --version v1 --kind ChiaSomething` 
 Change ChiaSomething to your desired Kind; for a harvester, the name is ChiaHarvester.
 When you enter the command, it will ask you if you want to create the resource and the controller, type `y` for both.
 
 Kubebuilder scaffolds a lot of files for us, but its defaults are a bit undesirable. There are multiple edits we will make besides implementing the API and controller logic that are described below:
 
-- The first thing you will need to change is in `config/crd/kustomization.yaml`. In the `resources` block of this file, edit the created resource name, it will look something like `- bases/k8s.chia.net.k8s.chia.net_chiasomething.yaml`, which should be changed to `- bases/k8s.chia.net_chiasomething.yaml`
-
 - In `config/default/kustomization.yaml` in the `resources` block, make sure the line `- ../crd` is commented. Kubebuilder CLI will have uncommented it.
 
-- In `config/rbac` there will be multiple files that get made which will contain the same redundant `k8s.chia.net.k8s.chia.net` text. Change all occurences to `k8s.chia.net`.
-
-- In `config/samples` the name of the sample kubebuilder created should be changed to the Kind of the controller resource, such as `chiasomething.yaml`.
+- In `config/samples` the name of the sample kubebuilder created should be changed to the Kind of the controller resource, such as `chiasomething.yaml`. Then fill it out with a basic working example of the Kind's usage.
 
 - In `api/v1` edit the API types to match the needs of the API. Lean on the other API types for examples.
 
