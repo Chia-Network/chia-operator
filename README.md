@@ -9,6 +9,7 @@ Kubernetes operator for managing Chia components in kubernetes. Currently suppor
 - harvesters
 - wallets
 - timelords
+- introducers
 - seeders
 - crawlers
 
