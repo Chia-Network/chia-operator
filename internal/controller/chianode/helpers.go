@@ -102,8 +102,8 @@ func (r *ChiaNodeReconciler) getChiaVolumeMounts(ctx context.Context, node k8sch
 	return v
 }
 
-// getChiaNodeEnv retrieves the environment variables from the Chia config struct
-func (r *ChiaNodeReconciler) getChiaNodeEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar {
+// getChiaEnv retrieves the environment variables from the Chia config struct
+func (r *ChiaNodeReconciler) getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar {
 	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 

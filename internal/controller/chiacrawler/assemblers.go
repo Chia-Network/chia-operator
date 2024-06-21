@@ -250,6 +250,25 @@ func (r *ChiaCrawlerReconciler) assembleDeployment(ctx context.Context, crawler 
 		},
 	}
 
+	if len(crawler.Spec.InitContainers) != 0 {
+		// Overwrite any volumeMounts specified in init containers. Not currently supported.
+		for _, cont := range crawler.Spec.InitContainers {
+			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+
+			// Share chia volume mounts if enabled
+			if cont.ShareVolumeMounts {
+				cont.Container.VolumeMounts = r.getChiaVolumeMounts(ctx, crawler)
+			}
+
+			// Share chia env if enabled
+			if cont.ShareEnv {
+				cont.Container.Env = append(cont.Container.Env, r.getChiaEnv(ctx, crawler)...)
+			}
+
+			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
+		}
+	}
+
 	if crawler.Spec.Strategy != nil {
 		deploy.Spec.Strategy = *crawler.Spec.Strategy
 	}

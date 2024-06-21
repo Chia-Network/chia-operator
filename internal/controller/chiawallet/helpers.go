@@ -85,6 +85,23 @@ func (r *ChiaWalletReconciler) getChiaVolumes(ctx context.Context, wallet k8schi
 	return v
 }
 
+func (r *ChiaWalletReconciler) getChiaVolumeMounts(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.VolumeMount {
+	return []corev1.VolumeMount{
+		{
+			Name:      "secret-ca",
+			MountPath: "/chia-ca",
+		},
+		{
+			Name:      "key",
+			MountPath: "/key",
+		},
+		{
+			Name:      "chiaroot",
+			MountPath: "/chia-data",
+		},
+	}
+}
+
 // getChiaEnv retrieves the environment variables from the Chia config struct
 func (r *ChiaWalletReconciler) getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.EnvVar {
 	logr := log.FromContext(ctx)

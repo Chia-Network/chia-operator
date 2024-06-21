@@ -279,6 +279,25 @@ func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8
 		},
 	}
 
+	if len(seeder.Spec.InitContainers) != 0 {
+		// Overwrite any volumeMounts specified in init containers. Not currently supported.
+		for _, cont := range seeder.Spec.InitContainers {
+			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+
+			// Share chia volume mounts if enabled
+			if cont.ShareVolumeMounts {
+				cont.Container.VolumeMounts = r.getChiaVolumeMounts(ctx, seeder)
+			}
+
+			// Share chia env if enabled
+			if cont.ShareEnv {
+				cont.Container.Env = append(cont.Container.Env, r.getChiaEnv(ctx, seeder)...)
+			}
+
+			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
+		}
+	}
+
 	if seeder.Spec.Strategy != nil {
 		deploy.Spec.Strategy = *seeder.Spec.Strategy
 	}

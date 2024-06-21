@@ -248,7 +248,7 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 							Name:            "chia",
 							Image:           node.Spec.ChiaConfig.Image,
 							ImagePullPolicy: node.Spec.ImagePullPolicy,
-							Env:             r.getChiaNodeEnv(ctx, node),
+							Env:             r.getChiaEnv(ctx, node),
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "daemon",
@@ -275,6 +275,25 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 			},
 			VolumeClaimTemplates: volClaimTemplates,
 		},
+	}
+
+	if len(node.Spec.InitContainers) != 0 {
+		// Overwrite any volumeMounts specified in init containers. Not currently supported.
+		for _, cont := range node.Spec.InitContainers {
+			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+
+			// Share chia volume mounts if enabled
+			if cont.ShareVolumeMounts {
+				cont.Container.VolumeMounts = r.getChiaVolumeMounts(ctx, node)
+			}
+
+			// Share chia env if enabled
+			if cont.ShareEnv {
+				cont.Container.Env = append(cont.Container.Env, r.getChiaEnv(ctx, node)...)
+			}
+
+			stateful.Spec.Template.Spec.InitContainers = append(stateful.Spec.Template.Spec.InitContainers, cont.Container)
+		}
 	}
 
 	if node.Spec.UpdateStrategy != nil {

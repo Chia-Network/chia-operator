@@ -83,6 +83,24 @@ func (r *ChiaFarmerReconciler) getChiaVolumes(ctx context.Context, farmer k8schi
 	return v
 }
 
+// getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct
+func (r *ChiaFarmerReconciler) getChiaVolumeMounts(ctx context.Context, farmer k8schianetv1.ChiaFarmer) []corev1.VolumeMount {
+	return []corev1.VolumeMount{
+		{
+			Name:      "secret-ca",
+			MountPath: "/chia-ca",
+		},
+		{
+			Name:      "key",
+			MountPath: "/key",
+		},
+		{
+			Name:      "chiaroot",
+			MountPath: "/chia-data",
+		},
+	}
+}
+
 // getChiaEnv retrieves the environment variables from the Chia config struct
 func (r *ChiaFarmerReconciler) getChiaEnv(ctx context.Context, farmer k8schianetv1.ChiaFarmer) []corev1.EnvVar {
 	var env []corev1.EnvVar

@@ -72,6 +72,20 @@ func (r *ChiaTimelordReconciler) getChiaVolumes(ctx context.Context, tl k8schian
 	return v
 }
 
+// getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct
+func (r *ChiaTimelordReconciler) getChiaVolumeMounts(ctx context.Context, tl k8schianetv1.ChiaTimelord) []corev1.VolumeMount {
+	return []corev1.VolumeMount{
+		{
+			Name:      "secret-ca",
+			MountPath: "/chia-ca",
+		},
+		{
+			Name:      "chiaroot",
+			MountPath: "/chia-data",
+		},
+	}
+}
+
 // getChiaEnv retrieves the environment variables from the Chia config struct
 func (r *ChiaTimelordReconciler) getChiaEnv(ctx context.Context, tl k8schianetv1.ChiaTimelord) []corev1.EnvVar {
 	var env []corev1.EnvVar
