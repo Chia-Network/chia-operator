@@ -5843,20 +5843,34 @@ spec:
                         description: PersistentVolumeClaim use an existing persistent
                           volume claim to store CHIA_ROOT data
                         properties:
+                          accessModes:
+                            description: |-
+                              AccessModes are the volume access modes. Only relevant for ChiaNodes and use with the GenerateVolumeClaims option.
+                              Defaults to RWO if unspecified.
+                            items:
+                              type: string
+                            type: array
                           claimName:
-                            description: ClaimName is the name of an existing PersistentVolumeClaim
-                              in the target namespace
+                            description: |-
+                              ClaimName is the name of an existing PersistentVolumeClaim in the target namespace
+                              This field does nothing on ChiaNode resources.
+                              This field does nothing when GenerateVolumeClaims is set to true.
                             type: string
+                          generateVolumeClaims:
+                            description: |-
+                              GenerateVolumeClaims is mutually exclusive with the ClaimName field, and overrides that field if set.
+                              Instead, an operator generated PVC name will be made, and the operator will provision a volume claim for you.
+                              This field does nothing on ChiaNode resources.
+                            type: boolean
                           resourceRequest:
-                            description: StorageClass is the amount of storage requested
-                              -- this is only relevant for ChiaNode objects and is
-                              ignored for others
+                            description: ResourceRequest is the amount of storage
+                              requested. Only relevant for ChiaNodes and use with
+                              the GenerateVolumeClaims option.
                             type: string
                           storageClass:
-                            default: ""
                             description: StorageClass is the name of a storage class
-                              for the PVC -- this is only relevant for ChiaNode objects
-                              and is ignored for others
+                              for the PVC. Only relevant for ChiaNodes and use with
+                              the GenerateVolumeClaims option.
                             type: string
                         type: object
                     type: object
@@ -5884,20 +5898,34 @@ spec:
                           description: PersistentVolumeClaimConfig config for PVC
                             volumes in kubernetes
                           properties:
+                            accessModes:
+                              description: |-
+                                AccessModes are the volume access modes. Only relevant for ChiaNodes and use with the GenerateVolumeClaims option.
+                                Defaults to RWO if unspecified.
+                              items:
+                                type: string
+                              type: array
                             claimName:
-                              description: ClaimName is the name of an existing PersistentVolumeClaim
-                                in the target namespace
+                              description: |-
+                                ClaimName is the name of an existing PersistentVolumeClaim in the target namespace
+                                This field does nothing on ChiaNode resources.
+                                This field does nothing when GenerateVolumeClaims is set to true.
                               type: string
+                            generateVolumeClaims:
+                              description: |-
+                                GenerateVolumeClaims is mutually exclusive with the ClaimName field, and overrides that field if set.
+                                Instead, an operator generated PVC name will be made, and the operator will provision a volume claim for you.
+                                This field does nothing on ChiaNode resources.
+                              type: boolean
                             resourceRequest:
-                              description: StorageClass is the amount of storage requested
-                                -- this is only relevant for ChiaNode objects and
-                                is ignored for others
+                              description: ResourceRequest is the amount of storage
+                                requested. Only relevant for ChiaNodes and use with
+                                the GenerateVolumeClaims option.
                               type: string
                             storageClass:
-                              default: ""
                               description: StorageClass is the name of a storage class
-                                for the PVC -- this is only relevant for ChiaNode
-                                objects and is ignored for others
+                                for the PVC. Only relevant for ChiaNodes and use with
+                                the GenerateVolumeClaims option.
                               type: string
                           type: object
                         type: array

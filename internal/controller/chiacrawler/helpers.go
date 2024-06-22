@@ -6,6 +6,7 @@ package chiacrawler
 
 import (
 	"context"
+	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strconv"
@@ -35,11 +36,18 @@ func (r *ChiaCrawlerReconciler) getChiaVolumes(ctx context.Context, crawler k8sc
 	var chiaRootAdded bool = false
 	if crawler.Spec.Storage != nil && crawler.Spec.Storage.ChiaRoot != nil {
 		if crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+			var pvcName string
+			if crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+				pvcName = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name)
+			} else {
+				pvcName = crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName
+			}
+
 			v = append(v, corev1.Volume{
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
+						ClaimName: pvcName,
 					},
 				},
 			})

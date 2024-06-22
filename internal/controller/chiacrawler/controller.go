@@ -198,6 +198,26 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 	}
 
+	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
+	if crawler.Spec.Storage != nil && crawler.Spec.Storage.ChiaRoot != nil && crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+		pvc, err := r.assembleVolumeClaim(ctx, crawler)
+		if err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler PVC -- Check operator logs.")
+			return reconcile.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error scaffolding a generated PersistentVolumeClaim: %v", req.NamespacedName, err)
+		}
+
+		res, err := kube.ReconcilePersistentVolumeClaim(ctx, resourceReconciler, pvc)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler PVC -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error reconciling PersistentVolumeClaim: %v", req.NamespacedName, err)
+		}
+	}
+
 	deploy := r.assembleDeployment(ctx, crawler)
 	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {

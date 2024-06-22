@@ -45,11 +45,18 @@ func (r *ChiaFarmerReconciler) getChiaVolumes(ctx context.Context, farmer k8schi
 	var chiaRootAdded bool = false
 	if farmer.Spec.Storage != nil && farmer.Spec.Storage.ChiaRoot != nil {
 		if farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+			var pvcName string
+			if farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+				pvcName = fmt.Sprintf(chiafarmerNamePattern, farmer.Name)
+			} else {
+				pvcName = farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName
+			}
+
 			v = append(v, corev1.Volume{
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
+						ClaimName: pvcName,
 					},
 				},
 			})

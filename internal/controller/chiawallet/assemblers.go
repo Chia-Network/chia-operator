@@ -7,6 +7,7 @@ package chiawallet
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
@@ -193,6 +194,37 @@ func (r *ChiaWalletReconciler) assembleChiaExporterService(ctx context.Context, 
 	}
 
 	return kube.AssembleCommonService(inputs)
+}
+
+// assembleVolumeClaim assembles the PVC resource for a ChiaWallet CR
+func (r *ChiaWalletReconciler) assembleVolumeClaim(ctx context.Context, wallet k8schianetv1.ChiaWallet) (corev1.PersistentVolumeClaim, error) {
+	resourceReq, err := resource.ParseQuantity(wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
+	if err != nil {
+		return corev1.PersistentVolumeClaim{}, err
+	}
+
+	var accessModes []corev1.PersistentVolumeAccessMode
+	if len(wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes) != 0 {
+		accessModes = wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
+	} else {
+		accessModes = []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
+	}
+
+	return corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf(chiawalletNamePattern, wallet.Name),
+			Namespace: wallet.Namespace,
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			AccessModes:      accessModes,
+			StorageClassName: &wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim.StorageClass,
+			Resources: corev1.VolumeResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceStorage: resourceReq,
+				},
+			},
+		},
+	}, nil
 }
 
 // assembleDeployment reconciles the wallet Deployment resource for a ChiaWallet CR

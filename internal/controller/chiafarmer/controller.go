@@ -199,6 +199,26 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
+	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
+	if farmer.Spec.Storage != nil && farmer.Spec.Storage.ChiaRoot != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+		pvc, err := r.assembleVolumeClaim(ctx, farmer)
+		if err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer PVC -- Check operator logs.")
+			return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error scaffolding a generated PersistentVolumeClaim: %v", req.NamespacedName, err)
+		}
+
+		res, err := kube.ReconcilePersistentVolumeClaim(ctx, resourceReconciler, pvc)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer PVC -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling PersistentVolumeClaim: %v", req.NamespacedName, err)
+		}
+	}
+
 	deploy := r.assembleDeployment(ctx, farmer)
 	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {

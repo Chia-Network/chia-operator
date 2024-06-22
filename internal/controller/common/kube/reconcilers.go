@@ -49,3 +49,8 @@ func ReconcileRoleBinding(ctx context.Context, rec reconciler.ResourceReconciler
 func ReconcileJob(ctx context.Context, rec reconciler.ResourceReconciler, job batchv1.Job) (*reconcile.Result, error) {
 	return rec.ReconcileResource(&job, reconciler.StatePresent)
 }
+
+// ReconcilePersistentVolumeClaim uses the ResourceReconciler to determine if the PVC resource needs to be created or updated
+func ReconcilePersistentVolumeClaim(ctx context.Context, rec reconciler.ResourceReconciler, pvc corev1.PersistentVolumeClaim) (*reconcile.Result, error) {
+	return rec.ReconcileResource(&pvc, reconciler.StatePresent)
+}

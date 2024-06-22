@@ -6,6 +6,7 @@ package chiaintroducer
 
 import (
 	"context"
+	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strconv"
@@ -35,11 +36,18 @@ func (r *ChiaIntroducerReconciler) getChiaVolumes(ctx context.Context, introduce
 	var chiaRootAdded bool = false
 	if introducer.Spec.Storage != nil && introducer.Spec.Storage.ChiaRoot != nil {
 		if introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+			var pvcName string
+			if introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+				pvcName = fmt.Sprintf(chiaintroducerNamePattern, introducer.Name)
+			} else {
+				pvcName = introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName
+			}
+
 			v = append(v, corev1.Volume{
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
+						ClaimName: pvcName,
 					},
 				},
 			})
