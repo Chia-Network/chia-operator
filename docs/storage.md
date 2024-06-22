@@ -1,6 +1,6 @@
 # Storage
 
-You can have the operator create persistent volume claims for your Chia resource Deployments. 
+You can have the operator create persistent volume claims for your Chia resource Deployments.
 
 This applies to all Chia components except for ChiaNodes which use Statefulsets and are configured a slightly different way. See the ChiaNode documentation for more details.
 
