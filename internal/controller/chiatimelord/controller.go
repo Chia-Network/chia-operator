@@ -197,6 +197,26 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}
 
+	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
+	if tl.Spec.Storage != nil && tl.Spec.Storage.ChiaRoot != nil && tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+		pvc, err := r.assembleVolumeClaim(ctx, tl)
+		if err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord PVC -- Check operator logs.")
+			return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error scaffolding a generated PersistentVolumeClaim: %v", req.NamespacedName, err)
+		}
+
+		res, err := kube.ReconcilePersistentVolumeClaim(ctx, resourceReconciler, pvc)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord PVC -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error reconciling PersistentVolumeClaim: %v", req.NamespacedName, err)
+		}
+	}
+
 	deploy := r.assembleDeployment(ctx, tl)
 	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {

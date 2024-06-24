@@ -6,6 +6,7 @@ package chiatimelord
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -34,11 +35,18 @@ func (r *ChiaTimelordReconciler) getChiaVolumes(ctx context.Context, tl k8schian
 	var chiaRootAdded bool = false
 	if tl.Spec.Storage != nil && tl.Spec.Storage.ChiaRoot != nil {
 		if tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+			var pvcName string
+			if tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+				pvcName = fmt.Sprintf(chiatimelordNamePattern, tl.Name)
+			} else {
+				pvcName = tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName
+			}
+
 			v = append(v, corev1.Volume{
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
+						ClaimName: pvcName,
 					},
 				},
 			})

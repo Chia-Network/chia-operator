@@ -252,15 +252,27 @@ type PlotsConfig struct {
 // PersistentVolumeClaimConfig config for PVC volumes in kubernetes
 type PersistentVolumeClaimConfig struct {
 	// ClaimName is the name of an existing PersistentVolumeClaim in the target namespace
+	// This field does nothing on ChiaNode resources.
+	// This field does nothing when GenerateVolumeClaims is set to true.
 	// +optional
 	ClaimName string `json:"claimName,omitempty"`
 
-	// StorageClass is the name of a storage class for the PVC -- this is only relevant for ChiaNode objects and is ignored for others
-	// +kubebuilder:default=""
+	// GenerateVolumeClaims is mutually exclusive with the ClaimName field, and overrides that field if set.
+	// Instead, an operator generated PVC name will be made, and the operator will provision a volume claim for you.
+	// This field does nothing on ChiaNode resources.
+	// +optional
+	GenerateVolumeClaims bool `json:"generateVolumeClaims,omitempty"`
+
+	// StorageClass is the name of a storage class for the PVC. Only relevant for ChiaNodes and use with the GenerateVolumeClaims option.
 	// +optional
 	StorageClass string `json:"storageClass,omitempty"`
 
-	// StorageClass is the amount of storage requested -- this is only relevant for ChiaNode objects and is ignored for others
+	// AccessModes are the volume access modes. Only relevant for ChiaNodes and use with the GenerateVolumeClaims option.
+	// Defaults to RWO if unspecified.
+	// +optional
+	AccessModes []corev1.PersistentVolumeAccessMode `json:"accessModes"`
+
+	// ResourceRequest is the amount of storage requested. Only relevant for ChiaNodes and use with the GenerateVolumeClaims option.
 	// +optional
 	ResourceRequest string `json:"resourceRequest,omitempty"`
 }

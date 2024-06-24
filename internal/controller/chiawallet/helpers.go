@@ -47,11 +47,18 @@ func (r *ChiaWalletReconciler) getChiaVolumes(ctx context.Context, wallet k8schi
 	var chiaRootAdded bool = false
 	if wallet.Spec.Storage != nil && wallet.Spec.Storage.ChiaRoot != nil {
 		if wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+			var pvcName string
+			if wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+				pvcName = fmt.Sprintf(chiawalletNamePattern, wallet.Name)
+			} else {
+				pvcName = wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName
+			}
+
 			v = append(v, corev1.Volume{
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
+						ClaimName: pvcName,
 					},
 				},
 			})

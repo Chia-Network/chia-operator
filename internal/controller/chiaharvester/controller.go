@@ -199,6 +199,26 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		}
 	}
 
+	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
+	if harvester.Spec.Storage != nil && harvester.Spec.Storage.ChiaRoot != nil && harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+		pvc, err := r.assembleVolumeClaim(ctx, harvester)
+		if err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester PVC -- Check operator logs.")
+			return reconcile.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error scaffolding a generated PersistentVolumeClaim: %v", req.NamespacedName, err)
+		}
+
+		res, err := kube.ReconcilePersistentVolumeClaim(ctx, resourceReconciler, pvc)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester PVC -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling PersistentVolumeClaim: %v", req.NamespacedName, err)
+		}
+	}
+
 	deploy := r.assembleDeployment(ctx, harvester)
 	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {

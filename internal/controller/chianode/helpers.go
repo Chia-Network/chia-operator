@@ -39,7 +39,7 @@ func (r *ChiaNodeReconciler) getChiaVolumesAndTemplates(ctx context.Context, nod
 	var chiaRootAdded bool = false
 	if node.Spec.Storage != nil && node.Spec.Storage.ChiaRoot != nil {
 		if node.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
-			vcts = append(vcts, corev1.PersistentVolumeClaim{
+			vct := corev1.PersistentVolumeClaim{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "chiaroot",
 				},
@@ -52,7 +52,13 @@ func (r *ChiaNodeReconciler) getChiaVolumesAndTemplates(ctx context.Context, nod
 						},
 					},
 				},
-			})
+			}
+
+			if len(node.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes) != 0 {
+				vct.Spec.AccessModes = node.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
+			}
+
+			vcts = append(vcts, vct)
 			chiaRootAdded = true
 		} else if node.Spec.Storage.ChiaRoot.HostPathVolume != nil {
 			v = append(v, corev1.Volume{

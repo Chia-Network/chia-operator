@@ -7,6 +7,7 @@ package chiaintroducer
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -150,6 +151,37 @@ func (r *ChiaIntroducerReconciler) assembleChiaExporterService(ctx context.Conte
 	}
 
 	return kube.AssembleCommonService(inputs)
+}
+
+// assembleVolumeClaim assembles the PVC resource for a ChiaIntroducer CR
+func (r *ChiaIntroducerReconciler) assembleVolumeClaim(ctx context.Context, introducer k8schianetv1.ChiaIntroducer) (corev1.PersistentVolumeClaim, error) {
+	resourceReq, err := resource.ParseQuantity(introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
+	if err != nil {
+		return corev1.PersistentVolumeClaim{}, err
+	}
+
+	var accessModes []corev1.PersistentVolumeAccessMode
+	if len(introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes) != 0 {
+		accessModes = introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
+	} else {
+		accessModes = []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
+	}
+
+	return corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name),
+			Namespace: introducer.Namespace,
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			AccessModes:      accessModes,
+			StorageClassName: &introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.StorageClass,
+			Resources: corev1.VolumeResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceStorage: resourceReq,
+				},
+			},
+		},
+	}, nil
 }
 
 // assembleDeployment assembles the Deployment resource for a ChiaIntroducer CR

@@ -7,6 +7,7 @@ package chiafarmer
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -194,6 +195,37 @@ func (r *ChiaFarmerReconciler) assembleChiaExporterService(ctx context.Context, 
 	}
 
 	return kube.AssembleCommonService(inputs)
+}
+
+// assembleVolumeClaim assembles the PVC resource for a ChiaFarmer CR
+func (r *ChiaFarmerReconciler) assembleVolumeClaim(ctx context.Context, farmer k8schianetv1.ChiaFarmer) (corev1.PersistentVolumeClaim, error) {
+	resourceReq, err := resource.ParseQuantity(farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
+	if err != nil {
+		return corev1.PersistentVolumeClaim{}, err
+	}
+
+	var accessModes []corev1.PersistentVolumeAccessMode
+	if len(farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes) != 0 {
+		accessModes = farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
+	} else {
+		accessModes = []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
+	}
+
+	return corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
+			Namespace: farmer.Namespace,
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			AccessModes:      accessModes,
+			StorageClassName: &farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.StorageClass,
+			Resources: corev1.VolumeResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceStorage: resourceReq,
+				},
+			},
+		},
+	}, nil
 }
 
 // assembleDeployment assembles the farmer Deployment resource for a ChiaFarmer CR

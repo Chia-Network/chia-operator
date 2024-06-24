@@ -35,11 +35,18 @@ func (r *ChiaHarvesterReconciler) getChiaVolumes(ctx context.Context, harvester 
 	var chiaRootAdded bool = false
 	if harvester.Spec.Storage != nil && harvester.Spec.Storage.ChiaRoot != nil {
 		if harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+			var pvcName string
+			if harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+				pvcName = fmt.Sprintf(chiaharvesterNamePattern, harvester.Name)
+			} else {
+				pvcName = harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName
+			}
+
 			v = append(v, corev1.Volume{
 				Name: "chiaroot",
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName,
+						ClaimName: pvcName,
 					},
 				},
 			})

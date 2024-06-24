@@ -166,6 +166,26 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		}
 	}
 
+	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
+	if introducer.Spec.Storage != nil && introducer.Spec.Storage.ChiaRoot != nil && introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+		pvc, err := r.assembleVolumeClaim(ctx, introducer)
+		if err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer PVC -- Check operator logs.")
+			return reconcile.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error scaffolding a generated PersistentVolumeClaim: %v", req.NamespacedName, err)
+		}
+
+		res, err := kube.ReconcilePersistentVolumeClaim(ctx, resourceReconciler, pvc)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer PVC -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error reconciling PersistentVolumeClaim: %v", req.NamespacedName, err)
+		}
+	}
+
 	deploy := r.assembleDeployment(ctx, introducer)
 	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {
