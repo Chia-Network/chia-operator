@@ -69,7 +69,7 @@ type Sidecars struct {
 // CommonSpecChia represents the common configuration options for a chia spec
 type CommonSpecChia struct {
 	// Image defines the image to use for the chia component containers
-	// +kubebuilder:default="ghcr.io/chia-network/chia:latest"
+	// +kubebuilder:default="ghcr.io/chia-network/chia:2.4.0"
 	// +optional
 	Image string `json:"image,omitempty"`
 
@@ -150,7 +150,7 @@ type SpecChiaExporter struct {
 	Enabled bool `json:"enabled,omitempty"`
 
 	// Image defines the image to use for the chia exporter containers
-	// +kubebuilder:default="ghcr.io/chia-network/chia-exporter:latest"
+	// +kubebuilder:default="ghcr.io/chia-network/chia-exporter:0.14.3"
 	// +optional
 	Image string `json:"image,omitempty"`
 
