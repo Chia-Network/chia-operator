@@ -1,0 +1,54 @@
+name: Smoke tests
+
+on: pull_request
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Install chia operator custom resources
+        run: |
+          make install
+
+      - name: Run the operator in the background
+        run: |
+          make run &
+
+      - name: Install chia components
+        run: |
+          kubectl apply -f ./config/samples/chiaca.yaml
+
+      - name: Wait for ChiaCA Secret
+        run: |
+          found=0
+          timeout=300
+          endtime=$((SECONDS+timeout))
+          while [ ${SECONDS} -lt ${endtime} ]; do
+            if kubectl get secret chiaca-secret &> /dev/null; then
+              echo "ChiaCA Secret found"
+              found=1
+              break
+            else
+              echo "Secret not found yet. Waiting..."
+              sleep 5
+            fi
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "Timeout reached waiting for ChiaCA Secret to be created."
+            echo "Getting Kubernetes Pods from the default namespace:"
+            kubectl get pods
+            echo "Getting Kubernetes Secrets from the default namespace:"
+            kubectl get secrets
+            exit 1
+          fi
