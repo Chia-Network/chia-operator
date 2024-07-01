@@ -16,5 +16,6 @@ spec:
     logLevel: "INFO"
   storage:
     chiaRoot:
-      storageClass: ""
-      resourceRequest: "250Gi"
+      persistentVolumeClaim:
+        storageClass: "standard"
+        resourceRequest: "250Gi"
