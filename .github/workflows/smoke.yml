@@ -28,6 +28,7 @@ jobs:
       - name: Install chia components
         run: |
           kubectl apply -f ./config/samples/chiaca.yaml
+          kubectl apply -f ./config/samples/chianode.yaml
 
       - name: Wait for ChiaCA Secret
         run: |
@@ -50,5 +51,34 @@ jobs:
             kubectl get pods
             echo "Getting Kubernetes Secrets from the default namespace:"
             kubectl get secrets
+            exit 1
+          fi
+
+      - name: Wait for Running ChiaNode
+        run: |
+          found=0
+          timeout=300
+          endtime=$((SECONDS+timeout))
+          while [ $SECONDS -lt $endtime ]; do
+            pod_status=$(kubectl get pod chianode-sample-node-0 -o jsonpath='{.status.phase}')
+            if [ "$pod_status" = "Running" ]; then
+              echo "Pod is running."
+              found=1
+              break  # Exit the loop if Pod is running
+            elif [ "$pod_status" = "Pending" ]; then
+              echo "Pod is pending. Waiting..."
+            elif [ "$pod_status" = "Failed" ] || [ "$pod_status" = "Unknown" ]; then
+              echo "Pod has failed or is in an unknown state. Exiting..."
+              exit 1
+            else
+              echo "Pod is in state: $pod_status. Waiting..."
+            fi
+            sleep 10
+          done
+          # Check if timeout was reached or if Pod is now up
+          if [ "$found" -eq 0 ]; then
+            echo "Timeout reached waiting for ChiaNode Pod to enter Running status."
+            echo "Getting Kubernetes Pods from the default namespace:"
+            kubectl get pods
             exit 1
           fi
