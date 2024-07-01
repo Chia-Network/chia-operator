@@ -73,7 +73,7 @@ jobs:
             else
               echo "Pod is in state: $pod_status. Waiting..."
             fi
-            sleep 10
+            sleep 5
           done
           # Check if timeout was reached or if Pod is now up
           if [ "$found" -eq 0 ]; then
