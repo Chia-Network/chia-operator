@@ -98,7 +98,7 @@ spec:
                       a DNS Introducer server.
                     type: string
                   image:
-                    default: ghcr.io/chia-network/chia:latest
+                    default: ghcr.io/chia-network/chia:2.4.2
                     description: Image defines the image to use for the chia component
                       containers
                     type: string
@@ -925,7 +925,7 @@ spec:
                       should run with the chia container
                     type: boolean
                   image:
-                    default: ghcr.io/chia-network/chia-exporter:latest
+                    default: ghcr.io/chia-network/chia-exporter:0.14.3
                     description: Image defines the image to use for the chia exporter
                       containers
                     type: string
