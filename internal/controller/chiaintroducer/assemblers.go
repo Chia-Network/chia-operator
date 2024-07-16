@@ -31,10 +31,10 @@ func (r *ChiaIntroducerReconciler) assemblePeerService(ctx context.Context, intr
 	inputs.OwnerReference = r.getOwnerReference(ctx, introducer)
 
 	// Service Type
-	if introducer.Spec.ChiaConfig.PeerService != nil && introducer.Spec.ChiaConfig.PeerService.ServiceType != nil {
-		inputs.ServiceType = *introducer.Spec.ChiaConfig.PeerService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if introducer.Spec.ChiaConfig.PeerService != nil {
+		inputs.ServiceType = introducer.Spec.ChiaConfig.PeerService.ServiceType
+		inputs.IPFamilyPolicy = introducer.Spec.ChiaConfig.PeerService.IPFamilyPolicy
+		inputs.IPFamilies = introducer.Spec.ChiaConfig.PeerService.IPFamilies
 	}
 
 	// Labels
@@ -75,10 +75,10 @@ func (r *ChiaIntroducerReconciler) assembleDaemonService(ctx context.Context, in
 	inputs.OwnerReference = r.getOwnerReference(ctx, introducer)
 
 	// Service Type
-	if introducer.Spec.ChiaConfig.DaemonService != nil && introducer.Spec.ChiaConfig.DaemonService.ServiceType != nil {
-		inputs.ServiceType = *introducer.Spec.ChiaConfig.DaemonService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if introducer.Spec.ChiaConfig.DaemonService != nil {
+		inputs.ServiceType = introducer.Spec.ChiaConfig.DaemonService.ServiceType
+		inputs.IPFamilyPolicy = introducer.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
+		inputs.IPFamilies = introducer.Spec.ChiaConfig.DaemonService.IPFamilies
 	}
 
 	// Labels
@@ -119,10 +119,10 @@ func (r *ChiaIntroducerReconciler) assembleChiaExporterService(ctx context.Conte
 	inputs.OwnerReference = r.getOwnerReference(ctx, introducer)
 
 	// Service Type
-	if introducer.Spec.ChiaExporterConfig.Service != nil && introducer.Spec.ChiaExporterConfig.Service.ServiceType != nil {
-		inputs.ServiceType = *introducer.Spec.ChiaExporterConfig.Service.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if introducer.Spec.ChiaExporterConfig.Service != nil {
+		inputs.ServiceType = introducer.Spec.ChiaExporterConfig.Service.ServiceType
+		inputs.IPFamilyPolicy = introducer.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
+		inputs.IPFamilies = introducer.Spec.ChiaExporterConfig.Service.IPFamilies
 	}
 
 	// Labels

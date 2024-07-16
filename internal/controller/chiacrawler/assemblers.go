@@ -31,10 +31,10 @@ func (r *ChiaCrawlerReconciler) assemblePeerService(ctx context.Context, crawler
 	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
-	if crawler.Spec.ChiaConfig.PeerService != nil && crawler.Spec.ChiaConfig.PeerService.ServiceType != nil {
-		inputs.ServiceType = *crawler.Spec.ChiaConfig.PeerService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if crawler.Spec.ChiaConfig.PeerService != nil {
+		inputs.ServiceType = crawler.Spec.ChiaConfig.PeerService.ServiceType
+		inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.PeerService.IPFamilyPolicy
+		inputs.IPFamilies = crawler.Spec.ChiaConfig.PeerService.IPFamilies
 	}
 
 	// Labels
@@ -75,10 +75,10 @@ func (r *ChiaCrawlerReconciler) assembleDaemonService(ctx context.Context, crawl
 	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
-	if crawler.Spec.ChiaConfig.DaemonService != nil && crawler.Spec.ChiaConfig.DaemonService.ServiceType != nil {
-		inputs.ServiceType = *crawler.Spec.ChiaConfig.DaemonService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if crawler.Spec.ChiaConfig.DaemonService != nil {
+		inputs.ServiceType = crawler.Spec.ChiaConfig.DaemonService.ServiceType
+		inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
+		inputs.IPFamilies = crawler.Spec.ChiaConfig.DaemonService.IPFamilies
 	}
 
 	// Labels
@@ -119,10 +119,10 @@ func (r *ChiaCrawlerReconciler) assembleRPCService(ctx context.Context, crawler 
 	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
-	if crawler.Spec.ChiaConfig.RPCService != nil && crawler.Spec.ChiaConfig.RPCService.ServiceType != nil {
-		inputs.ServiceType = *crawler.Spec.ChiaConfig.RPCService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if crawler.Spec.ChiaConfig.RPCService != nil {
+		inputs.ServiceType = crawler.Spec.ChiaConfig.RPCService.ServiceType
+		inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.RPCService.IPFamilyPolicy
+		inputs.IPFamilies = crawler.Spec.ChiaConfig.RPCService.IPFamilies
 	}
 
 	// Labels
@@ -163,10 +163,10 @@ func (r *ChiaCrawlerReconciler) assembleChiaExporterService(ctx context.Context,
 	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
-	if crawler.Spec.ChiaExporterConfig.Service != nil && crawler.Spec.ChiaExporterConfig.Service.ServiceType != nil {
-		inputs.ServiceType = *crawler.Spec.ChiaExporterConfig.Service.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if crawler.Spec.ChiaExporterConfig.Service != nil {
+		inputs.ServiceType = crawler.Spec.ChiaExporterConfig.Service.ServiceType
+		inputs.IPFamilyPolicy = crawler.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
+		inputs.IPFamilies = crawler.Spec.ChiaExporterConfig.Service.IPFamilies
 	}
 
 	// Labels

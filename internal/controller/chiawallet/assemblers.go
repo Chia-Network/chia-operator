@@ -30,10 +30,10 @@ func (r *ChiaWalletReconciler) assemblePeerService(ctx context.Context, wallet k
 	inputs.OwnerReference = r.getOwnerReference(ctx, wallet)
 
 	// Service Type
-	if wallet.Spec.ChiaConfig.PeerService != nil && wallet.Spec.ChiaConfig.PeerService.ServiceType != nil {
-		inputs.ServiceType = *wallet.Spec.ChiaConfig.PeerService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if wallet.Spec.ChiaConfig.PeerService != nil {
+		inputs.ServiceType = wallet.Spec.ChiaConfig.PeerService.ServiceType
+		inputs.IPFamilyPolicy = wallet.Spec.ChiaConfig.PeerService.IPFamilyPolicy
+		inputs.IPFamilies = wallet.Spec.ChiaConfig.PeerService.IPFamilies
 	}
 
 	// Labels
@@ -74,10 +74,10 @@ func (r *ChiaWalletReconciler) assembleDaemonService(ctx context.Context, wallet
 	inputs.OwnerReference = r.getOwnerReference(ctx, wallet)
 
 	// Service Type
-	if wallet.Spec.ChiaConfig.DaemonService != nil && wallet.Spec.ChiaConfig.DaemonService.ServiceType != nil {
-		inputs.ServiceType = *wallet.Spec.ChiaConfig.DaemonService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if wallet.Spec.ChiaConfig.DaemonService != nil {
+		inputs.ServiceType = wallet.Spec.ChiaConfig.DaemonService.ServiceType
+		inputs.IPFamilyPolicy = wallet.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
+		inputs.IPFamilies = wallet.Spec.ChiaConfig.DaemonService.IPFamilies
 	}
 
 	// Labels
@@ -118,10 +118,10 @@ func (r *ChiaWalletReconciler) assembleRPCService(ctx context.Context, wallet k8
 	inputs.OwnerReference = r.getOwnerReference(ctx, wallet)
 
 	// Service Type
-	if wallet.Spec.ChiaConfig.RPCService != nil && wallet.Spec.ChiaConfig.RPCService.ServiceType != nil {
-		inputs.ServiceType = *wallet.Spec.ChiaConfig.RPCService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if wallet.Spec.ChiaConfig.RPCService != nil {
+		inputs.ServiceType = wallet.Spec.ChiaConfig.RPCService.ServiceType
+		inputs.IPFamilyPolicy = wallet.Spec.ChiaConfig.RPCService.IPFamilyPolicy
+		inputs.IPFamilies = wallet.Spec.ChiaConfig.RPCService.IPFamilies
 	}
 
 	// Labels
@@ -162,10 +162,10 @@ func (r *ChiaWalletReconciler) assembleChiaExporterService(ctx context.Context, 
 	inputs.OwnerReference = r.getOwnerReference(ctx, wallet)
 
 	// Service Type
-	if wallet.Spec.ChiaExporterConfig.Service != nil && wallet.Spec.ChiaExporterConfig.Service.ServiceType != nil {
-		inputs.ServiceType = *wallet.Spec.ChiaExporterConfig.Service.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if wallet.Spec.ChiaExporterConfig.Service != nil {
+		inputs.ServiceType = wallet.Spec.ChiaExporterConfig.Service.ServiceType
+		inputs.IPFamilyPolicy = wallet.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
+		inputs.IPFamilies = wallet.Spec.ChiaExporterConfig.Service.IPFamilies
 	}
 
 	// Labels

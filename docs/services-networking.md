@@ -56,3 +56,19 @@ spec:
       annotations:
         hello: world
 ```
+
+## Dual-stack Services
+
+You may want to configure the IP families of a Service to have the operator generate IPv4 and/or IPv6 services. See the [kube documentation](https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services) on dual stack Services for generic usage information.
+
+Here's an example peer service configuration that will result in a dual stack Service:
+
+```yaml
+spec:
+  chia:
+    peerService:
+      ipFamilyPolicy: PreferDualStack
+      ipFamilies:
+        - IPv6
+        - IPv4
+```
