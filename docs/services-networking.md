@@ -69,6 +69,6 @@ spec:
     peerService:
       ipFamilyPolicy: PreferDualStack
       ipFamilies:
-        - IPv6
         - IPv4
+        - IPv6
 ```
