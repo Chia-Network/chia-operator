@@ -69,6 +69,19 @@ spec:
                         description: Enabled is a boolean selector for a Service if
                           it should be generated.
                         type: boolean
+                      ipFamilies:
+                        description: IPFamilies represents a list of IP families (IPv4
+                          and/or IPv6) required by a Service
+                        items:
+                          description: |-
+                            IPFamily represents the IP Family (IPv4 or IPv6). This type is used
+                            to express the family of an IP expressed by a type (e.g. service.spec.ipFamilies).
+                          type: string
+                        type: array
+                      ipFamilyPolicy:
+                        description: IPFamilyPolicy represents the dual-stack-ness
+                          requested or required by a Service
+                        type: string
                       labels:
                         additionalProperties:
                           type: string
@@ -274,6 +287,19 @@ spec:
                         description: Enabled is a boolean selector for a Service if
                           it should be generated.
                         type: boolean
+                      ipFamilies:
+                        description: IPFamilies represents a list of IP families (IPv4
+                          and/or IPv6) required by a Service
+                        items:
+                          description: |-
+                            IPFamily represents the IP Family (IPv4 or IPv6). This type is used
+                            to express the family of an IP expressed by a type (e.g. service.spec.ipFamilies).
+                          type: string
+                        type: array
+                      ipFamilyPolicy:
+                        description: IPFamilyPolicy represents the dual-stack-ness
+                          requested or required by a Service
+                        type: string
                       labels:
                         additionalProperties:
                           type: string
@@ -509,6 +535,19 @@ spec:
                         description: Enabled is a boolean selector for a Service if
                           it should be generated.
                         type: boolean
+                      ipFamilies:
+                        description: IPFamilies represents a list of IP families (IPv4
+                          and/or IPv6) required by a Service
+                        items:
+                          description: |-
+                            IPFamily represents the IP Family (IPv4 or IPv6). This type is used
+                            to express the family of an IP expressed by a type (e.g. service.spec.ipFamilies).
+                          type: string
+                        type: array
+                      ipFamilyPolicy:
+                        description: IPFamilyPolicy represents the dual-stack-ness
+                          requested or required by a Service
+                        type: string
                       labels:
                         additionalProperties:
                           type: string
@@ -906,6 +945,19 @@ spec:
                         description: Enabled is a boolean selector for a Service if
                           it should be generated.
                         type: boolean
+                      ipFamilies:
+                        description: IPFamilies represents a list of IP families (IPv4
+                          and/or IPv6) required by a Service
+                        items:
+                          description: |-
+                            IPFamily represents the IP Family (IPv4 or IPv6). This type is used
+                            to express the family of an IP expressed by a type (e.g. service.spec.ipFamilies).
+                          type: string
+                        type: array
+                      ipFamilyPolicy:
+                        description: IPFamilyPolicy represents the dual-stack-ness
+                          requested or required by a Service
+                        type: string
                       labels:
                         additionalProperties:
                           type: string

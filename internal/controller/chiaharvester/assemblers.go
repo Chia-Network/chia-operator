@@ -31,10 +31,10 @@ func (r *ChiaHarvesterReconciler) assemblePeerService(ctx context.Context, harve
 	inputs.OwnerReference = r.getOwnerReference(ctx, harvester)
 
 	// Service Type
-	if harvester.Spec.ChiaConfig.PeerService != nil && harvester.Spec.ChiaConfig.PeerService.ServiceType != nil {
-		inputs.ServiceType = *harvester.Spec.ChiaConfig.PeerService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if harvester.Spec.ChiaConfig.PeerService != nil {
+		inputs.ServiceType = harvester.Spec.ChiaConfig.PeerService.ServiceType
+		inputs.IPFamilyPolicy = harvester.Spec.ChiaConfig.PeerService.IPFamilyPolicy
+		inputs.IPFamilies = harvester.Spec.ChiaConfig.PeerService.IPFamilies
 	}
 
 	// Labels
@@ -75,10 +75,10 @@ func (r *ChiaHarvesterReconciler) assembleDaemonService(ctx context.Context, har
 	inputs.OwnerReference = r.getOwnerReference(ctx, harvester)
 
 	// Service Type
-	if harvester.Spec.ChiaConfig.DaemonService != nil && harvester.Spec.ChiaConfig.DaemonService.ServiceType != nil {
-		inputs.ServiceType = *harvester.Spec.ChiaConfig.DaemonService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if harvester.Spec.ChiaConfig.DaemonService != nil {
+		inputs.ServiceType = harvester.Spec.ChiaConfig.DaemonService.ServiceType
+		inputs.IPFamilyPolicy = harvester.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
+		inputs.IPFamilies = harvester.Spec.ChiaConfig.DaemonService.IPFamilies
 	}
 
 	// Labels
@@ -119,10 +119,10 @@ func (r *ChiaHarvesterReconciler) assembleRPCService(ctx context.Context, harves
 	inputs.OwnerReference = r.getOwnerReference(ctx, harvester)
 
 	// Service Type
-	if harvester.Spec.ChiaConfig.RPCService != nil && harvester.Spec.ChiaConfig.RPCService.ServiceType != nil {
-		inputs.ServiceType = *harvester.Spec.ChiaConfig.RPCService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if harvester.Spec.ChiaConfig.RPCService != nil {
+		inputs.ServiceType = harvester.Spec.ChiaConfig.RPCService.ServiceType
+		inputs.IPFamilyPolicy = harvester.Spec.ChiaConfig.RPCService.IPFamilyPolicy
+		inputs.IPFamilies = harvester.Spec.ChiaConfig.RPCService.IPFamilies
 	}
 
 	// Labels
@@ -163,10 +163,10 @@ func (r *ChiaHarvesterReconciler) assembleChiaExporterService(ctx context.Contex
 	inputs.OwnerReference = r.getOwnerReference(ctx, harvester)
 
 	// Service Type
-	if harvester.Spec.ChiaExporterConfig.Service != nil && harvester.Spec.ChiaExporterConfig.Service.ServiceType != nil {
-		inputs.ServiceType = *harvester.Spec.ChiaExporterConfig.Service.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if harvester.Spec.ChiaExporterConfig.Service != nil {
+		inputs.ServiceType = harvester.Spec.ChiaExporterConfig.Service.ServiceType
+		inputs.IPFamilyPolicy = harvester.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
+		inputs.IPFamilies = harvester.Spec.ChiaExporterConfig.Service.IPFamilies
 	}
 
 	// Labels

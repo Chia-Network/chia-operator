@@ -31,10 +31,10 @@ func (r *ChiaTimelordReconciler) assemblePeerService(ctx context.Context, tl k8s
 	inputs.OwnerReference = r.getOwnerReference(ctx, tl)
 
 	// Service Type
-	if tl.Spec.ChiaConfig.PeerService != nil && tl.Spec.ChiaConfig.PeerService.ServiceType != nil {
-		inputs.ServiceType = *tl.Spec.ChiaConfig.PeerService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if tl.Spec.ChiaConfig.PeerService != nil {
+		inputs.ServiceType = tl.Spec.ChiaConfig.PeerService.ServiceType
+		inputs.IPFamilyPolicy = tl.Spec.ChiaConfig.PeerService.IPFamilyPolicy
+		inputs.IPFamilies = tl.Spec.ChiaConfig.PeerService.IPFamilies
 	}
 
 	// Labels
@@ -75,10 +75,10 @@ func (r *ChiaTimelordReconciler) assembleDaemonService(ctx context.Context, tl k
 	inputs.OwnerReference = r.getOwnerReference(ctx, tl)
 
 	// Service Type
-	if tl.Spec.ChiaConfig.DaemonService != nil && tl.Spec.ChiaConfig.DaemonService.ServiceType != nil {
-		inputs.ServiceType = *tl.Spec.ChiaConfig.DaemonService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if tl.Spec.ChiaConfig.DaemonService != nil {
+		inputs.ServiceType = tl.Spec.ChiaConfig.DaemonService.ServiceType
+		inputs.IPFamilyPolicy = tl.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
+		inputs.IPFamilies = tl.Spec.ChiaConfig.DaemonService.IPFamilies
 	}
 
 	// Labels
@@ -119,10 +119,10 @@ func (r *ChiaTimelordReconciler) assembleRPCService(ctx context.Context, tl k8sc
 	inputs.OwnerReference = r.getOwnerReference(ctx, tl)
 
 	// Service Type
-	if tl.Spec.ChiaConfig.RPCService != nil && tl.Spec.ChiaConfig.RPCService.ServiceType != nil {
-		inputs.ServiceType = *tl.Spec.ChiaConfig.RPCService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if tl.Spec.ChiaConfig.RPCService != nil {
+		inputs.ServiceType = tl.Spec.ChiaConfig.RPCService.ServiceType
+		inputs.IPFamilyPolicy = tl.Spec.ChiaConfig.RPCService.IPFamilyPolicy
+		inputs.IPFamilies = tl.Spec.ChiaConfig.RPCService.IPFamilies
 	}
 
 	// Labels
@@ -163,10 +163,10 @@ func (r *ChiaTimelordReconciler) assembleChiaExporterService(ctx context.Context
 	inputs.OwnerReference = r.getOwnerReference(ctx, tl)
 
 	// Service Type
-	if tl.Spec.ChiaExporterConfig.Service != nil && tl.Spec.ChiaExporterConfig.Service.ServiceType != nil {
-		inputs.ServiceType = *tl.Spec.ChiaExporterConfig.Service.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if tl.Spec.ChiaExporterConfig.Service != nil {
+		inputs.ServiceType = tl.Spec.ChiaExporterConfig.Service.ServiceType
+		inputs.IPFamilyPolicy = tl.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
+		inputs.IPFamilies = tl.Spec.ChiaExporterConfig.Service.IPFamilies
 	}
 
 	// Labels

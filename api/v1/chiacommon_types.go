@@ -223,6 +223,14 @@ type Service struct {
 	// ServiceType is the Type of the Service. Defaults to ClusterIP
 	// +optional
 	ServiceType *corev1.ServiceType `json:"type,omitempty"`
+
+	// IPFamilyPolicy represents the dual-stack-ness requested or required by a Service
+	// +optional
+	IPFamilyPolicy *corev1.IPFamilyPolicy `json:"ipFamilyPolicy,omitempty"`
+
+	// IPFamilies represents a list of IP families (IPv4 and/or IPv6) required by a Service
+	// +optional
+	IPFamilies *[]corev1.IPFamily `json:"ipFamilies,omitempty"`
 }
 
 // ChiaRootConfig optional config for CHIA_ROOT persistent storage, likely only needed for Chia full_nodes, but may help in startup time for other components.

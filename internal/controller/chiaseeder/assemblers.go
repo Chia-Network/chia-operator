@@ -31,10 +31,10 @@ func (r *ChiaSeederReconciler) assemblePeerService(ctx context.Context, seeder k
 	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
 
 	// Service Type
-	if seeder.Spec.ChiaConfig.PeerService != nil && seeder.Spec.ChiaConfig.PeerService.ServiceType != nil {
-		inputs.ServiceType = *seeder.Spec.ChiaConfig.PeerService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if seeder.Spec.ChiaConfig.PeerService != nil {
+		inputs.ServiceType = seeder.Spec.ChiaConfig.PeerService.ServiceType
+		inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.PeerService.IPFamilyPolicy
+		inputs.IPFamilies = seeder.Spec.ChiaConfig.PeerService.IPFamilies
 	}
 
 	// Labels
@@ -87,10 +87,10 @@ func (r *ChiaSeederReconciler) assembleDaemonService(ctx context.Context, seeder
 	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
 
 	// Service Type
-	if seeder.Spec.ChiaConfig.DaemonService != nil && seeder.Spec.ChiaConfig.DaemonService.ServiceType != nil {
-		inputs.ServiceType = *seeder.Spec.ChiaConfig.DaemonService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if seeder.Spec.ChiaConfig.DaemonService != nil {
+		inputs.ServiceType = seeder.Spec.ChiaConfig.DaemonService.ServiceType
+		inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
+		inputs.IPFamilies = seeder.Spec.ChiaConfig.DaemonService.IPFamilies
 	}
 
 	// Labels
@@ -131,10 +131,10 @@ func (r *ChiaSeederReconciler) assembleRPCService(ctx context.Context, seeder k8
 	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
 
 	// Service Type
-	if seeder.Spec.ChiaConfig.RPCService != nil && seeder.Spec.ChiaConfig.RPCService.ServiceType != nil {
-		inputs.ServiceType = *seeder.Spec.ChiaConfig.RPCService.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if seeder.Spec.ChiaConfig.RPCService != nil {
+		inputs.ServiceType = seeder.Spec.ChiaConfig.RPCService.ServiceType
+		inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.RPCService.IPFamilyPolicy
+		inputs.IPFamilies = seeder.Spec.ChiaConfig.RPCService.IPFamilies
 	}
 
 	// Labels
@@ -206,10 +206,10 @@ func (r *ChiaSeederReconciler) assembleChiaExporterService(ctx context.Context, 
 	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
 
 	// Service Type
-	if seeder.Spec.ChiaExporterConfig.Service != nil && seeder.Spec.ChiaExporterConfig.Service.ServiceType != nil {
-		inputs.ServiceType = *seeder.Spec.ChiaExporterConfig.Service.ServiceType
-	} else {
-		inputs.ServiceType = corev1.ServiceTypeClusterIP
+	if seeder.Spec.ChiaExporterConfig.Service != nil {
+		inputs.ServiceType = seeder.Spec.ChiaExporterConfig.Service.ServiceType
+		inputs.IPFamilyPolicy = seeder.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
+		inputs.IPFamilies = seeder.Spec.ChiaExporterConfig.Service.IPFamilies
 	}
 
 	// Labels
