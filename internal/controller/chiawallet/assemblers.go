@@ -329,7 +329,13 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 	}
 
 	if wallet.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, wallet.Spec.ChiaExporterConfig.Image, containerSecurityContext, wallet.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                wallet.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     wallet.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           wallet.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 

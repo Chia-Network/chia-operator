@@ -330,7 +330,13 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 	}
 
 	if harvester.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, harvester.Spec.ChiaExporterConfig.Image, containerSecurityContext, harvester.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                harvester.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     harvester.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           harvester.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 

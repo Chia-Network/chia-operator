@@ -326,7 +326,13 @@ func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8
 	}
 
 	if farmer.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, farmer.Spec.ChiaExporterConfig.Image, containerSecurityContext, farmer.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                farmer.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     farmer.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           farmer.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 

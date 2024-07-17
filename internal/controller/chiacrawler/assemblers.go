@@ -28,7 +28,6 @@ func (r *ChiaCrawlerReconciler) assemblePeerService(ctx context.Context, crawler
 	// Service Metadata
 	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name)
 	inputs.Namespace = crawler.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
 	if crawler.Spec.ChiaConfig.PeerService != nil {
@@ -72,7 +71,6 @@ func (r *ChiaCrawlerReconciler) assembleDaemonService(ctx context.Context, crawl
 	// Service Metadata
 	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-daemon"
 	inputs.Namespace = crawler.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
 	if crawler.Spec.ChiaConfig.DaemonService != nil {
@@ -116,7 +114,6 @@ func (r *ChiaCrawlerReconciler) assembleRPCService(ctx context.Context, crawler 
 	// Service Metadata
 	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-rpc"
 	inputs.Namespace = crawler.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
 	if crawler.Spec.ChiaConfig.RPCService != nil {
@@ -160,7 +157,6 @@ func (r *ChiaCrawlerReconciler) assembleChiaExporterService(ctx context.Context,
 	// Service Metadata
 	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-metrics"
 	inputs.Namespace = crawler.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
 	if crawler.Spec.ChiaExporterConfig.Service != nil {
@@ -232,11 +228,10 @@ func (r *ChiaCrawlerReconciler) assembleVolumeClaim(ctx context.Context, crawler
 func (r *ChiaCrawlerReconciler) assembleDeployment(ctx context.Context, crawler k8schianetv1.ChiaCrawler) appsv1.Deployment {
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
-			Namespace:       crawler.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
-			Annotations:     crawler.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, crawler),
+			Name:        fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
+			Namespace:   crawler.Namespace,
+			Labels:      kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
+			Annotations: crawler.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -330,7 +325,13 @@ func (r *ChiaCrawlerReconciler) assembleDeployment(ctx context.Context, crawler 
 	}
 
 	if crawler.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, crawler.Spec.ChiaExporterConfig.Image, containerSecurityContext, crawler.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                crawler.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     crawler.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           crawler.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 

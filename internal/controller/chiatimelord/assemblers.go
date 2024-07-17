@@ -330,7 +330,13 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 	}
 
 	if tl.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, tl.Spec.ChiaExporterConfig.Image, containerSecurityContext, tl.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                tl.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     tl.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           tl.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 

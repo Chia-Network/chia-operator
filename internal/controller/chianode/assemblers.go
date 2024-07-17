@@ -325,7 +325,13 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 	}
 
 	if node.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, node.Spec.ChiaExporterConfig.Image, containerSecurityContext, node.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                node.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     node.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           node.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, exporterContainer)
 	}
 

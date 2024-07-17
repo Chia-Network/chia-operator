@@ -359,7 +359,13 @@ func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8
 	}
 
 	if seeder.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, seeder.Spec.ChiaExporterConfig.Image, containerSecurityContext, seeder.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                seeder.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     seeder.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           seeder.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 

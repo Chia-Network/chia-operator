@@ -943,6 +943,11 @@ spec:
                 description: ChiaExporterConfig defines the configuration options
                   available to Chia component containers
                 properties:
+                  configSecretName:
+                    description: ConfigSecretName is the name of an optional Secret
+                      that contains the environment variables that will be mounted
+                      in the chia-exporter container.
+                    type: string
                   enabled:
                     default: true
                     description: Enabled defines whether a chia-exporter sidecar container
