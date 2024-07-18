@@ -189,6 +189,14 @@ func (r *ChiaCrawlerReconciler) getChiaEnv(ctx context.Context, crawler k8schian
 	return env
 }
 
+// getFullNodePort determines the correct full_node port to use
+func (r *ChiaCrawlerReconciler) getFullNodePort(ctx context.Context, crawler k8schianetv1.ChiaCrawler) int32 {
+	if crawler.Spec.ChiaConfig.Testnet != nil && *crawler.Spec.ChiaConfig.Testnet {
+		return consts.TestnetNodePort
+	}
+	return consts.MainnetNodePort
+}
+
 // getOwnerReference gives the common owner reference spec for ChiaCrawler related objects
 func (r *ChiaCrawlerReconciler) getOwnerReference(ctx context.Context, crawler k8schianetv1.ChiaCrawler) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
@@ -200,12 +208,4 @@ func (r *ChiaCrawlerReconciler) getOwnerReference(ctx context.Context, crawler k
 			Controller: &consts.ControllerOwner,
 		},
 	}
-}
-
-// getFullNodePort determines the correct full_node port to use
-func (r *ChiaCrawlerReconciler) getFullNodePort(ctx context.Context, crawler k8schianetv1.ChiaCrawler) int32 {
-	if crawler.Spec.ChiaConfig.Testnet != nil && *crawler.Spec.ChiaConfig.Testnet {
-		return consts.TestnetNodePort
-	}
-	return consts.MainnetNodePort
 }

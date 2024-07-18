@@ -28,6 +28,7 @@ func (r *ChiaCrawlerReconciler) assemblePeerService(ctx context.Context, crawler
 	// Service Metadata
 	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name)
 	inputs.Namespace = crawler.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
 	if crawler.Spec.ChiaConfig.PeerService != nil {
@@ -71,6 +72,7 @@ func (r *ChiaCrawlerReconciler) assembleDaemonService(ctx context.Context, crawl
 	// Service Metadata
 	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-daemon"
 	inputs.Namespace = crawler.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
 	if crawler.Spec.ChiaConfig.DaemonService != nil {
@@ -114,6 +116,7 @@ func (r *ChiaCrawlerReconciler) assembleRPCService(ctx context.Context, crawler 
 	// Service Metadata
 	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-rpc"
 	inputs.Namespace = crawler.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
 	if crawler.Spec.ChiaConfig.RPCService != nil {
@@ -157,6 +160,7 @@ func (r *ChiaCrawlerReconciler) assembleChiaExporterService(ctx context.Context,
 	// Service Metadata
 	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-metrics"
 	inputs.Namespace = crawler.Namespace
+	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
 
 	// Service Type
 	if crawler.Spec.ChiaExporterConfig.Service != nil {
