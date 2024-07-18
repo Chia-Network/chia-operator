@@ -244,11 +244,10 @@ func (r *ChiaSeederReconciler) assembleChiaExporterService(ctx context.Context, 
 func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8schianetv1.ChiaSeeder) appsv1.Deployment {
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiaseederNamePattern, seeder.Name),
-			Namespace:       seeder.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels),
-			Annotations:     seeder.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, seeder),
+			Name:        fmt.Sprintf(chiaseederNamePattern, seeder.Name),
+			Namespace:   seeder.Namespace,
+			Labels:      kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels),
+			Annotations: seeder.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{

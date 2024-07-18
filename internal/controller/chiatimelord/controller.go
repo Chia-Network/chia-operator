@@ -7,7 +7,9 @@ package chiatimelord
 import (
 	"context"
 	"fmt"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -218,6 +220,11 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	deploy := r.assembleDeployment(ctx, tl)
+
+	if err := controllerutil.SetControllerReference(&tl, &deploy, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {
 		if res == nil {
@@ -245,5 +252,6 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 func (r *ChiaTimelordReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8schianetv1.ChiaTimelord{}).
+		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }

@@ -232,11 +232,10 @@ func (r *ChiaFarmerReconciler) assembleVolumeClaim(ctx context.Context, farmer k
 func (r *ChiaFarmerReconciler) assembleDeployment(ctx context.Context, farmer k8schianetv1.ChiaFarmer) appsv1.Deployment {
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
-			Namespace:       farmer.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
-			Annotations:     farmer.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, farmer),
+			Name:        fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
+			Namespace:   farmer.Namespace,
+			Labels:      kube.GetCommonLabels(ctx, farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
+			Annotations: farmer.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{

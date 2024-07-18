@@ -232,11 +232,10 @@ func (r *ChiaTimelordReconciler) assembleVolumeClaim(ctx context.Context, tl k8s
 func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8schianetv1.ChiaTimelord) appsv1.Deployment {
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiatimelordNamePattern, tl.Name),
-			Namespace:       tl.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
-			Annotations:     tl.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, tl),
+			Name:        fmt.Sprintf(chiatimelordNamePattern, tl.Name),
+			Namespace:   tl.Namespace,
+			Labels:      kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
+			Annotations: tl.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{

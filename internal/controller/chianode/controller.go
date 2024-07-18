@@ -7,7 +7,9 @@ package chianode
 import (
 	"context"
 	"fmt"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -260,6 +262,11 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	stateful := r.assembleStatefulset(ctx, node)
+
+	if err := controllerutil.SetControllerReference(&node, &stateful, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	res, err := kube.ReconcileStatefulset(ctx, resourceReconciler, stateful)
 	if err != nil {
 		if res == nil {
@@ -287,5 +294,6 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 func (r *ChiaNodeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8schianetv1.ChiaNode{}).
+		Owns(&appsv1.StatefulSet{}).
 		Complete(r)
 }

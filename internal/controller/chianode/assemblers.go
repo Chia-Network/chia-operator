@@ -224,11 +224,10 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 
 	var stateful appsv1.StatefulSet = appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chianodeNamePattern, node.Name),
-			Namespace:       node.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
-			Annotations:     node.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, node),
+			Name:        fmt.Sprintf(chianodeNamePattern, node.Name),
+			Namespace:   node.Namespace,
+			Labels:      kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+			Annotations: node.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.StatefulSetSpec{
 			Replicas: &node.Spec.Replicas,

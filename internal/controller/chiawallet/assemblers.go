@@ -231,11 +231,10 @@ func (r *ChiaWalletReconciler) assembleVolumeClaim(ctx context.Context, wallet k
 func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet) appsv1.Deployment {
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiawalletNamePattern, wallet.Name),
-			Namespace:       wallet.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
-			Annotations:     wallet.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, wallet),
+			Name:        fmt.Sprintf(chiawalletNamePattern, wallet.Name),
+			Namespace:   wallet.Namespace,
+			Labels:      kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
+			Annotations: wallet.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{

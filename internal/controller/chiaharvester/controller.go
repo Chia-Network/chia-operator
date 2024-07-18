@@ -7,7 +7,9 @@ package chiaharvester
 import (
 	"context"
 	"fmt"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -220,6 +222,11 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	deploy := r.assembleDeployment(ctx, harvester)
+
+	if err := controllerutil.SetControllerReference(&harvester, &deploy, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {
 		if res == nil {
@@ -247,5 +254,6 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 func (r *ChiaHarvesterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8schianetv1.ChiaHarvester{}).
+		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }
