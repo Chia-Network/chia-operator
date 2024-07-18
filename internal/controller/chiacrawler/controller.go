@@ -7,14 +7,15 @@ package chiacrawler
 import (
 	"context"
 	"fmt"
-	"k8s.io/apimachinery/pkg/types"
-
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -219,6 +220,11 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	deploy := r.assembleDeployment(ctx, crawler)
+
+	if err := controllerutil.SetControllerReference(&crawler, &deploy, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {
 		if res == nil {
@@ -246,5 +252,6 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 func (r *ChiaCrawlerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8schianetv1.ChiaCrawler{}).
+		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }
