@@ -12,9 +12,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ProvenanceLabelKey the key to the provenance label automatically added to operator managed resources
-const ProvenanceLabelKey = "k8s.chia.net/provenance"
-
 // GetCommonLabels gives some common labels for chia-operator related objects
 func GetCommonLabels(ctx context.Context, kind string, meta metav1.ObjectMeta, additionalLabels ...map[string]string) map[string]string {
 	var labels = make(map[string]string)
@@ -22,7 +19,7 @@ func GetCommonLabels(ctx context.Context, kind string, meta metav1.ObjectMeta, a
 	labels["app.kubernetes.io/instance"] = meta.Name
 	labels["app.kubernetes.io/name"] = meta.Name
 	labels["app.kubernetes.io/managed-by"] = "chia-operator"
-	labels[ProvenanceLabelKey] = fmt.Sprintf("%s.%s.%s", kind, meta.Namespace, meta.Name)
+	labels["k8s.chia.net/provenance"] = fmt.Sprintf("%s.%s.%s", kind, meta.Namespace, meta.Name)
 	return labels
 }
 
