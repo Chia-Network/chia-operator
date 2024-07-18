@@ -210,6 +210,14 @@ func (r *ChiaNodeReconciler) getChiaEnv(ctx context.Context, node k8schianetv1.C
 	return env
 }
 
+// getFullNodePort determines the correct full node port to use
+func (r *ChiaNodeReconciler) getFullNodePort(ctx context.Context, node k8schianetv1.ChiaNode) int32 {
+	if node.Spec.ChiaConfig.Testnet != nil && *node.Spec.ChiaConfig.Testnet {
+		return consts.TestnetNodePort
+	}
+	return consts.MainnetNodePort
+}
+
 // getOwnerReference gives the common owner reference spec for ChiaNode related objects
 func (r *ChiaNodeReconciler) getOwnerReference(ctx context.Context, node k8schianetv1.ChiaNode) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
@@ -221,12 +229,4 @@ func (r *ChiaNodeReconciler) getOwnerReference(ctx context.Context, node k8schia
 			Controller: &consts.ControllerOwner,
 		},
 	}
-}
-
-// getFullNodePort determines the correct full node port to use
-func (r *ChiaNodeReconciler) getFullNodePort(ctx context.Context, node k8schianetv1.ChiaNode) int32 {
-	if node.Spec.ChiaConfig.Testnet != nil && *node.Spec.ChiaConfig.Testnet {
-		return consts.TestnetNodePort
-	}
-	return consts.MainnetNodePort
 }
