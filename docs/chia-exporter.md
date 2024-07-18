@@ -34,3 +34,32 @@ spec:
       annotations:
         hello: world
 ```
+
+## Supplemental Configuration
+
+There are some niche configuration options for chia-exporter that the majority of people will not need. It is recommended to leave these alone unless you know what you're doing.
+
+In any Chia custom resource yaml file you can set the following:
+
+```yaml
+spec:
+  chiaExporter:
+    configSecretName: chia-exporter-config
+```
+
+Where `chia-exporter-config` is the name of a Kubernetes Secret in the same namespace as the supplied chia resource. An example Secret definition would look like the following:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: chia-exporter-config
+stringData:
+  CHIA_EXPORTER_MAXMIND_COUNTRY_DB_PATH: "/chia-data/country.db"
+  CHIA_EXPORTER_MAXMIND_ASN_DB_PATH: "/chia-data/asn.db"
+  CHIA_EXPORTER_MYSQL_HOST: "10.0.0.10"
+  CHIA_EXPORTER_MYSQL_PASSWORD: "mypassword"
+  CHIA_EXPORTER_MYSQL_DB_NAME: "mydbname"
+```
+
+This just sets a few non-default options in the environment variables of a chia-exporter sidecar container.
