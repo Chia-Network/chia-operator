@@ -232,11 +232,10 @@ func (r *ChiaCrawlerReconciler) assembleVolumeClaim(ctx context.Context, crawler
 func (r *ChiaCrawlerReconciler) assembleDeployment(ctx context.Context, crawler k8schianetv1.ChiaCrawler) appsv1.Deployment {
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
-			Namespace:       crawler.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
-			Annotations:     crawler.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, crawler),
+			Name:        fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
+			Namespace:   crawler.Namespace,
+			Labels:      kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
+			Annotations: crawler.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -330,7 +329,13 @@ func (r *ChiaCrawlerReconciler) assembleDeployment(ctx context.Context, crawler 
 	}
 
 	if crawler.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, crawler.Spec.ChiaExporterConfig.Image, containerSecurityContext, crawler.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                crawler.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     crawler.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           crawler.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 

@@ -159,6 +159,10 @@ type SpecChiaExporter struct {
 	// This Service will default to being enabled with a ClusterIP Service type if chia-exporter is enabled.
 	// +optional
 	Service *Service `json:"service,omitempty"`
+
+	// ConfigSecretName is the name of an optional Secret that contains the environment variables that will be mounted in the chia-exporter container.
+	// +optional
+	ConfigSecretName *string `json:"configSecretName,omitempty"`
 }
 
 // ChiaSecretKey defines the name of a kubernetes secret and key in that namespace that contains the Chia mnemonic

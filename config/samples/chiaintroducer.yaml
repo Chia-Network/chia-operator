@@ -1,4 +1,4 @@
-apiVersion: k8s.chia.net.k8s.chia.net/v1
+apiVersion: k8s.chia.net/v1
 kind: ChiaIntroducer
 metadata:
   labels:

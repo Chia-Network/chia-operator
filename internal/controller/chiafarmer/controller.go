@@ -7,7 +7,9 @@ package chiafarmer
 import (
 	"context"
 	"fmt"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -220,6 +222,11 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	deploy := r.assembleDeployment(ctx, farmer)
+
+	if err := controllerutil.SetControllerReference(&farmer, &deploy, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
 	if err != nil {
 		if res == nil {
@@ -247,5 +254,6 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 func (r *ChiaFarmerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8schianetv1.ChiaFarmer{}).
+		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }

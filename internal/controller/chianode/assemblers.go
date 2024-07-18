@@ -224,11 +224,10 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 
 	var stateful appsv1.StatefulSet = appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chianodeNamePattern, node.Name),
-			Namespace:       node.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
-			Annotations:     node.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, node),
+			Name:        fmt.Sprintf(chianodeNamePattern, node.Name),
+			Namespace:   node.Namespace,
+			Labels:      kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+			Annotations: node.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.StatefulSetSpec{
 			Replicas: &node.Spec.Replicas,
@@ -325,7 +324,13 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 	}
 
 	if node.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, node.Spec.ChiaExporterConfig.Image, containerSecurityContext, node.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                node.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     node.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           node.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, exporterContainer)
 	}
 

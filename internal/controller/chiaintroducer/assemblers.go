@@ -188,11 +188,10 @@ func (r *ChiaIntroducerReconciler) assembleVolumeClaim(ctx context.Context, intr
 func (r *ChiaIntroducerReconciler) assembleDeployment(ctx context.Context, introducer k8schianetv1.ChiaIntroducer) appsv1.Deployment {
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiaintroducerNamePattern, introducer.Name),
-			Namespace:       introducer.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels),
-			Annotations:     introducer.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, introducer),
+			Name:        fmt.Sprintf(chiaintroducerNamePattern, introducer.Name),
+			Namespace:   introducer.Namespace,
+			Labels:      kube.GetCommonLabels(ctx, introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels),
+			Annotations: introducer.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -281,7 +280,13 @@ func (r *ChiaIntroducerReconciler) assembleDeployment(ctx context.Context, intro
 	}
 
 	if introducer.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, introducer.Spec.ChiaExporterConfig.Image, containerSecurityContext, introducer.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                introducer.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     introducer.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           introducer.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 

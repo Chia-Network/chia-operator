@@ -232,11 +232,10 @@ func (r *ChiaHarvesterReconciler) assembleVolumeClaim(ctx context.Context, harve
 func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harvester k8schianetv1.ChiaHarvester) appsv1.Deployment {
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
-			Namespace:       harvester.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
-			Annotations:     harvester.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, harvester),
+			Name:        fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
+			Namespace:   harvester.Namespace,
+			Labels:      kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
+			Annotations: harvester.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -330,7 +329,13 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 	}
 
 	if harvester.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, harvester.Spec.ChiaExporterConfig.Image, containerSecurityContext, harvester.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                harvester.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     harvester.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           harvester.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 

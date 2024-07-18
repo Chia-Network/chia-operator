@@ -231,11 +231,10 @@ func (r *ChiaWalletReconciler) assembleVolumeClaim(ctx context.Context, wallet k
 func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet) appsv1.Deployment {
 	var deploy appsv1.Deployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiawalletNamePattern, wallet.Name),
-			Namespace:       wallet.Namespace,
-			Labels:          kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
-			Annotations:     wallet.Spec.AdditionalMetadata.Annotations,
-			OwnerReferences: r.getOwnerReference(ctx, wallet),
+			Name:        fmt.Sprintf(chiawalletNamePattern, wallet.Name),
+			Namespace:   wallet.Namespace,
+			Labels:      kube.GetCommonLabels(ctx, wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
+			Annotations: wallet.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -329,7 +328,13 @@ func (r *ChiaWalletReconciler) assembleDeployment(ctx context.Context, wallet k8
 	}
 
 	if wallet.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.GetChiaExporterContainer(ctx, wallet.Spec.ChiaExporterConfig.Image, containerSecurityContext, wallet.Spec.ImagePullPolicy, containerResorces)
+		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
+			Image:                wallet.Spec.ChiaExporterConfig.Image,
+			ConfigSecretName:     wallet.Spec.ChiaExporterConfig.ConfigSecretName,
+			SecurityContext:      containerSecurityContext,
+			PullPolicy:           wallet.Spec.ImagePullPolicy,
+			ResourceRequirements: containerResorces,
+		})
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 
