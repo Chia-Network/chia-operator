@@ -55,3 +55,14 @@ func GetChiaExporterServicePorts() []corev1.ServicePort {
 		},
 	}
 }
+
+func GetChiaDaemonServicePorts() []corev1.ServicePort {
+	return []corev1.ServicePort{
+		{
+			Port:       consts.DaemonPort,
+			TargetPort: intstr.FromString("daemon"),
+			Protocol:   "TCP",
+			Name:       "daemon",
+		},
+	}
+}

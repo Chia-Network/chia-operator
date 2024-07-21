@@ -66,14 +66,7 @@ func assembleDaemonService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 		Name:           fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-daemon",
 		Namespace:      wallet.Namespace,
 		OwnerReference: getOwnerReference(wallet),
-		Ports: []corev1.ServicePort{
-			{
-				Port:       consts.DaemonPort,
-				TargetPort: intstr.FromString("daemon"),
-				Protocol:   "TCP",
-				Name:       "daemon",
-			},
-		},
+		Ports:          kube.GetChiaDaemonServicePorts(),
 	}
 
 	if wallet.Spec.ChiaConfig.DaemonService != nil {

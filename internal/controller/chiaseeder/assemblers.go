@@ -5,7 +5,6 @@ Copyright 2023 Chia Network Inc.
 package chiaseeder
 
 import (
-	"context"
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -22,161 +21,173 @@ import (
 const chiaseederNamePattern = "%s-seeder"
 
 // assemblePeerService assembles the peer Service resource for a ChiaSeeder CR
-func (r *ChiaSeederReconciler) assemblePeerService(ctx context.Context, seeder k8schianetv1.ChiaSeeder) corev1.Service {
-	var inputs kube.AssembleCommonServiceInputs
+func assemblePeerService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:           fmt.Sprintf(chiaseederNamePattern, seeder.Name),
+		Namespace:      seeder.Namespace,
+		OwnerReference: getOwnerReference(seeder),
+		Ports: []corev1.ServicePort{
+			{
+				Port:       53,
+				TargetPort: intstr.FromString("dns"),
+				Protocol:   "UDP",
+				Name:       "dns",
+			},
+			{
+				Port:       53,
+				TargetPort: intstr.FromString("dns-tcp"),
+				Protocol:   "TCP",
+				Name:       "dns-tcp",
+			},
+			{
+				Port:       getFullNodePort(seeder),
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
+			},
+		},
+	}
 
-	// Service Metadata
-	inputs.Name = fmt.Sprintf(chiaseederNamePattern, seeder.Name)
-	inputs.Namespace = seeder.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
-
-	// Service Type
 	if seeder.Spec.ChiaConfig.PeerService != nil {
 		inputs.ServiceType = seeder.Spec.ChiaConfig.PeerService.ServiceType
 		inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.PeerService.IPFamilyPolicy
 		inputs.IPFamilies = seeder.Spec.ChiaConfig.PeerService.IPFamilies
-	}
 
-	// Labels
-	var additionalServiceLabels = make(map[string]string)
-	if seeder.Spec.ChiaConfig.PeerService != nil && seeder.Spec.ChiaConfig.PeerService.Labels != nil {
-		additionalServiceLabels = seeder.Spec.ChiaConfig.PeerService.Labels
-	}
-	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+		// Labels
+		var additionalServiceLabels = make(map[string]string)
+		if seeder.Spec.ChiaConfig.PeerService.Labels != nil {
+			additionalServiceLabels = seeder.Spec.ChiaConfig.PeerService.Labels
+		}
+		inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+		inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
 
-	// Annotations
-	var additionalServiceAnnotations = make(map[string]string)
-	if seeder.Spec.ChiaConfig.PeerService != nil && seeder.Spec.ChiaConfig.PeerService.Annotations != nil {
-		additionalServiceAnnotations = seeder.Spec.ChiaConfig.PeerService.Annotations
-	}
-	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
-
-	// Ports
-	inputs.Ports = []corev1.ServicePort{
-		{
-			Port:       53,
-			TargetPort: intstr.FromString("dns"),
-			Protocol:   "UDP",
-			Name:       "dns",
-		},
-		{
-			Port:       53,
-			TargetPort: intstr.FromString("dns-tcp"),
-			Protocol:   "TCP",
-			Name:       "dns-tcp",
-		},
-		{
-			Port:       r.getFullNodePort(ctx, seeder),
-			TargetPort: intstr.FromString("peers"),
-			Protocol:   "TCP",
-			Name:       "peers",
-		},
+		// Annotations
+		var additionalServiceAnnotations = make(map[string]string)
+		if seeder.Spec.ChiaConfig.PeerService.Annotations != nil {
+			additionalServiceAnnotations = seeder.Spec.ChiaConfig.PeerService.Annotations
+		}
+		inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 	}
 
 	return kube.AssembleCommonService(inputs)
 }
 
 // assembleDaemonService assembles the daemon Service resource for a ChiaSeeder CR
-func (r *ChiaSeederReconciler) assembleDaemonService(ctx context.Context, seeder k8schianetv1.ChiaSeeder) corev1.Service {
-	var inputs kube.AssembleCommonServiceInputs
+func assembleDaemonService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:           fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-daemon",
+		Namespace:      seeder.Namespace,
+		OwnerReference: getOwnerReference(seeder),
+		Ports:          kube.GetChiaDaemonServicePorts(),
+	}
 
-	// Service Metadata
-	inputs.Name = fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-daemon"
-	inputs.Namespace = seeder.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
-
-	// Service Type
 	if seeder.Spec.ChiaConfig.DaemonService != nil {
 		inputs.ServiceType = seeder.Spec.ChiaConfig.DaemonService.ServiceType
 		inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
 		inputs.IPFamilies = seeder.Spec.ChiaConfig.DaemonService.IPFamilies
-	}
 
-	// Labels
-	var additionalServiceLabels = make(map[string]string)
-	if seeder.Spec.ChiaConfig.DaemonService != nil && seeder.Spec.ChiaConfig.DaemonService.Labels != nil {
-		additionalServiceLabels = seeder.Spec.ChiaConfig.DaemonService.Labels
-	}
-	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+		// Labels
+		var additionalServiceLabels = make(map[string]string)
+		if seeder.Spec.ChiaConfig.DaemonService.Labels != nil {
+			additionalServiceLabels = seeder.Spec.ChiaConfig.DaemonService.Labels
+		}
+		inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+		inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
 
-	// Annotations
-	var additionalServiceAnnotations = make(map[string]string)
-	if seeder.Spec.ChiaConfig.DaemonService != nil && seeder.Spec.ChiaConfig.DaemonService.Annotations != nil {
-		additionalServiceAnnotations = seeder.Spec.ChiaConfig.DaemonService.Annotations
-	}
-	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
-
-	// Ports
-	inputs.Ports = []corev1.ServicePort{
-		{
-			Port:       consts.DaemonPort,
-			TargetPort: intstr.FromString("daemon"),
-			Protocol:   "TCP",
-			Name:       "daemon",
-		},
+		// Annotations
+		var additionalServiceAnnotations = make(map[string]string)
+		if seeder.Spec.ChiaConfig.DaemonService.Annotations != nil {
+			additionalServiceAnnotations = seeder.Spec.ChiaConfig.DaemonService.Annotations
+		}
+		inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 	}
 
 	return kube.AssembleCommonService(inputs)
 }
 
 // assembleRPCService assembles the RPC Service resource for a ChiaSeeder CR
-func (r *ChiaSeederReconciler) assembleRPCService(ctx context.Context, seeder k8schianetv1.ChiaSeeder) corev1.Service {
-	var inputs kube.AssembleCommonServiceInputs
+func assembleRPCService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:           fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-rpc",
+		Namespace:      seeder.Namespace,
+		OwnerReference: getOwnerReference(seeder),
+		Ports: []corev1.ServicePort{
+			{
+				Port:       consts.CrawlerRPCPort,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
+			},
+		},
+	}
 
-	// Service Metadata
-	inputs.Name = fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-rpc"
-	inputs.Namespace = seeder.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
-
-	// Service Type
 	if seeder.Spec.ChiaConfig.RPCService != nil {
 		inputs.ServiceType = seeder.Spec.ChiaConfig.RPCService.ServiceType
 		inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.RPCService.IPFamilyPolicy
 		inputs.IPFamilies = seeder.Spec.ChiaConfig.RPCService.IPFamilies
+
+		// Labels
+		var additionalServiceLabels = make(map[string]string)
+		if seeder.Spec.ChiaConfig.RPCService.Labels != nil {
+			additionalServiceLabels = seeder.Spec.ChiaConfig.RPCService.Labels
+		}
+		inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+		inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+		// Annotations
+		var additionalServiceAnnotations = make(map[string]string)
+		if seeder.Spec.ChiaConfig.RPCService.Annotations != nil {
+			additionalServiceAnnotations = seeder.Spec.ChiaConfig.RPCService.Annotations
+		}
+		inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 	}
 
-	// Labels
-	var additionalServiceLabels = make(map[string]string)
-	if seeder.Spec.ChiaConfig.RPCService != nil && seeder.Spec.ChiaConfig.RPCService.Labels != nil {
-		additionalServiceLabels = seeder.Spec.ChiaConfig.RPCService.Labels
-	}
-	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+	return kube.AssembleCommonService(inputs)
+}
 
-	// Annotations
-	var additionalServiceAnnotations = make(map[string]string)
-	if seeder.Spec.ChiaConfig.RPCService != nil && seeder.Spec.ChiaConfig.RPCService.Annotations != nil {
-		additionalServiceAnnotations = seeder.Spec.ChiaConfig.RPCService.Annotations
+// assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaSeeder CR
+func assembleChiaExporterService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:           fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-metrics",
+		Namespace:      seeder.Namespace,
+		OwnerReference: getOwnerReference(seeder),
+		Ports:          kube.GetChiaExporterServicePorts(),
 	}
-	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
-	// Ports
-	inputs.Ports = []corev1.ServicePort{
-		{
-			Port:       consts.CrawlerRPCPort,
-			TargetPort: intstr.FromString("rpc"),
-			Protocol:   "TCP",
-			Name:       "rpc",
-		},
+	if seeder.Spec.ChiaExporterConfig.Service != nil {
+		inputs.ServiceType = seeder.Spec.ChiaExporterConfig.Service.ServiceType
+		inputs.IPFamilyPolicy = seeder.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
+		inputs.IPFamilies = seeder.Spec.ChiaExporterConfig.Service.IPFamilies
+
+		// Labels
+		var additionalServiceLabels = make(map[string]string)
+		if seeder.Spec.ChiaExporterConfig.Service.Labels != nil {
+			additionalServiceLabels = seeder.Spec.ChiaExporterConfig.Service.Labels
+		}
+		inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+		inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+		// Annotations
+		var additionalServiceAnnotations = make(map[string]string)
+		if seeder.Spec.ChiaExporterConfig.Service.Annotations != nil {
+			additionalServiceAnnotations = seeder.Spec.ChiaExporterConfig.Service.Annotations
+		}
+		inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 	}
 
 	return kube.AssembleCommonService(inputs)
 }
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaSeeder CR
-func (r *ChiaSeederReconciler) assembleVolumeClaim(ctx context.Context, seeder k8schianetv1.ChiaSeeder) (corev1.PersistentVolumeClaim, error) {
+func assembleVolumeClaim(seeder k8schianetv1.ChiaSeeder) (corev1.PersistentVolumeClaim, error) {
 	resourceReq, err := resource.ParseQuantity(seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
 	if err != nil {
 		return corev1.PersistentVolumeClaim{}, err
 	}
 
-	var accessModes []corev1.PersistentVolumeAccessMode
+	accessModes := []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
 	if len(seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes) != 0 {
 		accessModes = seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
-	} else {
-		accessModes = []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
 	}
 
 	return corev1.PersistentVolumeClaim{
@@ -196,53 +207,12 @@ func (r *ChiaSeederReconciler) assembleVolumeClaim(ctx context.Context, seeder k
 	}, nil
 }
 
-// assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaSeeder CR
-func (r *ChiaSeederReconciler) assembleChiaExporterService(ctx context.Context, seeder k8schianetv1.ChiaSeeder) corev1.Service {
-	var inputs kube.AssembleCommonServiceInputs
+// assembleDeployment assembles the seeder Deployment resource for a ChiaSeeder CR
+func assembleDeployment(seeder k8schianetv1.ChiaSeeder) appsv1.Deployment {
+	chiaContainer := assembleChiaContainer(seeder)
+	chiaExporterContainer := assembleChiaExporterContainer(seeder)
 
-	// Service Metadata
-	inputs.Name = fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-metrics"
-	inputs.Namespace = seeder.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, seeder)
-
-	// Service Type
-	if seeder.Spec.ChiaExporterConfig.Service != nil {
-		inputs.ServiceType = seeder.Spec.ChiaExporterConfig.Service.ServiceType
-		inputs.IPFamilyPolicy = seeder.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
-		inputs.IPFamilies = seeder.Spec.ChiaExporterConfig.Service.IPFamilies
-	}
-
-	// Labels
-	var additionalServiceLabels = make(map[string]string)
-	if seeder.Spec.ChiaExporterConfig.Service != nil && seeder.Spec.ChiaExporterConfig.Service.Labels != nil {
-		additionalServiceLabels = seeder.Spec.ChiaExporterConfig.Service.Labels
-	}
-	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
-
-	// Annotations
-	var additionalServiceAnnotations = make(map[string]string)
-	if seeder.Spec.ChiaExporterConfig.Service != nil && seeder.Spec.ChiaExporterConfig.Service.Annotations != nil {
-		additionalServiceAnnotations = seeder.Spec.ChiaExporterConfig.Service.Annotations
-	}
-	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
-
-	// Ports
-	inputs.Ports = []corev1.ServicePort{
-		{
-			Port:       consts.ChiaExporterPort,
-			TargetPort: intstr.FromString("metrics"),
-			Protocol:   "TCP",
-			Name:       "metrics",
-		},
-	}
-
-	return kube.AssembleCommonService(inputs)
-}
-
-// assembleDeployment assembles the Deployment resource for a ChiaSeeder CR
-func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8schianetv1.ChiaSeeder) appsv1.Deployment {
-	var deploy appsv1.Deployment = appsv1.Deployment{
+	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiaseederNamePattern, seeder.Name),
 			Namespace:   seeder.Namespace,
@@ -259,52 +229,9 @@ func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8
 					Annotations: seeder.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					// TODO add: imagePullSecret, serviceAccountName config
-					Containers: []corev1.Container{
-						{
-							Name:            "chia",
-							Image:           seeder.Spec.ChiaConfig.Image,
-							ImagePullPolicy: seeder.Spec.ImagePullPolicy,
-							Env:             r.getChiaEnv(ctx, seeder),
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "daemon",
-									ContainerPort: consts.DaemonPort,
-									Protocol:      "TCP",
-								},
-								{
-									Name:          "dns",
-									ContainerPort: 53,
-									Protocol:      "UDP",
-								},
-								{
-									Name:          "dns-tcp",
-									ContainerPort: 53,
-									Protocol:      "TCP",
-								},
-								{
-									Name:          "peers",
-									ContainerPort: r.getFullNodePort(ctx, seeder),
-									Protocol:      "TCP",
-								},
-								{
-									Name:          "rpc",
-									ContainerPort: consts.CrawlerRPCPort,
-									Protocol:      "TCP",
-								},
-							},
-							VolumeMounts: r.getChiaVolumeMounts(ctx, seeder),
-							SecurityContext: &corev1.SecurityContext{
-								Capabilities: &corev1.Capabilities{
-									Add: []corev1.Capability{
-										"NET_BIND_SERVICE",
-									},
-								},
-							},
-						},
-					},
+					Containers:   []corev1.Container{chiaContainer, chiaExporterContainer},
 					NodeSelector: seeder.Spec.NodeSelector,
-					Volumes:      r.getChiaVolumes(ctx, seeder),
+					Volumes:      getChiaVolumes(seeder),
 				},
 			},
 		},
@@ -317,12 +244,12 @@ func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8
 
 			// Share chia volume mounts if enabled
 			if cont.ShareVolumeMounts {
-				cont.Container.VolumeMounts = r.getChiaVolumeMounts(ctx, seeder)
+				cont.Container.VolumeMounts = getChiaVolumeMounts(seeder)
 			}
 
 			// Share chia env if enabled
 			if cont.ShareEnv {
-				cont.Container.Env = append(cont.Container.Env, r.getChiaEnv(ctx, seeder)...)
+				cont.Container.Env = append(cont.Container.Env, getChiaEnv(seeder)...)
 			}
 
 			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
@@ -331,41 +258,6 @@ func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8
 
 	if seeder.Spec.Strategy != nil {
 		deploy.Spec.Strategy = *seeder.Spec.Strategy
-	}
-
-	var containerSecurityContext *corev1.SecurityContext
-	if seeder.Spec.ChiaConfig.SecurityContext != nil {
-		containerSecurityContext = seeder.Spec.ChiaConfig.SecurityContext
-		deploy.Spec.Template.Spec.Containers[0].SecurityContext = seeder.Spec.ChiaConfig.SecurityContext
-	}
-
-	if seeder.Spec.ChiaConfig.LivenessProbe != nil {
-		deploy.Spec.Template.Spec.Containers[0].LivenessProbe = seeder.Spec.ChiaConfig.LivenessProbe
-	}
-
-	if seeder.Spec.ChiaConfig.ReadinessProbe != nil {
-		deploy.Spec.Template.Spec.Containers[0].ReadinessProbe = seeder.Spec.ChiaConfig.ReadinessProbe
-	}
-
-	if seeder.Spec.ChiaConfig.StartupProbe != nil {
-		deploy.Spec.Template.Spec.Containers[0].StartupProbe = seeder.Spec.ChiaConfig.StartupProbe
-	}
-
-	var containerResorces corev1.ResourceRequirements
-	if seeder.Spec.ChiaConfig.Resources != nil {
-		containerResorces = *seeder.Spec.ChiaConfig.Resources
-		deploy.Spec.Template.Spec.Containers[0].Resources = *seeder.Spec.ChiaConfig.Resources
-	}
-
-	if seeder.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
-			Image:                seeder.Spec.ChiaExporterConfig.Image,
-			ConfigSecretName:     seeder.Spec.ChiaExporterConfig.ConfigSecretName,
-			SecurityContext:      containerSecurityContext,
-			PullPolicy:           seeder.Spec.ImagePullPolicy,
-			ResourceRequirements: containerResorces,
-		})
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 
 	if seeder.Spec.PodSecurityContext != nil {
@@ -379,4 +271,62 @@ func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8
 	// TODO add pod affinity, tolerations
 
 	return deploy
+}
+
+func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder) corev1.Container {
+	input := kube.AssembleChiaContainerInputs{
+		Image:           seeder.Spec.ChiaConfig.Image,
+		ImagePullPolicy: seeder.Spec.ImagePullPolicy,
+		Env:             getChiaEnv(seeder),
+		Ports:           getChiaPorts(seeder),
+		VolumeMounts:    getChiaVolumeMounts(seeder),
+	}
+
+	if seeder.Spec.ChiaConfig.SecurityContext != nil {
+		input.SecurityContext = seeder.Spec.ChiaConfig.SecurityContext
+	} else {
+		input.SecurityContext = &corev1.SecurityContext{
+			Capabilities: &corev1.Capabilities{
+				Add: []corev1.Capability{
+					"NET_BIND_SERVICE",
+				},
+			},
+		}
+	}
+
+	if seeder.Spec.ChiaConfig.LivenessProbe != nil {
+		input.LivenessProbe = seeder.Spec.ChiaConfig.LivenessProbe
+	}
+
+	if seeder.Spec.ChiaConfig.ReadinessProbe != nil {
+		input.ReadinessProbe = seeder.Spec.ChiaConfig.ReadinessProbe
+	}
+
+	if seeder.Spec.ChiaConfig.StartupProbe != nil {
+		input.StartupProbe = seeder.Spec.ChiaConfig.StartupProbe
+	}
+
+	if seeder.Spec.ChiaConfig.Resources != nil {
+		input.ResourceRequirements = seeder.Spec.ChiaConfig.Resources
+	}
+
+	return kube.AssembleChiaContainer(input)
+}
+
+func assembleChiaExporterContainer(seeder k8schianetv1.ChiaSeeder) corev1.Container {
+	input := kube.AssembleChiaExporterContainerInputs{
+		Image:            seeder.Spec.ChiaExporterConfig.Image,
+		ConfigSecretName: seeder.Spec.ChiaExporterConfig.ConfigSecretName,
+		PullPolicy:       seeder.Spec.ImagePullPolicy,
+	}
+
+	if seeder.Spec.ChiaConfig.SecurityContext != nil {
+		input.SecurityContext = seeder.Spec.ChiaConfig.SecurityContext
+	}
+
+	if seeder.Spec.ChiaConfig.Resources != nil {
+		input.ResourceRequirements = *seeder.Spec.ChiaConfig.Resources
+	}
+
+	return kube.AssembleChiaExporterContainer(input)
 }

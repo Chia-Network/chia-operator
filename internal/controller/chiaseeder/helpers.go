@@ -5,7 +5,6 @@ Copyright 2023 Chia Network Inc.
 package chiaseeder
 
 import (
-	"context"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +15,7 @@ import (
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
-func (r *ChiaSeederReconciler) getChiaVolumes(ctx context.Context, seeder k8schianetv1.ChiaSeeder) []corev1.Volume {
+func getChiaVolumes(seeder k8schianetv1.ChiaSeeder) []corev1.Volume {
 	var v []corev1.Volume
 
 	// secret ca volume
@@ -33,7 +32,7 @@ func (r *ChiaSeederReconciler) getChiaVolumes(ctx context.Context, seeder k8schi
 
 	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
 	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
-	var chiaRootAdded bool = false
+	var chiaRootAdded = false
 	if seeder.Spec.Storage != nil && seeder.Spec.Storage.ChiaRoot != nil {
 		if seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
 			var pvcName string
@@ -82,7 +81,7 @@ func (r *ChiaSeederReconciler) getChiaVolumes(ctx context.Context, seeder k8schi
 }
 
 // getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct
-func (r *ChiaSeederReconciler) getChiaVolumeMounts(ctx context.Context, seeder k8schianetv1.ChiaSeeder) []corev1.VolumeMount {
+func getChiaVolumeMounts(seeder k8schianetv1.ChiaSeeder) []corev1.VolumeMount {
 	var v []corev1.VolumeMount
 
 	// secret ca volume
@@ -103,7 +102,7 @@ func (r *ChiaSeederReconciler) getChiaVolumeMounts(ctx context.Context, seeder k
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func (r *ChiaSeederReconciler) getChiaEnv(ctx context.Context, seeder k8schianetv1.ChiaSeeder) []corev1.EnvVar {
+func getChiaEnv(seeder k8schianetv1.ChiaSeeder) []corev1.EnvVar {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -232,7 +231,7 @@ func (r *ChiaSeederReconciler) getChiaEnv(ctx context.Context, seeder k8schianet
 }
 
 // getOwnerReference gives the common owner reference spec for ChiaSeeder related objects
-func (r *ChiaSeederReconciler) getOwnerReference(ctx context.Context, seeder k8schianetv1.ChiaSeeder) []metav1.OwnerReference {
+func getOwnerReference(seeder k8schianetv1.ChiaSeeder) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
 		{
 			APIVersion: seeder.APIVersion,
@@ -245,9 +244,40 @@ func (r *ChiaSeederReconciler) getOwnerReference(ctx context.Context, seeder k8s
 }
 
 // getFullNodePort determines the correct full_node port to use
-func (r *ChiaSeederReconciler) getFullNodePort(ctx context.Context, seeder k8schianetv1.ChiaSeeder) int32 {
+func getFullNodePort(seeder k8schianetv1.ChiaSeeder) int32 {
 	if seeder.Spec.ChiaConfig.Testnet != nil && *seeder.Spec.ChiaConfig.Testnet {
 		return consts.TestnetNodePort
 	}
 	return consts.MainnetNodePort
+}
+
+// getChiaPorts returns the ports to a chia container
+func getChiaPorts(seeder k8schianetv1.ChiaSeeder) []corev1.ContainerPort {
+	return []corev1.ContainerPort{
+		{
+			Name:          "daemon",
+			ContainerPort: consts.DaemonPort,
+			Protocol:      "TCP",
+		},
+		{
+			Name:          "dns",
+			ContainerPort: 53,
+			Protocol:      "UDP",
+		},
+		{
+			Name:          "dns-tcp",
+			ContainerPort: 53,
+			Protocol:      "TCP",
+		},
+		{
+			Name:          "peers",
+			ContainerPort: getFullNodePort(seeder),
+			Protocol:      "TCP",
+		},
+		{
+			Name:          "rpc",
+			ContainerPort: consts.CrawlerRPCPort,
+			Protocol:      "TCP",
+		},
+	}
 }

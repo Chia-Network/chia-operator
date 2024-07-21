@@ -90,7 +90,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.PeerService) {
-		srv := r.assemblePeerService(ctx, seeder)
+		srv := assemblePeerService(seeder)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -120,7 +120,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.DaemonService) {
-		srv := r.assembleDaemonService(ctx, seeder)
+		srv := assembleDaemonService(seeder)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -152,7 +152,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.RPCService) {
-		srv := r.assembleRPCService(ctx, seeder)
+		srv := assembleRPCService(seeder)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -184,7 +184,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaExporterConfig.Service) {
-		srv := r.assembleChiaExporterService(ctx, seeder)
+		srv := assembleChiaExporterService(seeder)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -217,7 +217,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if seeder.Spec.Storage != nil && seeder.Spec.Storage.ChiaRoot != nil && seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
-		pvc, err := r.assembleVolumeClaim(ctx, seeder)
+		pvc, err := assembleVolumeClaim(seeder)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder PVC -- Check operator logs.")
@@ -235,7 +235,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	deploy := r.assembleDeployment(ctx, seeder)
+	deploy := assembleDeployment(seeder)
 
 	if err := controllerutil.SetControllerReference(&seeder, &deploy, r.Scheme); err != nil {
 		return ctrl.Result{}, err

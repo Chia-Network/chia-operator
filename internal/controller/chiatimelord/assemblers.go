@@ -66,14 +66,7 @@ func assembleDaemonService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 		Name:           fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-daemon",
 		Namespace:      tl.Namespace,
 		OwnerReference: getOwnerReference(tl),
-		Ports: []corev1.ServicePort{
-			{
-				Port:       consts.DaemonPort,
-				TargetPort: intstr.FromString("daemon"),
-				Protocol:   "TCP",
-				Name:       "daemon",
-			},
-		},
+		Ports:          kube.GetChiaDaemonServicePorts(),
 	}
 
 	if tl.Spec.ChiaConfig.DaemonService != nil {
