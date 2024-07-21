@@ -75,7 +75,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Reconcile ChiaNode owned objects
 	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
-		srv := r.assemblePeerService(ctx, node)
+		srv := assemblePeerService(node)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -105,7 +105,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
-		srv := r.assembleHeadlessPeerService(ctx, node)
+		srv := assembleHeadlessPeerService(node)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -135,7 +135,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
-		srv := r.assembleLocalPeerService(ctx, node)
+		srv := assembleLocalPeerService(node)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -165,7 +165,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	if kube.ShouldMakeService(node.Spec.ChiaConfig.DaemonService) {
-		srv := r.assembleDaemonService(ctx, node)
+		srv := assembleDaemonService(node)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -197,7 +197,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	if kube.ShouldMakeService(node.Spec.ChiaConfig.RPCService) {
-		srv := r.assembleRPCService(ctx, node)
+		srv := assembleRPCService(node)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -229,7 +229,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	if kube.ShouldMakeService(node.Spec.ChiaExporterConfig.Service) {
-		srv := r.assembleChiaExporterService(ctx, node)
+		srv := assembleChiaExporterService(node)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -260,7 +260,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	stateful := r.assembleStatefulset(ctx, node)
+	stateful := assembleStatefulset(ctx, node)
 
 	if err := controllerutil.SetControllerReference(&node, &stateful, r.Scheme); err != nil {
 		return ctrl.Result{}, err

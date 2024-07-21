@@ -209,9 +209,6 @@ func assembleVolumeClaim(seeder k8schianetv1.ChiaSeeder) (corev1.PersistentVolum
 
 // assembleDeployment assembles the seeder Deployment resource for a ChiaSeeder CR
 func assembleDeployment(seeder k8schianetv1.ChiaSeeder) appsv1.Deployment {
-	chiaContainer := assembleChiaContainer(seeder)
-	chiaExporterContainer := assembleChiaExporterContainer(seeder)
-
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiaseederNamePattern, seeder.Name),
@@ -229,7 +226,7 @@ func assembleDeployment(seeder k8schianetv1.ChiaSeeder) appsv1.Deployment {
 					Annotations: seeder.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Containers:   []corev1.Container{chiaContainer, chiaExporterContainer},
+					Containers:   []corev1.Container{assembleChiaContainer(seeder)},
 					NodeSelector: seeder.Spec.NodeSelector,
 					Volumes:      getChiaVolumes(seeder),
 				},
@@ -254,6 +251,11 @@ func assembleDeployment(seeder k8schianetv1.ChiaSeeder) appsv1.Deployment {
 
 			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
 		}
+	}
+
+	if seeder.Spec.ChiaExporterConfig.Enabled {
+		chiaExporterContainer := assembleChiaExporterContainer(seeder)
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
 	}
 
 	if seeder.Spec.Strategy != nil {

@@ -5,7 +5,6 @@ Copyright 2023 Chia Network Inc.
 package chiafarmer
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 
@@ -17,7 +16,7 @@ import (
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
-func (r *ChiaFarmerReconciler) getChiaVolumes(ctx context.Context, farmer k8schianetv1.ChiaFarmer) []corev1.Volume {
+func getChiaVolumes(farmer k8schianetv1.ChiaFarmer) []corev1.Volume {
 	var v []corev1.Volume
 
 	// secret ca volume
@@ -42,7 +41,7 @@ func (r *ChiaFarmerReconciler) getChiaVolumes(ctx context.Context, farmer k8schi
 
 	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
 	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
-	var chiaRootAdded bool = false
+	var chiaRootAdded = false
 	if farmer.Spec.Storage != nil && farmer.Spec.Storage.ChiaRoot != nil {
 		if farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
 			var pvcName string
@@ -91,7 +90,7 @@ func (r *ChiaFarmerReconciler) getChiaVolumes(ctx context.Context, farmer k8schi
 }
 
 // getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct
-func (r *ChiaFarmerReconciler) getChiaVolumeMounts(ctx context.Context, farmer k8schianetv1.ChiaFarmer) []corev1.VolumeMount {
+func getChiaVolumeMounts() []corev1.VolumeMount {
 	return []corev1.VolumeMount{
 		{
 			Name:      "secret-ca",
@@ -109,7 +108,7 @@ func (r *ChiaFarmerReconciler) getChiaVolumeMounts(ctx context.Context, farmer k
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func (r *ChiaFarmerReconciler) getChiaEnv(ctx context.Context, farmer k8schianetv1.ChiaFarmer) []corev1.EnvVar {
+func getChiaEnv(farmer k8schianetv1.ChiaFarmer) []corev1.EnvVar {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -202,7 +201,7 @@ func (r *ChiaFarmerReconciler) getChiaEnv(ctx context.Context, farmer k8schianet
 }
 
 // getOwnerReference gives the common owner reference spec for ChiaFarmer related objects
-func (r *ChiaFarmerReconciler) getOwnerReference(ctx context.Context, farmer k8schianetv1.ChiaFarmer) []metav1.OwnerReference {
+func getOwnerReference(farmer k8schianetv1.ChiaFarmer) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
 		{
 			APIVersion: farmer.APIVersion,

@@ -74,7 +74,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	if kube.ShouldMakeService(introducer.Spec.ChiaConfig.PeerService) {
-		srv := r.assemblePeerService(ctx, introducer)
+		srv := assemblePeerService(introducer)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -104,7 +104,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	if kube.ShouldMakeService(introducer.Spec.ChiaConfig.DaemonService) {
-		srv := r.assembleDaemonService(ctx, introducer)
+		srv := assembleDaemonService(introducer)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -136,7 +136,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	if kube.ShouldMakeService(introducer.Spec.ChiaExporterConfig.Service) {
-		srv := r.assembleChiaExporterService(ctx, introducer)
+		srv := assembleChiaExporterService(introducer)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -169,7 +169,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if introducer.Spec.Storage != nil && introducer.Spec.Storage.ChiaRoot != nil && introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
-		pvc, err := r.assembleVolumeClaim(ctx, introducer)
+		pvc, err := assembleVolumeClaim(introducer)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer PVC -- Check operator logs.")
@@ -187,7 +187,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		}
 	}
 
-	deploy := r.assembleDeployment(ctx, introducer)
+	deploy := assembleDeployment(introducer)
 
 	if err := controllerutil.SetControllerReference(&introducer, &deploy, r.Scheme); err != nil {
 		return ctrl.Result{}, err

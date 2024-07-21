@@ -197,9 +197,6 @@ func assembleVolumeClaim(tl k8schianetv1.ChiaTimelord) (corev1.PersistentVolumeC
 
 // assembleDeployment assembles the tl Deployment resource for a ChiaTimelord CR
 func assembleDeployment(tl k8schianetv1.ChiaTimelord) appsv1.Deployment {
-	chiaContainer := assembleChiaContainer(tl)
-	chiaExporterContainer := assembleChiaExporterContainer(tl)
-
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiatimelordNamePattern, tl.Name),
@@ -217,7 +214,7 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord) appsv1.Deployment {
 					Annotations: tl.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Containers:   []corev1.Container{chiaContainer, chiaExporterContainer},
+					Containers:   []corev1.Container{assembleChiaContainer(tl)},
 					NodeSelector: tl.Spec.NodeSelector,
 					Volumes:      getChiaVolumes(tl),
 				},
@@ -242,6 +239,11 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord) appsv1.Deployment {
 
 			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
 		}
+	}
+
+	if tl.Spec.ChiaExporterConfig.Enabled {
+		chiaExporterContainer := assembleChiaExporterContainer(tl)
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
 	}
 
 	if tl.Spec.Strategy != nil {

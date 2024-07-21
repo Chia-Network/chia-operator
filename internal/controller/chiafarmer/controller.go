@@ -75,7 +75,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Reconcile ChiaFarmer owned objects
 	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.PeerService) {
-		srv := r.assemblePeerService(ctx, farmer)
+		srv := assemblePeerService(farmer)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -105,7 +105,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.DaemonService) {
-		srv := r.assembleDaemonService(ctx, farmer)
+		srv := assembleDaemonService(farmer)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -137,7 +137,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.RPCService) {
-		srv := r.assembleRPCService(ctx, farmer)
+		srv := assembleRPCService(farmer)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -169,7 +169,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(farmer.Spec.ChiaExporterConfig.Service) {
-		srv := r.assembleChiaExporterService(ctx, farmer)
+		srv := assembleChiaExporterService(farmer)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -202,7 +202,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if farmer.Spec.Storage != nil && farmer.Spec.Storage.ChiaRoot != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
-		pvc, err := r.assembleVolumeClaim(ctx, farmer)
+		pvc, err := assembleVolumeClaim(farmer)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer PVC -- Check operator logs.")
@@ -220,7 +220,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	deploy := r.assembleDeployment(ctx, farmer)
+	deploy := assembleDeployment(farmer)
 
 	if err := controllerutil.SetControllerReference(&farmer, &deploy, r.Scheme); err != nil {
 		return ctrl.Result{}, err

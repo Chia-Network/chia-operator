@@ -5,7 +5,6 @@ Copyright 2023 Chia Network Inc.
 package chiaca
 
 import (
-	"context"
 	"fmt"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
@@ -20,13 +19,13 @@ import (
 const chiacaNamePattern = "%s-chiaca-generator"
 
 // assembleJob assembles the Job resource for a ChiaCA CR
-func (r *ChiaCAReconciler) assembleJob(ctx context.Context, ca k8schianetv1.ChiaCA) batchv1.Job {
-	var job batchv1.Job = batchv1.Job{
+func (r *ChiaCAReconciler) assembleJob(ca k8schianetv1.ChiaCA) batchv1.Job {
+	var job = batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
 			Namespace:       ca.Namespace,
 			Labels:          kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
-			OwnerReferences: r.getOwnerReference(ctx, ca),
+			OwnerReferences: getOwnerReference(ca),
 		},
 		Spec: batchv1.JobSpec{
 			Template: corev1.PodTemplateSpec{
@@ -69,25 +68,25 @@ func (r *ChiaCAReconciler) assembleJob(ctx context.Context, ca k8schianetv1.Chia
 }
 
 // assembleServiceAccount assembles the ServiceAccount resource for a ChiaCA CR
-func (r *ChiaCAReconciler) assembleServiceAccount(ctx context.Context, ca k8schianetv1.ChiaCA) corev1.ServiceAccount {
+func (r *ChiaCAReconciler) assembleServiceAccount(ca k8schianetv1.ChiaCA) corev1.ServiceAccount {
 	return corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
 			Namespace:       ca.Namespace,
 			Labels:          kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
-			OwnerReferences: r.getOwnerReference(ctx, ca),
+			OwnerReferences: getOwnerReference(ca),
 		},
 	}
 }
 
 // assembleRole assembles the Role resource for a ChiaCA CR
-func (r *ChiaCAReconciler) assembleRole(ctx context.Context, ca k8schianetv1.ChiaCA) rbacv1.Role {
+func (r *ChiaCAReconciler) assembleRole(ca k8schianetv1.ChiaCA) rbacv1.Role {
 	return rbacv1.Role{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
 			Namespace:       ca.Namespace,
 			Labels:          kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
-			OwnerReferences: r.getOwnerReference(ctx, ca),
+			OwnerReferences: getOwnerReference(ca),
 		},
 		Rules: []rbacv1.PolicyRule{
 			{
@@ -106,13 +105,13 @@ func (r *ChiaCAReconciler) assembleRole(ctx context.Context, ca k8schianetv1.Chi
 }
 
 // assembleRoleBinding assembles the RoleBinding resource for a ChiaCA CR
-func (r *ChiaCAReconciler) assembleRoleBinding(ctx context.Context, ca k8schianetv1.ChiaCA) rbacv1.RoleBinding {
+func (r *ChiaCAReconciler) assembleRoleBinding(ca k8schianetv1.ChiaCA) rbacv1.RoleBinding {
 	return rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
 			Namespace:       ca.Namespace,
 			Labels:          kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
-			OwnerReferences: r.getOwnerReference(ctx, ca),
+			OwnerReferences: getOwnerReference(ca),
 		},
 		Subjects: []rbacv1.Subject{
 			{

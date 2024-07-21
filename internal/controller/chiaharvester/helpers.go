@@ -5,7 +5,6 @@ Copyright 2023 Chia Network Inc.
 package chiaharvester
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 
@@ -17,7 +16,7 @@ import (
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
-func (r *ChiaHarvesterReconciler) getChiaVolumes(ctx context.Context, harvester k8schianetv1.ChiaHarvester) []corev1.Volume {
+func getChiaVolumes(harvester k8schianetv1.ChiaHarvester) []corev1.Volume {
 	var v []corev1.Volume
 
 	// secret ca volume
@@ -32,7 +31,7 @@ func (r *ChiaHarvesterReconciler) getChiaVolumes(ctx context.Context, harvester 
 
 	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
 	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
-	var chiaRootAdded bool = false
+	var chiaRootAdded = false
 	if harvester.Spec.Storage != nil && harvester.Spec.Storage.ChiaRoot != nil {
 		if harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
 			var pvcName string
@@ -118,7 +117,7 @@ func (r *ChiaHarvesterReconciler) getChiaVolumes(ctx context.Context, harvester 
 }
 
 // getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct
-func (r *ChiaHarvesterReconciler) getChiaVolumeMounts(ctx context.Context, harvester k8schianetv1.ChiaHarvester) []corev1.VolumeMount {
+func getChiaVolumeMounts(harvester k8schianetv1.ChiaHarvester) []corev1.VolumeMount {
 	var v []corev1.VolumeMount
 
 	// secret ca volume
@@ -168,7 +167,7 @@ func (r *ChiaHarvesterReconciler) getChiaVolumeMounts(ctx context.Context, harve
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func (r *ChiaHarvesterReconciler) getChiaEnv(ctx context.Context, harvester k8schianetv1.ChiaHarvester) []corev1.EnvVar {
+func getChiaEnv(harvester k8schianetv1.ChiaHarvester) []corev1.EnvVar {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -266,7 +265,7 @@ func (r *ChiaHarvesterReconciler) getChiaEnv(ctx context.Context, harvester k8sc
 }
 
 // getOwnerReference gives the common owner reference spec for ChiaHarvester related objects
-func (r *ChiaHarvesterReconciler) getOwnerReference(ctx context.Context, harvester k8schianetv1.ChiaHarvester) []metav1.OwnerReference {
+func getOwnerReference(harvester k8schianetv1.ChiaHarvester) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
 		{
 			APIVersion: harvester.APIVersion,

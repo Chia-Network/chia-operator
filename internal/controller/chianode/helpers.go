@@ -20,7 +20,7 @@ import (
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
-func (r *ChiaNodeReconciler) getChiaVolumesAndTemplates(ctx context.Context, node k8schianetv1.ChiaNode) ([]corev1.Volume, []corev1.PersistentVolumeClaim) {
+func getChiaVolumesAndTemplates(node k8schianetv1.ChiaNode) ([]corev1.Volume, []corev1.PersistentVolumeClaim) {
 	var v []corev1.Volume
 	var vcts []corev1.PersistentVolumeClaim
 
@@ -36,7 +36,7 @@ func (r *ChiaNodeReconciler) getChiaVolumesAndTemplates(ctx context.Context, nod
 
 	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
 	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
-	var chiaRootAdded bool = false
+	var chiaRootAdded = false
 	if node.Spec.Storage != nil && node.Spec.Storage.ChiaRoot != nil {
 		if node.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
 			vct := corev1.PersistentVolumeClaim{
@@ -90,7 +90,7 @@ func (r *ChiaNodeReconciler) getChiaVolumesAndTemplates(ctx context.Context, nod
 }
 
 // getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct
-func (r *ChiaNodeReconciler) getChiaVolumeMounts(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.VolumeMount {
+func getChiaVolumeMounts() []corev1.VolumeMount {
 	var v []corev1.VolumeMount
 
 	// secret ca volume
@@ -109,7 +109,7 @@ func (r *ChiaNodeReconciler) getChiaVolumeMounts(ctx context.Context, node k8sch
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func (r *ChiaNodeReconciler) getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar {
 	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 
@@ -211,7 +211,7 @@ func (r *ChiaNodeReconciler) getChiaEnv(ctx context.Context, node k8schianetv1.C
 }
 
 // getOwnerReference gives the common owner reference spec for ChiaNode related objects
-func (r *ChiaNodeReconciler) getOwnerReference(ctx context.Context, node k8schianetv1.ChiaNode) []metav1.OwnerReference {
+func getOwnerReference(node k8schianetv1.ChiaNode) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
 		{
 			APIVersion: node.APIVersion,
@@ -224,7 +224,7 @@ func (r *ChiaNodeReconciler) getOwnerReference(ctx context.Context, node k8schia
 }
 
 // getFullNodePort determines the correct full node port to use
-func (r *ChiaNodeReconciler) getFullNodePort(ctx context.Context, node k8schianetv1.ChiaNode) int32 {
+func getFullNodePort(node k8schianetv1.ChiaNode) int32 {
 	if node.Spec.ChiaConfig.Testnet != nil && *node.Spec.ChiaConfig.Testnet {
 		return consts.TestnetNodePort
 	}

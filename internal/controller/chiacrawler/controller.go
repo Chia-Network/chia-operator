@@ -73,7 +73,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.PeerService) {
-		srv := r.assemblePeerService(ctx, crawler)
+		srv := assemblePeerService(crawler)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -103,7 +103,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.DaemonService) {
-		srv := r.assembleDaemonService(ctx, crawler)
+		srv := assembleDaemonService(crawler)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -135,7 +135,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.RPCService) {
-		srv := r.assembleRPCService(ctx, crawler)
+		srv := assembleRPCService(crawler)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -167,7 +167,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	if kube.ShouldMakeService(crawler.Spec.ChiaExporterConfig.Service) {
-		srv := r.assembleChiaExporterService(ctx, crawler)
+		srv := assembleChiaExporterService(crawler)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -200,7 +200,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if crawler.Spec.Storage != nil && crawler.Spec.Storage.ChiaRoot != nil && crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
-		pvc, err := r.assembleVolumeClaim(ctx, crawler)
+		pvc, err := assembleVolumeClaim(crawler)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler PVC -- Check operator logs.")
@@ -218,7 +218,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 	}
 
-	deploy := r.assembleDeployment(ctx, crawler)
+	deploy := assembleDeployment(crawler)
 
 	if err := controllerutil.SetControllerReference(&crawler, &deploy, r.Scheme); err != nil {
 		return ctrl.Result{}, err

@@ -197,9 +197,6 @@ func assembleVolumeClaim(wallet k8schianetv1.ChiaWallet) (corev1.PersistentVolum
 
 // assembleDeployment assembles the wallet Deployment resource for a ChiaWallet CR
 func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet) appsv1.Deployment {
-	chiaContainer := assembleChiaContainer(ctx, wallet)
-	chiaExporterContainer := assembleChiaExporterContainer(wallet)
-
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiawalletNamePattern, wallet.Name),
@@ -217,7 +214,7 @@ func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet) app
 					Annotations: wallet.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Containers:   []corev1.Container{chiaContainer, chiaExporterContainer},
+					Containers:   []corev1.Container{assembleChiaContainer(ctx, wallet)},
 					NodeSelector: wallet.Spec.NodeSelector,
 					Volumes:      getChiaVolumes(wallet),
 				},
@@ -242,6 +239,11 @@ func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet) app
 
 			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
 		}
+	}
+
+	if wallet.Spec.ChiaExporterConfig.Enabled {
+		chiaExporterContainer := assembleChiaExporterContainer(wallet)
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
 	}
 
 	if wallet.Spec.Strategy != nil {

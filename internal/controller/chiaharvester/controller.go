@@ -75,7 +75,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	// Reconcile ChiaHarvester owned objects
 	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.PeerService) {
-		srv := r.assemblePeerService(ctx, harvester)
+		srv := assemblePeerService(harvester)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -105,7 +105,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.DaemonService) {
-		srv := r.assembleDaemonService(ctx, harvester)
+		srv := assembleDaemonService(harvester)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -137,7 +137,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.RPCService) {
-		srv := r.assembleRPCService(ctx, harvester)
+		srv := assembleRPCService(harvester)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -169,7 +169,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	if kube.ShouldMakeService(harvester.Spec.ChiaExporterConfig.Service) {
-		srv := r.assembleChiaExporterService(ctx, harvester)
+		srv := assembleChiaExporterService(harvester)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -202,7 +202,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if harvester.Spec.Storage != nil && harvester.Spec.Storage.ChiaRoot != nil && harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
-		pvc, err := r.assembleVolumeClaim(ctx, harvester)
+		pvc, err := assembleVolumeClaim(harvester)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester PVC -- Check operator logs.")
@@ -220,7 +220,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		}
 	}
 
-	deploy := r.assembleDeployment(ctx, harvester)
+	deploy := assembleDeployment(harvester)
 
 	if err := controllerutil.SetControllerReference(&harvester, &deploy, r.Scheme); err != nil {
 		return ctrl.Result{}, err

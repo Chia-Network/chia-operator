@@ -5,7 +5,6 @@ Copyright 2024 Chia Network Inc.
 package chiaintroducer
 
 import (
-	"context"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +15,7 @@ import (
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
-func (r *ChiaIntroducerReconciler) getChiaVolumes(ctx context.Context, introducer k8schianetv1.ChiaIntroducer) []corev1.Volume {
+func getChiaVolumes(introducer k8schianetv1.ChiaIntroducer) []corev1.Volume {
 	var v []corev1.Volume
 
 	// secret ca volume
@@ -33,7 +32,7 @@ func (r *ChiaIntroducerReconciler) getChiaVolumes(ctx context.Context, introduce
 
 	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
 	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
-	var chiaRootAdded bool = false
+	var chiaRootAdded = false
 	if introducer.Spec.Storage != nil && introducer.Spec.Storage.ChiaRoot != nil {
 		if introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
 			var pvcName string
@@ -82,7 +81,7 @@ func (r *ChiaIntroducerReconciler) getChiaVolumes(ctx context.Context, introduce
 }
 
 // getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct
-func (r *ChiaIntroducerReconciler) getChiaVolumeMounts(ctx context.Context, introducer k8schianetv1.ChiaIntroducer) []corev1.VolumeMount {
+func getChiaVolumeMounts(introducer k8schianetv1.ChiaIntroducer) []corev1.VolumeMount {
 	var v []corev1.VolumeMount
 
 	// secret ca volume
@@ -103,7 +102,7 @@ func (r *ChiaIntroducerReconciler) getChiaVolumeMounts(ctx context.Context, intr
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func (r *ChiaIntroducerReconciler) getChiaEnv(ctx context.Context, introducer k8schianetv1.ChiaIntroducer) []corev1.EnvVar {
+func getChiaEnv(introducer k8schianetv1.ChiaIntroducer) []corev1.EnvVar {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -157,7 +156,7 @@ func (r *ChiaIntroducerReconciler) getChiaEnv(ctx context.Context, introducer k8
 		// The default full_node port in the initial config is 8445, which will often need overwriting
 		env = append(env, corev1.EnvVar{
 			Name:  "network_port",
-			Value: strconv.Itoa(int(r.getFullNodePort(ctx, introducer))),
+			Value: strconv.Itoa(int(getFullNodePort(introducer))),
 		})
 	}
 
@@ -197,7 +196,7 @@ func (r *ChiaIntroducerReconciler) getChiaEnv(ctx context.Context, introducer k8
 }
 
 // getOwnerReference gives the common owner reference spec for ChiaIntroducer related objects
-func (r *ChiaIntroducerReconciler) getOwnerReference(ctx context.Context, introducer k8schianetv1.ChiaIntroducer) []metav1.OwnerReference {
+func getOwnerReference(introducer k8schianetv1.ChiaIntroducer) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
 		{
 			APIVersion: introducer.APIVersion,
@@ -210,7 +209,7 @@ func (r *ChiaIntroducerReconciler) getOwnerReference(ctx context.Context, introd
 }
 
 // getFullNodePort determines the correct full_node port to use
-func (r *ChiaIntroducerReconciler) getFullNodePort(ctx context.Context, introducer k8schianetv1.ChiaIntroducer) int32 {
+func getFullNodePort(introducer k8schianetv1.ChiaIntroducer) int32 {
 	if introducer.Spec.ChiaConfig.Testnet != nil && *introducer.Spec.ChiaConfig.Testnet {
 		return consts.TestnetNodePort
 	}

@@ -75,7 +75,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// Reconcile resources, creating them if they don't exist
-	sa := r.assembleServiceAccount(ctx, ca)
+	sa := r.assembleServiceAccount(ca)
 	res, err := kube.ReconcileServiceAccount(ctx, resourceReconciler, sa)
 	if err != nil {
 		if res == nil {
@@ -86,7 +86,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator ServiceAccount: %v", req.NamespacedName, err)
 	}
 
-	role := r.assembleRole(ctx, ca)
+	role := r.assembleRole(ca)
 	res, err = kube.ReconcileRole(ctx, resourceReconciler, role)
 	if err != nil {
 		if res == nil {
@@ -97,7 +97,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator Role: %v", req.NamespacedName, err)
 	}
 
-	rb := r.assembleRoleBinding(ctx, ca)
+	rb := r.assembleRoleBinding(ca)
 	res, err = kube.ReconcileRoleBinding(ctx, resourceReconciler, rb)
 	if err != nil {
 		if res == nil {
@@ -117,7 +117,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 	// Create CA generating Job if Secret does not already exist
 	if notFound {
-		job := r.assembleJob(ctx, ca)
+		job := r.assembleJob(ca)
 		res, err = kube.ReconcileJob(ctx, resourceReconciler, job)
 		if err != nil {
 			if res == nil {
