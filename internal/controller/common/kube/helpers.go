@@ -5,15 +5,17 @@ Copyright 2023 Chia Network Inc.
 package kube
 
 import (
-	"context"
 	"fmt"
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // GetCommonLabels gives some common labels for chia-operator related objects
-func GetCommonLabels(ctx context.Context, kind string, meta metav1.ObjectMeta, additionalLabels ...map[string]string) map[string]string {
+func GetCommonLabels(kind string, meta metav1.ObjectMeta, additionalLabels ...map[string]string) map[string]string {
 	var labels = make(map[string]string)
 	labels = CombineMaps(additionalLabels...)
 	labels["app.kubernetes.io/instance"] = meta.Name
@@ -41,4 +43,15 @@ func ShouldMakeService(srv *k8schianetv1.Service) bool {
 		return *srv.Enabled
 	}
 	return true // default to true if the Service wasn't declared
+}
+
+func GetChiaExporterServicePorts() []corev1.ServicePort {
+	return []corev1.ServicePort{
+		{
+			Port:       consts.ChiaExporterPort,
+			TargetPort: intstr.FromString("metrics"),
+			Protocol:   "TCP",
+			Name:       "metrics",
+		},
+	}
 }

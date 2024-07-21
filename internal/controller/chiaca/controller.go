@@ -31,7 +31,7 @@ type ChiaCAReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var chiacas map[string]bool = make(map[string]bool)
+var chiacas = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacas,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacas/status,verbs=get;update;patch
@@ -43,12 +43,11 @@ var chiacas map[string]bool = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
+// Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaCAReconciler ChiaCA=%s", req.NamespacedName.String()))
+	log.Info(fmt.Sprintf("ChiaCAReconciler ChiaCA=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
 	var ca k8schianetv1.ChiaCA

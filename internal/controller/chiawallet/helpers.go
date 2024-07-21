@@ -18,8 +18,29 @@ import (
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 )
 
+// getChiaPorts returns the ports to a chia container
+func getChiaPorts() []corev1.ContainerPort {
+	return []corev1.ContainerPort{
+		{
+			Name:          "daemon",
+			ContainerPort: consts.DaemonPort,
+			Protocol:      "TCP",
+		},
+		{
+			Name:          "peers",
+			ContainerPort: consts.WalletPort,
+			Protocol:      "TCP",
+		},
+		{
+			Name:          "rpc",
+			ContainerPort: consts.WalletRPCPort,
+			Protocol:      "TCP",
+		},
+	}
+}
+
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
-func (r *ChiaWalletReconciler) getChiaVolumes(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.Volume {
+func getChiaVolumes(wallet k8schianetv1.ChiaWallet) []corev1.Volume {
 	var v []corev1.Volume
 
 	// secret ca volume
@@ -44,7 +65,7 @@ func (r *ChiaWalletReconciler) getChiaVolumes(ctx context.Context, wallet k8schi
 
 	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
 	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
-	var chiaRootAdded bool = false
+	chiaRootAdded := false
 	if wallet.Spec.Storage != nil && wallet.Spec.Storage.ChiaRoot != nil {
 		if wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
 			var pvcName string
@@ -92,7 +113,7 @@ func (r *ChiaWalletReconciler) getChiaVolumes(ctx context.Context, wallet k8schi
 	return v
 }
 
-func (r *ChiaWalletReconciler) getChiaVolumeMounts(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.VolumeMount {
+func getChiaVolumeMounts() []corev1.VolumeMount {
 	return []corev1.VolumeMount{
 		{
 			Name:      "secret-ca",
@@ -110,7 +131,7 @@ func (r *ChiaWalletReconciler) getChiaVolumeMounts(ctx context.Context, wallet k
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func (r *ChiaWalletReconciler) getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.EnvVar {
 	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 
@@ -220,7 +241,7 @@ func (r *ChiaWalletReconciler) getChiaEnv(ctx context.Context, wallet k8schianet
 }
 
 // getOwnerReference gives the common owner reference spec for ChiaWallet related objects
-func (r *ChiaWalletReconciler) getOwnerReference(ctx context.Context, wallet k8schianetv1.ChiaWallet) []metav1.OwnerReference {
+func getOwnerReference(wallet k8schianetv1.ChiaWallet) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
 		{
 			APIVersion: wallet.APIVersion,

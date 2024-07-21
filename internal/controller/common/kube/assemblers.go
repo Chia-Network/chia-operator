@@ -49,6 +49,41 @@ func AssembleCommonService(input AssembleCommonServiceInputs) corev1.Service {
 	return srv
 }
 
+// AssembleChiaContainerInputs contains configuration inputs to the AssembleChiaContainer function
+type AssembleChiaContainerInputs struct {
+	Image                string
+	ImagePullPolicy      corev1.PullPolicy
+	Env                  []corev1.EnvVar
+	Ports                []corev1.ContainerPort
+	VolumeMounts         []corev1.VolumeMount
+	SecurityContext      *corev1.SecurityContext
+	LivenessProbe        *corev1.Probe
+	ReadinessProbe       *corev1.Probe
+	StartupProbe         *corev1.Probe
+	ResourceRequirements *corev1.ResourceRequirements
+}
+
+// AssembleChiaContainer assembles a chia container spec
+func AssembleChiaContainer(input AssembleChiaContainerInputs) corev1.Container {
+	container := corev1.Container{
+		Name:            "chia",
+		Image:           input.Image,
+		ImagePullPolicy: input.ImagePullPolicy,
+		Env:             input.Env,
+		Ports:           input.Ports,
+		VolumeMounts:    input.VolumeMounts,
+		LivenessProbe:   input.LivenessProbe,
+		ReadinessProbe:  input.ReadinessProbe,
+		StartupProbe:    input.StartupProbe,
+	}
+
+	if input.ResourceRequirements != nil {
+		container.Resources = *input.ResourceRequirements
+	}
+
+	return container
+}
+
 // AssembleChiaExporterContainerInputs contains configuration inputs to the AssembleChiaExporterContainer function
 type AssembleChiaExporterContainerInputs struct {
 	Image                string

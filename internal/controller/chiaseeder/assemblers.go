@@ -42,8 +42,8 @@ func (r *ChiaSeederReconciler) assemblePeerService(ctx context.Context, seeder k
 	if seeder.Spec.ChiaConfig.PeerService != nil && seeder.Spec.ChiaConfig.PeerService.Labels != nil {
 		additionalServiceLabels = seeder.Spec.ChiaConfig.PeerService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -98,8 +98,8 @@ func (r *ChiaSeederReconciler) assembleDaemonService(ctx context.Context, seeder
 	if seeder.Spec.ChiaConfig.DaemonService != nil && seeder.Spec.ChiaConfig.DaemonService.Labels != nil {
 		additionalServiceLabels = seeder.Spec.ChiaConfig.DaemonService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -142,8 +142,8 @@ func (r *ChiaSeederReconciler) assembleRPCService(ctx context.Context, seeder k8
 	if seeder.Spec.ChiaConfig.RPCService != nil && seeder.Spec.ChiaConfig.RPCService.Labels != nil {
 		additionalServiceLabels = seeder.Spec.ChiaConfig.RPCService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -217,8 +217,8 @@ func (r *ChiaSeederReconciler) assembleChiaExporterService(ctx context.Context, 
 	if seeder.Spec.ChiaExporterConfig.Service != nil && seeder.Spec.ChiaExporterConfig.Service.Labels != nil {
 		additionalServiceLabels = seeder.Spec.ChiaExporterConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -246,16 +246,16 @@ func (r *ChiaSeederReconciler) assembleDeployment(ctx context.Context, seeder k8
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiaseederNamePattern, seeder.Name),
 			Namespace:   seeder.Namespace,
-			Labels:      kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels),
+			Labels:      kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels),
 			Annotations: seeder.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta),
+				MatchLabels: kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta),
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(ctx, seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels),
 					Annotations: seeder.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{

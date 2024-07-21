@@ -42,8 +42,8 @@ func (r *ChiaTimelordReconciler) assemblePeerService(ctx context.Context, tl k8s
 	if tl.Spec.ChiaConfig.PeerService != nil && tl.Spec.ChiaConfig.PeerService.Labels != nil {
 		additionalServiceLabels = tl.Spec.ChiaConfig.PeerService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -86,8 +86,8 @@ func (r *ChiaTimelordReconciler) assembleDaemonService(ctx context.Context, tl k
 	if tl.Spec.ChiaConfig.DaemonService != nil && tl.Spec.ChiaConfig.DaemonService.Labels != nil {
 		additionalServiceLabels = tl.Spec.ChiaConfig.DaemonService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -130,8 +130,8 @@ func (r *ChiaTimelordReconciler) assembleRPCService(ctx context.Context, tl k8sc
 	if tl.Spec.ChiaConfig.RPCService != nil && tl.Spec.ChiaConfig.RPCService.Labels != nil {
 		additionalServiceLabels = tl.Spec.ChiaConfig.RPCService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -174,8 +174,8 @@ func (r *ChiaTimelordReconciler) assembleChiaExporterService(ctx context.Context
 	if tl.Spec.ChiaExporterConfig.Service != nil && tl.Spec.ChiaExporterConfig.Service.Labels != nil {
 		additionalServiceLabels = tl.Spec.ChiaExporterConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -234,16 +234,16 @@ func (r *ChiaTimelordReconciler) assembleDeployment(ctx context.Context, tl k8sc
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiatimelordNamePattern, tl.Name),
 			Namespace:   tl.Namespace,
-			Labels:      kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
+			Labels:      kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 			Annotations: tl.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta),
+				MatchLabels: kube.GetCommonLabels(tl.Kind, tl.ObjectMeta),
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(ctx, tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
 					Annotations: tl.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{

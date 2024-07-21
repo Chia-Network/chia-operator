@@ -41,8 +41,8 @@ func (r *ChiaNodeReconciler) assemblePeerService(ctx context.Context, node k8sch
 	if node.Spec.ChiaConfig.PeerService != nil && node.Spec.ChiaConfig.PeerService.Labels != nil {
 		additionalServiceLabels = node.Spec.ChiaConfig.PeerService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -107,8 +107,8 @@ func (r *ChiaNodeReconciler) assembleDaemonService(ctx context.Context, node k8s
 	if node.Spec.ChiaConfig.DaemonService != nil && node.Spec.ChiaConfig.DaemonService.Labels != nil {
 		additionalServiceLabels = node.Spec.ChiaConfig.DaemonService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -151,8 +151,8 @@ func (r *ChiaNodeReconciler) assembleRPCService(ctx context.Context, node k8schi
 	if node.Spec.ChiaConfig.RPCService != nil && node.Spec.ChiaConfig.RPCService.Labels != nil {
 		additionalServiceLabels = node.Spec.ChiaConfig.RPCService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -195,8 +195,8 @@ func (r *ChiaNodeReconciler) assembleChiaExporterService(ctx context.Context, no
 	if node.Spec.ChiaExporterConfig.Service != nil && node.Spec.ChiaExporterConfig.Service.Labels != nil {
 		additionalServiceLabels = node.Spec.ChiaExporterConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -226,18 +226,18 @@ func (r *ChiaNodeReconciler) assembleStatefulset(ctx context.Context, node k8sch
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chianodeNamePattern, node.Name),
 			Namespace:   node.Namespace,
-			Labels:      kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+			Labels:      kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
 			Annotations: node.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.StatefulSetSpec{
 			Replicas: &node.Spec.Replicas,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta),
+				MatchLabels: kube.GetCommonLabels(node.Kind, node.ObjectMeta),
 			},
 			ServiceName: fmt.Sprintf(chianodeNamePattern, node.Name) + "-headless",
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(ctx, node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
 					Annotations: node.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{

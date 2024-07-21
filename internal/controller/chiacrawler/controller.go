@@ -32,7 +32,7 @@ type ChiaCrawlerReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var chiacrawlers map[string]bool = make(map[string]bool)
+var chiacrawlers = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacrawlers,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacrawlers/status,verbs=get;update;patch
@@ -41,12 +41,11 @@ var chiacrawlers map[string]bool = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
+// Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s", req.NamespacedName.String()))
+	log.Info(fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
 	var crawler k8schianetv1.ChiaCrawler

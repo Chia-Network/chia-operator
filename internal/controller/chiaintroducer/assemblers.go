@@ -42,8 +42,8 @@ func (r *ChiaIntroducerReconciler) assemblePeerService(ctx context.Context, intr
 	if introducer.Spec.ChiaConfig.PeerService != nil && introducer.Spec.ChiaConfig.PeerService.Labels != nil {
 		additionalServiceLabels = introducer.Spec.ChiaConfig.PeerService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -86,8 +86,8 @@ func (r *ChiaIntroducerReconciler) assembleDaemonService(ctx context.Context, in
 	if introducer.Spec.ChiaConfig.DaemonService != nil && introducer.Spec.ChiaConfig.DaemonService.Labels != nil {
 		additionalServiceLabels = introducer.Spec.ChiaConfig.DaemonService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -130,8 +130,8 @@ func (r *ChiaIntroducerReconciler) assembleChiaExporterService(ctx context.Conte
 	if introducer.Spec.ChiaExporterConfig.Service != nil && introducer.Spec.ChiaExporterConfig.Service.Labels != nil {
 		additionalServiceLabels = introducer.Spec.ChiaExporterConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -190,16 +190,16 @@ func (r *ChiaIntroducerReconciler) assembleDeployment(ctx context.Context, intro
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiaintroducerNamePattern, introducer.Name),
 			Namespace:   introducer.Namespace,
-			Labels:      kube.GetCommonLabels(ctx, introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels),
+			Labels:      kube.GetCommonLabels(introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels),
 			Annotations: introducer.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: kube.GetCommonLabels(ctx, introducer.Kind, introducer.ObjectMeta),
+				MatchLabels: kube.GetCommonLabels(introducer.Kind, introducer.ObjectMeta),
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(ctx, introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels),
 					Annotations: introducer.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{

@@ -42,8 +42,8 @@ func (r *ChiaHarvesterReconciler) assemblePeerService(ctx context.Context, harve
 	if harvester.Spec.ChiaConfig.PeerService != nil && harvester.Spec.ChiaConfig.PeerService.Labels != nil {
 		additionalServiceLabels = harvester.Spec.ChiaConfig.PeerService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -86,8 +86,8 @@ func (r *ChiaHarvesterReconciler) assembleDaemonService(ctx context.Context, har
 	if harvester.Spec.ChiaConfig.DaemonService != nil && harvester.Spec.ChiaConfig.DaemonService.Labels != nil {
 		additionalServiceLabels = harvester.Spec.ChiaConfig.DaemonService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -130,8 +130,8 @@ func (r *ChiaHarvesterReconciler) assembleRPCService(ctx context.Context, harves
 	if harvester.Spec.ChiaConfig.RPCService != nil && harvester.Spec.ChiaConfig.RPCService.Labels != nil {
 		additionalServiceLabels = harvester.Spec.ChiaConfig.RPCService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -174,8 +174,8 @@ func (r *ChiaHarvesterReconciler) assembleChiaExporterService(ctx context.Contex
 	if harvester.Spec.ChiaExporterConfig.Service != nil && harvester.Spec.ChiaExporterConfig.Service.Labels != nil {
 		additionalServiceLabels = harvester.Spec.ChiaExporterConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -234,16 +234,16 @@ func (r *ChiaHarvesterReconciler) assembleDeployment(ctx context.Context, harves
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
 			Namespace:   harvester.Namespace,
-			Labels:      kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
+			Labels:      kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
 			Annotations: harvester.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta),
+				MatchLabels: kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta),
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(ctx, harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels),
 					Annotations: harvester.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{

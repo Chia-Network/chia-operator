@@ -33,7 +33,7 @@ type ChiaTimelordReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var chiatimelords map[string]bool = make(map[string]bool)
+var chiatimelords = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiatimelords,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiatimelords/status,verbs=get;update;patch
@@ -42,10 +42,11 @@ var chiatimelords map[string]bool = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
+// Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaTimelordController ChiaTimelord=%s", req.NamespacedName.String()))
+	log.Info(fmt.Sprintf("ChiaTimelordController ChiaTimelord=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
 	var tl k8schianetv1.ChiaTimelord

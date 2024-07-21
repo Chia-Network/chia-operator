@@ -49,7 +49,7 @@ type ChiaSeederReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var chiaseeders map[string]bool = make(map[string]bool)
+var chiaseeders = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaseeders,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaseeders/status,verbs=get;update;patch
@@ -58,12 +58,11 @@ var chiaseeders map[string]bool = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
+// Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s", req.NamespacedName.String()))
+	log.Info(fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
 	var seeder k8schianetv1.ChiaSeeder

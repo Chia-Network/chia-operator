@@ -33,7 +33,7 @@ type ChiaWalletReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var chiawallets map[string]bool = make(map[string]bool)
+var chiawallets = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiawallets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiawallets/status,verbs=get;update;patch
@@ -42,12 +42,11 @@ var chiawallets map[string]bool = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.15.0/pkg/reconcile
+// Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s", req.NamespacedName.String()))
+	log.Info(fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
 	var wallet k8schianetv1.ChiaWallet
@@ -76,7 +75,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Reconcile ChiaWallet owned objects
 	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.PeerService) {
-		srv := r.assemblePeerService(ctx, wallet)
+		srv := assemblePeerService(wallet)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -106,7 +105,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.DaemonService) {
-		srv := r.assembleDaemonService(ctx, wallet)
+		srv := assembleDaemonService(wallet)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -138,7 +137,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.RPCService) {
-		srv := r.assembleRPCService(ctx, wallet)
+		srv := assembleRPCService(wallet)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -170,7 +169,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(wallet.Spec.ChiaExporterConfig.Service) {
-		srv := r.assembleChiaExporterService(ctx, wallet)
+		srv := assembleChiaExporterService(wallet)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -203,7 +202,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if wallet.Spec.Storage != nil && wallet.Spec.Storage.ChiaRoot != nil && wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
-		pvc, err := r.assembleVolumeClaim(ctx, wallet)
+		pvc, err := assembleVolumeClaim(wallet)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create wallet PVC -- Check operator logs.")
@@ -221,7 +220,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	deploy := r.assembleDeployment(ctx, wallet)
+	deploy := assembleDeployment(ctx, wallet)
 
 	if err := controllerutil.SetControllerReference(&wallet, &deploy, r.Scheme); err != nil {
 		return ctrl.Result{}, err

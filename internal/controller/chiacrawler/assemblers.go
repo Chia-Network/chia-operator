@@ -42,8 +42,8 @@ func (r *ChiaCrawlerReconciler) assemblePeerService(ctx context.Context, crawler
 	if crawler.Spec.ChiaConfig.PeerService != nil && crawler.Spec.ChiaConfig.PeerService.Labels != nil {
 		additionalServiceLabels = crawler.Spec.ChiaConfig.PeerService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -86,8 +86,8 @@ func (r *ChiaCrawlerReconciler) assembleDaemonService(ctx context.Context, crawl
 	if crawler.Spec.ChiaConfig.DaemonService != nil && crawler.Spec.ChiaConfig.DaemonService.Labels != nil {
 		additionalServiceLabels = crawler.Spec.ChiaConfig.DaemonService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -130,8 +130,8 @@ func (r *ChiaCrawlerReconciler) assembleRPCService(ctx context.Context, crawler 
 	if crawler.Spec.ChiaConfig.RPCService != nil && crawler.Spec.ChiaConfig.RPCService.Labels != nil {
 		additionalServiceLabels = crawler.Spec.ChiaConfig.RPCService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -174,8 +174,8 @@ func (r *ChiaCrawlerReconciler) assembleChiaExporterService(ctx context.Context,
 	if crawler.Spec.ChiaExporterConfig.Service != nil && crawler.Spec.ChiaExporterConfig.Service.Labels != nil {
 		additionalServiceLabels = crawler.Spec.ChiaExporterConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
@@ -234,16 +234,16 @@ func (r *ChiaCrawlerReconciler) assembleDeployment(ctx context.Context, crawler 
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
 			Namespace:   crawler.Namespace,
-			Labels:      kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
+			Labels:      kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
 			Annotations: crawler.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta),
+				MatchLabels: kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta),
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
 					Annotations: crawler.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{

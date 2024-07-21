@@ -33,7 +33,7 @@ type ChiaIntroducerReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var chiaintroducers map[string]bool = make(map[string]bool)
+var chiaintroducers = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaintroducers,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaintroducers/status,verbs=get;update;patch
@@ -42,12 +42,11 @@ var chiaintroducers map[string]bool = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
-// Reconcile For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
+// Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s", req.NamespacedName.String()))
+	log.Info(fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
 	var introducer k8schianetv1.ChiaIntroducer
