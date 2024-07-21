@@ -75,7 +75,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// Reconcile ChiaTimelord owned objects
 	if kube.ShouldMakeService(tl.Spec.ChiaConfig.PeerService) {
-		srv := r.assemblePeerService(ctx, tl)
+		srv := assemblePeerService(tl)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -105,7 +105,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	if kube.ShouldMakeService(tl.Spec.ChiaConfig.DaemonService) {
-		srv := r.assembleDaemonService(ctx, tl)
+		srv := assembleDaemonService(tl)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -137,7 +137,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	if kube.ShouldMakeService(tl.Spec.ChiaConfig.RPCService) {
-		srv := r.assembleRPCService(ctx, tl)
+		srv := assembleRPCService(tl)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -169,7 +169,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	if kube.ShouldMakeService(tl.Spec.ChiaExporterConfig.Service) {
-		srv := r.assembleChiaExporterService(ctx, tl)
+		srv := assembleChiaExporterService(tl)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -202,7 +202,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if tl.Spec.Storage != nil && tl.Spec.Storage.ChiaRoot != nil && tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
-		pvc, err := r.assembleVolumeClaim(ctx, tl)
+		pvc, err := assembleVolumeClaim(tl)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord PVC -- Check operator logs.")
@@ -220,7 +220,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}
 
-	deploy := r.assembleDeployment(ctx, tl)
+	deploy := assembleDeployment(tl)
 
 	if err := controllerutil.SetControllerReference(&tl, &deploy, r.Scheme); err != nil {
 		return ctrl.Result{}, err
