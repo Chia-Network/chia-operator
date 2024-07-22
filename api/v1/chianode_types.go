@@ -16,6 +16,10 @@ type ChiaNodeSpec struct {
 	// ChiaConfig defines the configuration options available to Chia component containers
 	ChiaConfig ChiaNodeSpecChia `json:"chia"`
 
+	// ChiaHealthcheckConfig defines the configuration options available to an optional Chia healthcheck sidecar
+	// +optional
+	ChiaHealthcheckConfig SpecChiaHealthcheck `json:"chiaHealthcheck,omitempty"`
+
 	// Replicas is the desired number of replicas of the given Statefulset. defaults to 1.
 	// +optional
 	// +kubebuilder:default=1

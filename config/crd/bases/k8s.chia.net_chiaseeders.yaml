@@ -1005,6 +1005,25 @@ spec:
                         type: string
                     type: object
                 type: object
+              chiaHealthcheck:
+                description: ChiaHealthcheckConfig defines the configuration options
+                  available to an optional Chia healthcheck sidecar
+                properties:
+                  dnsHostname:
+                    description: DNSHostname is the hostname to check for DNS responses.
+                      Disabled if not provided.
+                    type: string
+                  enabled:
+                    default: false
+                    description: Enabled defines whether a chia-exporter sidecar container
+                      should run with the chia container
+                    type: boolean
+                  image:
+                    default: ghcr.io/chia-network/chia-healthcheck:main
+                    description: Image defines the image to use for the chia exporter
+                      containers
+                    type: string
+                type: object
               imagePullPolicy:
                 default: Always
                 description: ImagePullPolicy is the pull policy for containers in

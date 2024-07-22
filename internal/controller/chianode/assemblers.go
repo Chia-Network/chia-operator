@@ -241,8 +241,11 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode) appsv1
 	}
 
 	if node.Spec.ChiaExporterConfig.Enabled {
-		chiaExporterContainer := assembleChiaExporterContainer(node)
-		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, chiaExporterContainer)
+		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, assembleChiaExporterContainer(node))
+	}
+
+	if node.Spec.ChiaHealthcheckConfig.Enabled {
+		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, assembleChiaHealthcheckContainer(node))
 	}
 
 	if node.Spec.UpdateStrategy != nil {
@@ -293,14 +296,30 @@ func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode) core
 
 	if node.Spec.ChiaConfig.LivenessProbe != nil {
 		input.LivenessProbe = node.Spec.ChiaConfig.LivenessProbe
+	} else if node.Spec.ChiaHealthcheckConfig.Enabled {
+		input.LivenessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Kind: consts.ChiaNodeKind,
+		})
 	}
 
 	if node.Spec.ChiaConfig.ReadinessProbe != nil {
 		input.ReadinessProbe = node.Spec.ChiaConfig.ReadinessProbe
+	} else if node.Spec.ChiaHealthcheckConfig.Enabled {
+		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Kind: consts.ChiaNodeKind,
+		})
 	}
 
 	if node.Spec.ChiaConfig.StartupProbe != nil {
 		input.StartupProbe = node.Spec.ChiaConfig.StartupProbe
+	} else if node.Spec.ChiaHealthcheckConfig.Enabled {
+		failThresh := int32(30)
+		periodSec := int32(10)
+		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Kind:             consts.ChiaNodeKind,
+			FailureThreshold: &failThresh,
+			PeriodSeconds:    &periodSec,
+		})
 	}
 
 	if node.Spec.ChiaConfig.Resources != nil {
@@ -326,4 +345,21 @@ func assembleChiaExporterContainer(node k8schianetv1.ChiaNode) corev1.Container 
 	}
 
 	return kube.AssembleChiaExporterContainer(input)
+}
+
+func assembleChiaHealthcheckContainer(node k8schianetv1.ChiaNode) corev1.Container {
+	input := kube.AssembleChiaHealthcheckContainerInputs{
+		Image:      node.Spec.ChiaHealthcheckConfig.Image,
+		PullPolicy: node.Spec.ImagePullPolicy,
+	}
+
+	if node.Spec.ChiaConfig.SecurityContext != nil {
+		input.SecurityContext = node.Spec.ChiaConfig.SecurityContext
+	}
+
+	if node.Spec.ChiaConfig.Resources != nil {
+		input.ResourceRequirements = *node.Spec.ChiaConfig.Resources
+	}
+
+	return kube.AssembleChiaHealthcheckContainer(input)
 }

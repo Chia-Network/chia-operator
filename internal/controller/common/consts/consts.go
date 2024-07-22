@@ -7,6 +7,35 @@ package consts
 // ControllerOwner bool to help set the controller owner for a create kubernetes Kind
 var ControllerOwner = true
 
+// ChiaKind enumerates the list of Chia component custom resources this operator controls
+type ChiaKind string
+
+const (
+	// ChiaCAKind is the API Kind for Chia certificate authorities
+	ChiaCAKind ChiaKind = "ChiaCA"
+
+	// ChiaCrawlerKind is the API Kind for Chia crawlers
+	ChiaCrawlerKind ChiaKind = "ChiaCrawler"
+
+	// ChiaFarmerKind is the API Kind for Chia farmers
+	ChiaFarmerKind ChiaKind = "ChiaFarmer"
+
+	// ChiaHarvesterKind is the API Kind for Chia harvesters
+	ChiaHarvesterKind ChiaKind = "ChiaHarvester"
+
+	// ChiaIntroducerKind is the API Kind for Chia introducers
+	ChiaIntroducerKind ChiaKind = "ChiaIntroducer"
+
+	// ChiaNodeKind is the API Kind for Chia full_nodes
+	ChiaNodeKind ChiaKind = "ChiaNode"
+
+	// ChiaSeederKind is the API Kind for Chia seeders / dns-introducers
+	ChiaSeederKind ChiaKind = "ChiaSeeder"
+
+	// ChiaWalletKind is the API Kind for Chia wallets
+	ChiaWalletKind ChiaKind = "ChiaWallet"
+)
+
 const (
 	// DaemonPort defines the port for the Chia daemon
 	DaemonPort = 55400
@@ -49,4 +78,7 @@ const (
 
 	// ChiaExporterPort defines the port for Chia Exporter instances
 	ChiaExporterPort = 9914
+
+	// ChiaHealthcheckPort defines the port for Chia Healthcheck instances
+	ChiaHealthcheckPort = 9950
 )

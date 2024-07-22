@@ -16,6 +16,10 @@ type ChiaSeederSpec struct {
 	// ChiaConfig defines the configuration options available to Chia component containers
 	ChiaConfig ChiaSeederSpecChia `json:"chia"`
 
+	// ChiaHealthcheckConfig defines the configuration options available to an optional Chia healthcheck sidecar
+	// +optional
+	ChiaHealthcheckConfig SpecChiaHealthcheck `json:"chiaHealthcheck,omitempty"`
+
 	// Strategy describes how to replace existing pods with new ones.
 	// +optional
 	Strategy *appsv1.DeploymentStrategy `json:"strategy,omitempty"`

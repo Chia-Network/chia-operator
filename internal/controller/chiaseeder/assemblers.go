@@ -254,8 +254,11 @@ func assembleDeployment(seeder k8schianetv1.ChiaSeeder) appsv1.Deployment {
 	}
 
 	if seeder.Spec.ChiaExporterConfig.Enabled {
-		chiaExporterContainer := assembleChiaExporterContainer(seeder)
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(seeder))
+	}
+
+	if seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaHealthcheckContainer(seeder))
 	}
 
 	if seeder.Spec.Strategy != nil {
@@ -298,14 +301,30 @@ func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder) corev1.Container {
 
 	if seeder.Spec.ChiaConfig.LivenessProbe != nil {
 		input.LivenessProbe = seeder.Spec.ChiaConfig.LivenessProbe
+	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled {
+		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Kind: consts.ChiaSeederKind,
+		})
 	}
 
 	if seeder.Spec.ChiaConfig.ReadinessProbe != nil {
 		input.ReadinessProbe = seeder.Spec.ChiaConfig.ReadinessProbe
+	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled {
+		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Kind: consts.ChiaSeederKind,
+		})
 	}
 
 	if seeder.Spec.ChiaConfig.StartupProbe != nil {
 		input.StartupProbe = seeder.Spec.ChiaConfig.StartupProbe
+	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled {
+		failThresh := int32(30)
+		periodSec := int32(10)
+		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Kind:             consts.ChiaSeederKind,
+			FailureThreshold: &failThresh,
+			PeriodSeconds:    &periodSec,
+		})
 	}
 
 	if seeder.Spec.ChiaConfig.Resources != nil {
@@ -331,4 +350,22 @@ func assembleChiaExporterContainer(seeder k8schianetv1.ChiaSeeder) corev1.Contai
 	}
 
 	return kube.AssembleChiaExporterContainer(input)
+}
+
+func assembleChiaHealthcheckContainer(seeder k8schianetv1.ChiaSeeder) corev1.Container {
+	input := kube.AssembleChiaHealthcheckContainerInputs{
+		Image:       seeder.Spec.ChiaHealthcheckConfig.Image,
+		DNSHostname: seeder.Spec.ChiaHealthcheckConfig.DNSHostname,
+		PullPolicy:  seeder.Spec.ImagePullPolicy,
+	}
+
+	if seeder.Spec.ChiaConfig.SecurityContext != nil {
+		input.SecurityContext = seeder.Spec.ChiaConfig.SecurityContext
+	}
+
+	if seeder.Spec.ChiaConfig.Resources != nil {
+		input.ResourceRequirements = *seeder.Spec.ChiaConfig.Resources
+	}
+
+	return kube.AssembleChiaHealthcheckContainer(input)
 }
