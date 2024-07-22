@@ -14,4 +14,8 @@ spec:
     testnet: true
     timezone: "UTC"
     logLevel: "INFO"
-
+  storage:
+    chiaRoot:
+      persistentVolumeClaim:
+        storageClass: "standard"
+        resourceRequest: "250Gi"
