@@ -315,7 +315,7 @@ func assembleChiaExporterContainer(tl k8schianetv1.ChiaTimelord) corev1.Containe
 	input := kube.AssembleChiaExporterContainerInputs{
 		Image:            tl.Spec.ChiaExporterConfig.Image,
 		ConfigSecretName: tl.Spec.ChiaExporterConfig.ConfigSecretName,
-		PullPolicy:       tl.Spec.ImagePullPolicy,
+		ImagePullPolicy:  tl.Spec.ImagePullPolicy,
 	}
 
 	if tl.Spec.ChiaConfig.SecurityContext != nil {

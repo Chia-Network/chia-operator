@@ -333,7 +333,7 @@ func assembleChiaExporterContainer(node k8schianetv1.ChiaNode) corev1.Container 
 	input := kube.AssembleChiaExporterContainerInputs{
 		Image:            node.Spec.ChiaExporterConfig.Image,
 		ConfigSecretName: node.Spec.ChiaExporterConfig.ConfigSecretName,
-		PullPolicy:       node.Spec.ImagePullPolicy,
+		ImagePullPolicy:  node.Spec.ImagePullPolicy,
 	}
 
 	if node.Spec.ChiaConfig.SecurityContext != nil {
@@ -349,8 +349,8 @@ func assembleChiaExporterContainer(node k8schianetv1.ChiaNode) corev1.Container 
 
 func assembleChiaHealthcheckContainer(node k8schianetv1.ChiaNode) corev1.Container {
 	input := kube.AssembleChiaHealthcheckContainerInputs{
-		Image:      node.Spec.ChiaHealthcheckConfig.Image,
-		PullPolicy: node.Spec.ImagePullPolicy,
+		Image:           node.Spec.ChiaHealthcheckConfig.Image,
+		ImagePullPolicy: node.Spec.ImagePullPolicy,
 	}
 
 	if node.Spec.ChiaConfig.SecurityContext != nil {

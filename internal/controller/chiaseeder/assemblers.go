@@ -338,7 +338,7 @@ func assembleChiaExporterContainer(seeder k8schianetv1.ChiaSeeder) corev1.Contai
 	input := kube.AssembleChiaExporterContainerInputs{
 		Image:            seeder.Spec.ChiaExporterConfig.Image,
 		ConfigSecretName: seeder.Spec.ChiaExporterConfig.ConfigSecretName,
-		PullPolicy:       seeder.Spec.ImagePullPolicy,
+		ImagePullPolicy:  seeder.Spec.ImagePullPolicy,
 	}
 
 	if seeder.Spec.ChiaConfig.SecurityContext != nil {
@@ -354,9 +354,9 @@ func assembleChiaExporterContainer(seeder k8schianetv1.ChiaSeeder) corev1.Contai
 
 func assembleChiaHealthcheckContainer(seeder k8schianetv1.ChiaSeeder) corev1.Container {
 	input := kube.AssembleChiaHealthcheckContainerInputs{
-		Image:       seeder.Spec.ChiaHealthcheckConfig.Image,
-		DNSHostname: seeder.Spec.ChiaHealthcheckConfig.DNSHostname,
-		PullPolicy:  seeder.Spec.ImagePullPolicy,
+		Image:           seeder.Spec.ChiaHealthcheckConfig.Image,
+		DNSHostname:     seeder.Spec.ChiaHealthcheckConfig.DNSHostname,
+		ImagePullPolicy: seeder.Spec.ImagePullPolicy,
 	}
 
 	if seeder.Spec.ChiaConfig.SecurityContext != nil {

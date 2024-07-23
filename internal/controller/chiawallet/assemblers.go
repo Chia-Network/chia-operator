@@ -299,7 +299,7 @@ func assembleChiaExporterContainer(wallet k8schianetv1.ChiaWallet) corev1.Contai
 	input := kube.AssembleChiaExporterContainerInputs{
 		Image:            wallet.Spec.ChiaExporterConfig.Image,
 		ConfigSecretName: wallet.Spec.ChiaExporterConfig.ConfigSecretName,
-		PullPolicy:       wallet.Spec.ImagePullPolicy,
+		ImagePullPolicy:  wallet.Spec.ImagePullPolicy,
 	}
 
 	if wallet.Spec.ChiaConfig.SecurityContext != nil {

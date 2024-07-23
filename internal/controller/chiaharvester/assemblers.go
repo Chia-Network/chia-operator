@@ -315,7 +315,7 @@ func assembleChiaExporterContainer(harvester k8schianetv1.ChiaHarvester) corev1.
 	input := kube.AssembleChiaExporterContainerInputs{
 		Image:            harvester.Spec.ChiaExporterConfig.Image,
 		ConfigSecretName: harvester.Spec.ChiaExporterConfig.ConfigSecretName,
-		PullPolicy:       harvester.Spec.ImagePullPolicy,
+		ImagePullPolicy:  harvester.Spec.ImagePullPolicy,
 	}
 
 	if harvester.Spec.ChiaConfig.SecurityContext != nil {

@@ -270,7 +270,7 @@ func assembleChiaExporterContainer(introducer k8schianetv1.ChiaIntroducer) corev
 	input := kube.AssembleChiaExporterContainerInputs{
 		Image:            introducer.Spec.ChiaExporterConfig.Image,
 		ConfigSecretName: introducer.Spec.ChiaExporterConfig.ConfigSecretName,
-		PullPolicy:       introducer.Spec.ImagePullPolicy,
+		ImagePullPolicy:  introducer.Spec.ImagePullPolicy,
 	}
 
 	if introducer.Spec.ChiaConfig.SecurityContext != nil {

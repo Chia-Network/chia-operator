@@ -315,7 +315,7 @@ func assembleChiaExporterContainer(crawler k8schianetv1.ChiaCrawler) corev1.Cont
 	input := kube.AssembleChiaExporterContainerInputs{
 		Image:            crawler.Spec.ChiaExporterConfig.Image,
 		ConfigSecretName: crawler.Spec.ChiaExporterConfig.ConfigSecretName,
-		PullPolicy:       crawler.Spec.ImagePullPolicy,
+		ImagePullPolicy:  crawler.Spec.ImagePullPolicy,
 	}
 
 	if crawler.Spec.ChiaConfig.SecurityContext != nil {

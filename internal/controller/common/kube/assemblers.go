@@ -72,6 +72,7 @@ func AssembleChiaContainer(input AssembleChiaContainerInputs) corev1.Container {
 		Env:             input.Env,
 		Ports:           input.Ports,
 		VolumeMounts:    input.VolumeMounts,
+		SecurityContext: input.SecurityContext,
 		LivenessProbe:   input.LivenessProbe,
 		ReadinessProbe:  input.ReadinessProbe,
 		StartupProbe:    input.StartupProbe,
@@ -87,10 +88,10 @@ func AssembleChiaContainer(input AssembleChiaContainerInputs) corev1.Container {
 // AssembleChiaExporterContainerInputs contains configuration inputs to the AssembleChiaExporterContainer function
 type AssembleChiaExporterContainerInputs struct {
 	Image                string
+	ImagePullPolicy      corev1.PullPolicy
+	ResourceRequirements corev1.ResourceRequirements
 	ConfigSecretName     *string
 	SecurityContext      *corev1.SecurityContext
-	PullPolicy           corev1.PullPolicy
-	ResourceRequirements corev1.ResourceRequirements
 }
 
 // AssembleChiaExporterContainer assembles a chia-exporter container spec
@@ -99,7 +100,7 @@ func AssembleChiaExporterContainer(input AssembleChiaExporterContainerInputs) co
 		Name:            "chia-exporter",
 		SecurityContext: input.SecurityContext,
 		Image:           input.Image,
-		ImagePullPolicy: input.PullPolicy,
+		ImagePullPolicy: input.ImagePullPolicy,
 		Env: []corev1.EnvVar{
 			{
 				Name:  "CHIA_ROOT",
@@ -164,10 +165,10 @@ func AssembleChiaExporterContainer(input AssembleChiaExporterContainerInputs) co
 // AssembleChiaHealthcheckContainerInputs contains configuration inputs to the AssembleChiaHealthcheckContainer function
 type AssembleChiaHealthcheckContainerInputs struct {
 	Image                string
+	ImagePullPolicy      corev1.PullPolicy
+	ResourceRequirements corev1.ResourceRequirements
 	DNSHostname          *string
 	SecurityContext      *corev1.SecurityContext
-	PullPolicy           corev1.PullPolicy
-	ResourceRequirements corev1.ResourceRequirements
 }
 
 // AssembleChiaHealthcheckContainer assembles a chia-healthcheck container spec
@@ -176,7 +177,7 @@ func AssembleChiaHealthcheckContainer(input AssembleChiaHealthcheckContainerInpu
 		Name:            "chia-healthcheck",
 		SecurityContext: input.SecurityContext,
 		Image:           input.Image,
-		ImagePullPolicy: input.PullPolicy,
+		ImagePullPolicy: input.ImagePullPolicy,
 		Env: []corev1.EnvVar{
 			{
 				Name:  "CHIA_ROOT",

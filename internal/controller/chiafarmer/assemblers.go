@@ -315,7 +315,7 @@ func assembleChiaExporterContainer(farmer k8schianetv1.ChiaFarmer) corev1.Contai
 	input := kube.AssembleChiaExporterContainerInputs{
 		Image:            farmer.Spec.ChiaExporterConfig.Image,
 		ConfigSecretName: farmer.Spec.ChiaExporterConfig.ConfigSecretName,
-		PullPolicy:       farmer.Spec.ImagePullPolicy,
+		ImagePullPolicy:  farmer.Spec.ImagePullPolicy,
 	}
 
 	if farmer.Spec.ChiaConfig.SecurityContext != nil {
