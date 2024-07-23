@@ -43,8 +43,8 @@ spec:
 
 The path specified in your probe config will change depending on the component you're installing:
 
-* `/full_node` for ChiaNodes
-* `/seeder` for ChiaSeeders
+-`/full_node` for ChiaNodes
+-`/seeder` for ChiaSeeders
 
 ## DNS Hostnames
 
