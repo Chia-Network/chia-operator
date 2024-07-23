@@ -18,6 +18,22 @@ spec:
       key: "key.txt"
 ```
 
+## Secret key
+
+The `secretKey` field in the ChiaWallet's spec defines the name of a Kubernetes Secret that contains your mnemonic. Only Wallets and Farmers need your mnemonic key to function. You can create your Kubernetes Secret like so:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: chiakey-secret
+stringData:
+  key.txt: your mnemonic goes here
+type: Opaque
+```
+
+Replace the text value for `key.txt` with your mnemonic, and then reference it in your ChiaWallet resource in the way shown above.
+
 ## Chia configuration
 
 Some of Chia's configuration can be changed from within the CR.
@@ -36,38 +52,6 @@ You can also give a local full_node as a peer for your wallet. This does not cur
 spec:
   chia:
     fullNodePeer: "node.default.svc.cluster.local:8444" # A local full_node using kubernetes DNS names
-```
-
-## CHIA_ROOT storage
-
-`CHIA_ROOT` is an environment variable that tells chia services where to expect a data directory to be for local chia state. You can store your chia state persistently a couple of different ways: either with a host mount or a persistent volume claim.
-
-To use a persistent volume claim, first create one in the same namespace and then give its name in the CR like the following:
-
-```yaml
-spec:
-  storage:
-    chiaRoot:
-      persistentVolumeClaim:
-        claimName: "chiaroot-data"
-```
-
-To use a hostPath volume, first create a directory on the host and specify the path in the CR like the following:
-
-```yaml
-spec:
-  storage:
-    chiaRoot:
-      hostPathVolume:
-        path: "/home/user/storage/chiaroot"
-```
-
-If using a hostPath, you may want to pin the pod to a specific kubernetes node using a NodeSelector:
-
-```yaml
-spec:
-  nodeSelector:
-    kubernetes.io/hostname: "node-with-hostpath"
 ```
 
 ## Selecting a network
