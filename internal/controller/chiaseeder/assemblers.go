@@ -301,7 +301,7 @@ func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder) corev1.Container {
 
 	if seeder.Spec.ChiaConfig.LivenessProbe != nil {
 		input.LivenessProbe = seeder.Spec.ChiaConfig.LivenessProbe
-	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled {
+	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
 		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
 			Kind: consts.ChiaSeederKind,
 		})
@@ -309,7 +309,7 @@ func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder) corev1.Container {
 
 	if seeder.Spec.ChiaConfig.ReadinessProbe != nil {
 		input.ReadinessProbe = seeder.Spec.ChiaConfig.ReadinessProbe
-	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled {
+	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
 		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
 			Kind: consts.ChiaSeederKind,
 		})
@@ -317,7 +317,7 @@ func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder) corev1.Container {
 
 	if seeder.Spec.ChiaConfig.StartupProbe != nil {
 		input.StartupProbe = seeder.Spec.ChiaConfig.StartupProbe
-	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled {
+	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
 		failThresh := int32(30)
 		periodSec := int32(10)
 		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
