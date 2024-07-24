@@ -2,6 +2,8 @@
 
 Specifying a ChiaHarvester will create a kubernetes Deployment and some Services for a Chia harvester that connects to a local [farmer](chiafarmer.md). It also requires a specified [Chia certificate authority](chiaca.md).
 
+It is also expected you have some pre-existing plots in persistent volumes or mounted to a host path on one of your k8s nodes.
+
 Here's a minimal ChiaHarvester example custom resource (CR):
 
 ```yaml

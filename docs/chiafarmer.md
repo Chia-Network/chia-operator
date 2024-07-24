@@ -2,6 +2,8 @@
 
 Specifying a ChiaFarmer will create a kubernetes Deployment and some Services for a Chia farmer that connects to a local [full_node](chianode.md). It also requires a specified [Chia certificate authority](chiaca.md).
 
+It is also expected you have a pre-existing Chia key to import, likely one that you generated locally in a Chia GUI installation.
+
 Here's a minimal ChiaFarmer example custom resource (CR):
 
 ```yaml
