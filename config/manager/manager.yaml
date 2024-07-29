@@ -57,7 +57,7 @@ spec:
         - /manager
         args:
         - --leader-elect
-        image: ghcr.io/chia-network/chia-operator:latest
+        image: ghcr.io/chia-network/chia-operator:0.6.0
         name: manager
         ports:
         - containerPort: 8081
