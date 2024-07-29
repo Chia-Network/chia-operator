@@ -1019,7 +1019,7 @@ spec:
                       should run with the chia container
                     type: boolean
                   image:
-                    default: ghcr.io/chia-network/chia-healthcheck:main
+                    default: ghcr.io/chia-network/chia-healthcheck:latest
                     description: Image defines the image to use for the chia exporter
                       containers
                     type: string

@@ -173,7 +173,7 @@ type SpecChiaHealthcheck struct {
 	Enabled bool `json:"enabled,omitempty"`
 
 	// Image defines the image to use for the chia exporter containers
-	// +kubebuilder:default="ghcr.io/chia-network/chia-healthcheck:main"
+	// +kubebuilder:default="ghcr.io/chia-network/chia-healthcheck:latest"
 	// +optional
 	Image string `json:"image,omitempty"`
 

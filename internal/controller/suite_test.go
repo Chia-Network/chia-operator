@@ -48,7 +48,7 @@ var (
 const (
 	defaultChiaImageTag            = "latest"
 	defaultChiaExporterImageTag    = "latest"
-	defaultChiaHealthcheckImageTag = "main"
+	defaultChiaHealthcheckImageTag = "latest"
 	defaultChiaCAImageTag          = "latest"
 )
 
