@@ -2,6 +2,8 @@
 
 Specifying a ChiaHarvester will create a kubernetes Deployment and some Services for a Chia harvester that connects to a local [farmer](chiafarmer.md). It also requires a specified [Chia certificate authority](chiaca.md).
 
+It is also expected you have some pre-existing plots in persistent volumes or mounted to a host path on one of your k8s nodes.
+
 Here's a minimal ChiaHarvester example custom resource (CR):
 
 ```yaml
@@ -41,38 +43,6 @@ spec:
       hostPathVolume:
         - path: "/home/user/storage/plots3"
         - path: "/home/user/storage/plots4"
-```
-
-If using a hostPath, you may want to pin the pod to a specific kubernetes node using a NodeSelector:
-
-```yaml
-spec:
-  nodeSelector:
-    kubernetes.io/hostname: "node-with-hostpath"
-```
-
-## CHIA_ROOT storage
-
-`CHIA_ROOT` is an environment variable that tells chia services where to expect a data directory to be for local chia state. You can store your chia state persistently a couple of different ways: either with a host mount or a persistent volume claim.
-
-To use a persistent volume claim, first create one in the same namespace and then give its name in the CR like the following:
-
-```yaml
-spec:
-  storage:
-    chiaRoot:
-      persistentVolumeClaim:
-        claimName: "chiaroot-data"
-```
-
-To use a hostPath volume, first create a directory on the host and specify the path in the CR like the following:
-
-```yaml
-spec:
-  storage:
-    chiaRoot:
-      hostPathVolume:
-        path: "/home/user/storage/chiaroot"
 ```
 
 If using a hostPath, you may want to pin the pod to a specific kubernetes node using a NodeSelector:

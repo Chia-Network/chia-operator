@@ -5,7 +5,6 @@ Copyright 2023 Chia Network Inc.
 package chiatimelord
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 
@@ -17,7 +16,7 @@ import (
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
-func (r *ChiaTimelordReconciler) getChiaVolumes(ctx context.Context, tl k8schianetv1.ChiaTimelord) []corev1.Volume {
+func getChiaVolumes(tl k8schianetv1.ChiaTimelord) []corev1.Volume {
 	var v []corev1.Volume
 
 	// secret ca volume
@@ -32,7 +31,7 @@ func (r *ChiaTimelordReconciler) getChiaVolumes(ctx context.Context, tl k8schian
 
 	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
 	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
-	var chiaRootAdded bool = false
+	var chiaRootAdded = false
 	if tl.Spec.Storage != nil && tl.Spec.Storage.ChiaRoot != nil {
 		if tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
 			var pvcName string
@@ -81,7 +80,7 @@ func (r *ChiaTimelordReconciler) getChiaVolumes(ctx context.Context, tl k8schian
 }
 
 // getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct
-func (r *ChiaTimelordReconciler) getChiaVolumeMounts(ctx context.Context, tl k8schianetv1.ChiaTimelord) []corev1.VolumeMount {
+func getChiaVolumeMounts() []corev1.VolumeMount {
 	return []corev1.VolumeMount{
 		{
 			Name:      "secret-ca",
@@ -95,7 +94,7 @@ func (r *ChiaTimelordReconciler) getChiaVolumeMounts(ctx context.Context, tl k8s
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func (r *ChiaTimelordReconciler) getChiaEnv(ctx context.Context, tl k8schianetv1.ChiaTimelord) []corev1.EnvVar {
+func getChiaEnv(tl k8schianetv1.ChiaTimelord) []corev1.EnvVar {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -182,7 +181,7 @@ func (r *ChiaTimelordReconciler) getChiaEnv(ctx context.Context, tl k8schianetv1
 }
 
 // getOwnerReference gives the common owner reference spec for ChiaTimelord related objects
-func (r *ChiaTimelordReconciler) getOwnerReference(ctx context.Context, tl k8schianetv1.ChiaTimelord) []metav1.OwnerReference {
+func getOwnerReference(tl k8schianetv1.ChiaTimelord) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
 		{
 			APIVersion: tl.APIVersion,

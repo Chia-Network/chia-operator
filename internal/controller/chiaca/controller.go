@@ -31,7 +31,7 @@ type ChiaCAReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var chiacas map[string]bool = make(map[string]bool)
+var chiacas = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacas,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacas/status,verbs=get;update;patch
@@ -43,12 +43,11 @@ var chiacas map[string]bool = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
+// Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaCAReconciler ChiaCA=%s", req.NamespacedName.String()))
+	log.Info(fmt.Sprintf("ChiaCAReconciler ChiaCA=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
 	var ca k8schianetv1.ChiaCA
@@ -76,7 +75,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// Reconcile resources, creating them if they don't exist
-	sa := r.assembleServiceAccount(ctx, ca)
+	sa := r.assembleServiceAccount(ca)
 	res, err := kube.ReconcileServiceAccount(ctx, resourceReconciler, sa)
 	if err != nil {
 		if res == nil {
@@ -87,7 +86,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator ServiceAccount: %v", req.NamespacedName, err)
 	}
 
-	role := r.assembleRole(ctx, ca)
+	role := r.assembleRole(ca)
 	res, err = kube.ReconcileRole(ctx, resourceReconciler, role)
 	if err != nil {
 		if res == nil {
@@ -98,7 +97,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return *res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error reconciling CA generator Role: %v", req.NamespacedName, err)
 	}
 
-	rb := r.assembleRoleBinding(ctx, ca)
+	rb := r.assembleRoleBinding(ca)
 	res, err = kube.ReconcileRoleBinding(ctx, resourceReconciler, rb)
 	if err != nil {
 		if res == nil {
@@ -118,7 +117,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 	// Create CA generating Job if Secret does not already exist
 	if notFound {
-		job := r.assembleJob(ctx, ca)
+		job := r.assembleJob(ca)
 		res, err = kube.ReconcileJob(ctx, resourceReconciler, job)
 		if err != nil {
 			if res == nil {

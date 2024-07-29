@@ -49,13 +49,49 @@ func AssembleCommonService(input AssembleCommonServiceInputs) corev1.Service {
 	return srv
 }
 
+// AssembleChiaContainerInputs contains configuration inputs to the AssembleChiaContainer function
+type AssembleChiaContainerInputs struct {
+	Image                string
+	ImagePullPolicy      corev1.PullPolicy
+	Env                  []corev1.EnvVar
+	Ports                []corev1.ContainerPort
+	VolumeMounts         []corev1.VolumeMount
+	SecurityContext      *corev1.SecurityContext
+	LivenessProbe        *corev1.Probe
+	ReadinessProbe       *corev1.Probe
+	StartupProbe         *corev1.Probe
+	ResourceRequirements *corev1.ResourceRequirements
+}
+
+// AssembleChiaContainer assembles a chia container spec
+func AssembleChiaContainer(input AssembleChiaContainerInputs) corev1.Container {
+	container := corev1.Container{
+		Name:            "chia",
+		Image:           input.Image,
+		ImagePullPolicy: input.ImagePullPolicy,
+		Env:             input.Env,
+		Ports:           input.Ports,
+		VolumeMounts:    input.VolumeMounts,
+		SecurityContext: input.SecurityContext,
+		LivenessProbe:   input.LivenessProbe,
+		ReadinessProbe:  input.ReadinessProbe,
+		StartupProbe:    input.StartupProbe,
+	}
+
+	if input.ResourceRequirements != nil {
+		container.Resources = *input.ResourceRequirements
+	}
+
+	return container
+}
+
 // AssembleChiaExporterContainerInputs contains configuration inputs to the AssembleChiaExporterContainer function
 type AssembleChiaExporterContainerInputs struct {
 	Image                string
+	ImagePullPolicy      corev1.PullPolicy
+	ResourceRequirements corev1.ResourceRequirements
 	ConfigSecretName     *string
 	SecurityContext      *corev1.SecurityContext
-	PullPolicy           corev1.PullPolicy
-	ResourceRequirements corev1.ResourceRequirements
 }
 
 // AssembleChiaExporterContainer assembles a chia-exporter container spec
@@ -64,7 +100,7 @@ func AssembleChiaExporterContainer(input AssembleChiaExporterContainerInputs) co
 		Name:            "chia-exporter",
 		SecurityContext: input.SecurityContext,
 		Image:           input.Image,
-		ImagePullPolicy: input.PullPolicy,
+		ImagePullPolicy: input.ImagePullPolicy,
 		Env: []corev1.EnvVar{
 			{
 				Name:  "CHIA_ROOT",
@@ -124,4 +160,92 @@ func AssembleChiaExporterContainer(input AssembleChiaExporterContainerInputs) co
 	}
 
 	return container
+}
+
+// AssembleChiaHealthcheckContainerInputs contains configuration inputs to the AssembleChiaHealthcheckContainer function
+type AssembleChiaHealthcheckContainerInputs struct {
+	Image                string
+	ImagePullPolicy      corev1.PullPolicy
+	ResourceRequirements corev1.ResourceRequirements
+	DNSHostname          *string
+	SecurityContext      *corev1.SecurityContext
+}
+
+// AssembleChiaHealthcheckContainer assembles a chia-healthcheck container spec
+func AssembleChiaHealthcheckContainer(input AssembleChiaHealthcheckContainerInputs) corev1.Container {
+	container := corev1.Container{
+		Name:            "chia-healthcheck",
+		SecurityContext: input.SecurityContext,
+		Image:           input.Image,
+		ImagePullPolicy: input.ImagePullPolicy,
+		Env: []corev1.EnvVar{
+			{
+				Name:  "CHIA_ROOT",
+				Value: "/chia-data",
+			},
+			{
+				Name:  "CHIA_HEALTHCHECK_HOSTNAME",
+				Value: "127.0.0.1",
+			},
+		},
+		Ports: []corev1.ContainerPort{
+			{
+				Name:          "health",
+				ContainerPort: consts.ChiaHealthcheckPort,
+				Protocol:      "TCP",
+			},
+		},
+		Resources: input.ResourceRequirements,
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "chiaroot",
+				MountPath: "/chia-data",
+			},
+		},
+	}
+
+	if input.DNSHostname != nil && *input.DNSHostname != "" {
+		container.Env = append(container.Env, corev1.EnvVar{
+			Name:  "CHIA_HEALTHCHECK_DNS_HOSTNAME",
+			Value: *input.DNSHostname,
+		})
+	}
+
+	return container
+}
+
+// AssembleChiaHealthcheckProbeInputs contains configuration inputs to the AssembleChiaHealthcheckProbe function
+type AssembleChiaHealthcheckProbeInputs struct {
+	Kind             consts.ChiaKind
+	FailureThreshold *int32
+	PeriodSeconds    *int32
+}
+
+func AssembleChiaHealthcheckProbe(input AssembleChiaHealthcheckProbeInputs) *corev1.Probe {
+	probe := corev1.Probe{
+		ProbeHandler: corev1.ProbeHandler{
+			HTTPGet: &corev1.HTTPGetAction{
+				Path: "/",
+				Port: intstr.FromInt32(consts.ChiaHealthcheckPort),
+			},
+		},
+	}
+
+	if input.FailureThreshold != nil {
+		probe.FailureThreshold = *input.FailureThreshold
+	}
+
+	if input.PeriodSeconds != nil {
+		probe.PeriodSeconds = *input.PeriodSeconds
+	}
+
+	switch input.Kind {
+	case consts.ChiaNodeKind:
+		probe.ProbeHandler.HTTPGet.Path = "/full_node"
+	case consts.ChiaSeederKind:
+		probe.ProbeHandler.HTTPGet.Path = "/seeder"
+	default:
+		return nil
+	}
+	return &probe
 }

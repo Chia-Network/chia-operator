@@ -26,38 +26,6 @@ spec:
     logLevel: "INFO" # Sets the Chia log level.
 ```
 
-## CHIA_ROOT storage
-
-`CHIA_ROOT` is an environment variable that tells chia services where to expect a data directory to be for local chia state. You can store your chia state persistently a couple of different ways: either with a host mount or a persistent volume claim.
-
-To use a persistent volume claim, first create one in the same namespace and then give its name in the CR like the following:
-
-```yaml
-spec:
-  storage:
-    chiaRoot:
-      persistentVolumeClaim:
-        claimName: "chiaroot-data"
-```
-
-To use a hostPath volume, first create a directory on the host and specify the path in the CR like the following:
-
-```yaml
-spec:
-  storage:
-    chiaRoot:
-      hostPathVolume:
-        path: "/home/user/storage/chiaroot"
-```
-
-If using a hostPath, you may want to pin the pod to a specific kubernetes node using a NodeSelector:
-
-```yaml
-spec:
-  nodeSelector:
-    kubernetes.io/hostname: "node-with-hostpath"
-```
-
 ## Selecting a network
 
 You can select a network from your chia configuration with the following options:

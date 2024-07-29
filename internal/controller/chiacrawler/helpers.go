@@ -5,7 +5,6 @@ Copyright 2024 Chia Network Inc.
 package chiacrawler
 
 import (
-	"context"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +15,7 @@ import (
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
-func (r *ChiaCrawlerReconciler) getChiaVolumes(ctx context.Context, crawler k8schianetv1.ChiaCrawler) []corev1.Volume {
+func getChiaVolumes(crawler k8schianetv1.ChiaCrawler) []corev1.Volume {
 	var v []corev1.Volume
 
 	// secret ca volume
@@ -33,7 +32,7 @@ func (r *ChiaCrawlerReconciler) getChiaVolumes(ctx context.Context, crawler k8sc
 
 	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
 	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
-	var chiaRootAdded bool = false
+	var chiaRootAdded = false
 	if crawler.Spec.Storage != nil && crawler.Spec.Storage.ChiaRoot != nil {
 		if crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
 			var pvcName string
@@ -82,7 +81,7 @@ func (r *ChiaCrawlerReconciler) getChiaVolumes(ctx context.Context, crawler k8sc
 }
 
 // getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct
-func (r *ChiaCrawlerReconciler) getChiaVolumeMounts(ctx context.Context, crawler k8schianetv1.ChiaCrawler) []corev1.VolumeMount {
+func getChiaVolumeMounts(crawler k8schianetv1.ChiaCrawler) []corev1.VolumeMount {
 	var v []corev1.VolumeMount
 
 	// secret ca volume
@@ -103,7 +102,7 @@ func (r *ChiaCrawlerReconciler) getChiaVolumeMounts(ctx context.Context, crawler
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func (r *ChiaCrawlerReconciler) getChiaEnv(ctx context.Context, crawler k8schianetv1.ChiaCrawler) []corev1.EnvVar {
+func getChiaEnv(crawler k8schianetv1.ChiaCrawler) []corev1.EnvVar {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -190,7 +189,7 @@ func (r *ChiaCrawlerReconciler) getChiaEnv(ctx context.Context, crawler k8schian
 }
 
 // getOwnerReference gives the common owner reference spec for ChiaCrawler related objects
-func (r *ChiaCrawlerReconciler) getOwnerReference(ctx context.Context, crawler k8schianetv1.ChiaCrawler) []metav1.OwnerReference {
+func getOwnerReference(crawler k8schianetv1.ChiaCrawler) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
 		{
 			APIVersion: crawler.APIVersion,
@@ -203,7 +202,7 @@ func (r *ChiaCrawlerReconciler) getOwnerReference(ctx context.Context, crawler k
 }
 
 // getFullNodePort determines the correct full_node port to use
-func (r *ChiaCrawlerReconciler) getFullNodePort(ctx context.Context, crawler k8schianetv1.ChiaCrawler) int32 {
+func getFullNodePort(crawler k8schianetv1.ChiaCrawler) int32 {
 	if crawler.Spec.ChiaConfig.Testnet != nil && *crawler.Spec.ChiaConfig.Testnet {
 		return consts.TestnetNodePort
 	}

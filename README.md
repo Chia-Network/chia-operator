@@ -1,7 +1,5 @@
 # chia-operator
 
-> NOTE: This is an early implementation that is being actively worked on. The API should stay backwards-compatible in the majority of cases but is not currently guaranteed.
-
 Kubernetes operator for managing Chia components in kubernetes. Currently supported components:
 
 - full_nodes
@@ -173,11 +171,6 @@ spec:
 The config here is very similar to the farmer we already made since it also requires your mnemonic key and a full_node peer.
 
 Finally, apply this ChiaWallet with `kubectl apply -f wallet.yaml`
-
-## TODO
-
-- Additional controller tests for CRs with all options set to something non-default, currently all the tests use fairly minimal implementations to test overlaying CRD defaults on top of the submitted CR
-- Add ability to configure a custom testnet for Chia components to switch to
 
 ## License
 

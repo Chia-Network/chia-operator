@@ -35,7 +35,7 @@ func (r *ChiaCAReconciler) getCASecret(ctx context.Context, ca k8schianetv1.Chia
 }
 
 // getOwnerReference gives the common owner reference spec for ChiaCA related objects
-func (r *ChiaCAReconciler) getOwnerReference(ctx context.Context, ca k8schianetv1.ChiaCA) []metav1.OwnerReference {
+func getOwnerReference(ca k8schianetv1.ChiaCA) []metav1.OwnerReference {
 	return []metav1.OwnerReference{
 		{
 			APIVersion: ca.APIVersion,

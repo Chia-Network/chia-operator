@@ -5,7 +5,6 @@ Copyright 2024 Chia Network Inc.
 package chiacrawler
 
 import (
-	"context"
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -22,193 +21,161 @@ import (
 const chiacrawlerNamePattern = "%s-crawler"
 
 // assemblePeerService assembles the peer Service resource for a ChiaCrawler CR
-func (r *ChiaCrawlerReconciler) assemblePeerService(ctx context.Context, crawler k8schianetv1.ChiaCrawler) corev1.Service {
-	var inputs kube.AssembleCommonServiceInputs
+func assemblePeerService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:           fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
+		Namespace:      crawler.Namespace,
+		OwnerReference: getOwnerReference(crawler),
+		Ports: []corev1.ServicePort{
+			{
+				Port:       getFullNodePort(crawler),
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
+			},
+		},
+	}
 
-	// Service Metadata
-	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name)
-	inputs.Namespace = crawler.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
-
-	// Service Type
 	if crawler.Spec.ChiaConfig.PeerService != nil {
 		inputs.ServiceType = crawler.Spec.ChiaConfig.PeerService.ServiceType
 		inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.PeerService.IPFamilyPolicy
 		inputs.IPFamilies = crawler.Spec.ChiaConfig.PeerService.IPFamilies
-	}
 
-	// Labels
-	var additionalServiceLabels = make(map[string]string)
-	if crawler.Spec.ChiaConfig.PeerService != nil && crawler.Spec.ChiaConfig.PeerService.Labels != nil {
-		additionalServiceLabels = crawler.Spec.ChiaConfig.PeerService.Labels
-	}
-	inputs.Labels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+		// Labels
+		var additionalServiceLabels = make(map[string]string)
+		if crawler.Spec.ChiaConfig.PeerService.Labels != nil {
+			additionalServiceLabels = crawler.Spec.ChiaConfig.PeerService.Labels
+		}
+		inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+		inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
 
-	// Annotations
-	var additionalServiceAnnotations = make(map[string]string)
-	if crawler.Spec.ChiaConfig.PeerService != nil && crawler.Spec.ChiaConfig.PeerService.Annotations != nil {
-		additionalServiceAnnotations = crawler.Spec.ChiaConfig.PeerService.Annotations
-	}
-	inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
-
-	// Ports
-	inputs.Ports = []corev1.ServicePort{
-		{
-			Port:       r.getFullNodePort(ctx, crawler),
-			TargetPort: intstr.FromString("peers"),
-			Protocol:   "TCP",
-			Name:       "peers",
-		},
+		// Annotations
+		var additionalServiceAnnotations = make(map[string]string)
+		if crawler.Spec.ChiaConfig.PeerService.Annotations != nil {
+			additionalServiceAnnotations = crawler.Spec.ChiaConfig.PeerService.Annotations
+		}
+		inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 	}
 
 	return kube.AssembleCommonService(inputs)
 }
 
 // assembleDaemonService assembles the daemon Service resource for a ChiaCrawler CR
-func (r *ChiaCrawlerReconciler) assembleDaemonService(ctx context.Context, crawler k8schianetv1.ChiaCrawler) corev1.Service {
-	var inputs kube.AssembleCommonServiceInputs
+func assembleDaemonService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:           fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-daemon",
+		Namespace:      crawler.Namespace,
+		OwnerReference: getOwnerReference(crawler),
+		Ports:          kube.GetChiaDaemonServicePorts(),
+	}
 
-	// Service Metadata
-	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-daemon"
-	inputs.Namespace = crawler.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
-
-	// Service Type
 	if crawler.Spec.ChiaConfig.DaemonService != nil {
 		inputs.ServiceType = crawler.Spec.ChiaConfig.DaemonService.ServiceType
 		inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
 		inputs.IPFamilies = crawler.Spec.ChiaConfig.DaemonService.IPFamilies
-	}
 
-	// Labels
-	var additionalServiceLabels = make(map[string]string)
-	if crawler.Spec.ChiaConfig.DaemonService != nil && crawler.Spec.ChiaConfig.DaemonService.Labels != nil {
-		additionalServiceLabels = crawler.Spec.ChiaConfig.DaemonService.Labels
-	}
-	inputs.Labels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+		// Labels
+		var additionalServiceLabels = make(map[string]string)
+		if crawler.Spec.ChiaConfig.DaemonService.Labels != nil {
+			additionalServiceLabels = crawler.Spec.ChiaConfig.DaemonService.Labels
+		}
+		inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+		inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
 
-	// Annotations
-	var additionalServiceAnnotations = make(map[string]string)
-	if crawler.Spec.ChiaConfig.DaemonService != nil && crawler.Spec.ChiaConfig.DaemonService.Annotations != nil {
-		additionalServiceAnnotations = crawler.Spec.ChiaConfig.DaemonService.Annotations
-	}
-	inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
-
-	// Ports
-	inputs.Ports = []corev1.ServicePort{
-		{
-			Port:       consts.DaemonPort,
-			TargetPort: intstr.FromString("daemon"),
-			Protocol:   "TCP",
-			Name:       "daemon",
-		},
+		// Annotations
+		var additionalServiceAnnotations = make(map[string]string)
+		if crawler.Spec.ChiaConfig.DaemonService.Annotations != nil {
+			additionalServiceAnnotations = crawler.Spec.ChiaConfig.DaemonService.Annotations
+		}
+		inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 	}
 
 	return kube.AssembleCommonService(inputs)
 }
 
 // assembleRPCService assembles the RPC Service resource for a ChiaCrawler CR
-func (r *ChiaCrawlerReconciler) assembleRPCService(ctx context.Context, crawler k8schianetv1.ChiaCrawler) corev1.Service {
-	var inputs kube.AssembleCommonServiceInputs
+func assembleRPCService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:           fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-rpc",
+		Namespace:      crawler.Namespace,
+		OwnerReference: getOwnerReference(crawler),
+		Ports: []corev1.ServicePort{
+			{
+				Port:       consts.CrawlerRPCPort,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
+			},
+		},
+	}
 
-	// Service Metadata
-	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-rpc"
-	inputs.Namespace = crawler.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
-
-	// Service Type
 	if crawler.Spec.ChiaConfig.RPCService != nil {
 		inputs.ServiceType = crawler.Spec.ChiaConfig.RPCService.ServiceType
 		inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.RPCService.IPFamilyPolicy
 		inputs.IPFamilies = crawler.Spec.ChiaConfig.RPCService.IPFamilies
-	}
 
-	// Labels
-	var additionalServiceLabels = make(map[string]string)
-	if crawler.Spec.ChiaConfig.RPCService != nil && crawler.Spec.ChiaConfig.RPCService.Labels != nil {
-		additionalServiceLabels = crawler.Spec.ChiaConfig.RPCService.Labels
-	}
-	inputs.Labels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+		// Labels
+		var additionalServiceLabels = make(map[string]string)
+		if crawler.Spec.ChiaConfig.RPCService.Labels != nil {
+			additionalServiceLabels = crawler.Spec.ChiaConfig.RPCService.Labels
+		}
+		inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+		inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
 
-	// Annotations
-	var additionalServiceAnnotations = make(map[string]string)
-	if crawler.Spec.ChiaConfig.RPCService != nil && crawler.Spec.ChiaConfig.RPCService.Annotations != nil {
-		additionalServiceAnnotations = crawler.Spec.ChiaConfig.RPCService.Annotations
-	}
-	inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
-
-	// Ports
-	inputs.Ports = []corev1.ServicePort{
-		{
-			Port:       consts.CrawlerRPCPort,
-			TargetPort: intstr.FromString("rpc"),
-			Protocol:   "TCP",
-			Name:       "rpc",
-		},
+		// Annotations
+		var additionalServiceAnnotations = make(map[string]string)
+		if crawler.Spec.ChiaConfig.RPCService.Annotations != nil {
+			additionalServiceAnnotations = crawler.Spec.ChiaConfig.RPCService.Annotations
+		}
+		inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 	}
 
 	return kube.AssembleCommonService(inputs)
 }
 
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaCrawler CR
-func (r *ChiaCrawlerReconciler) assembleChiaExporterService(ctx context.Context, crawler k8schianetv1.ChiaCrawler) corev1.Service {
-	var inputs kube.AssembleCommonServiceInputs
+func assembleChiaExporterService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:           fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-metrics",
+		Namespace:      crawler.Namespace,
+		OwnerReference: getOwnerReference(crawler),
+		Ports:          kube.GetChiaExporterServicePorts(),
+	}
 
-	// Service Metadata
-	inputs.Name = fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-metrics"
-	inputs.Namespace = crawler.Namespace
-	inputs.OwnerReference = r.getOwnerReference(ctx, crawler)
-
-	// Service Type
 	if crawler.Spec.ChiaExporterConfig.Service != nil {
 		inputs.ServiceType = crawler.Spec.ChiaExporterConfig.Service.ServiceType
 		inputs.IPFamilyPolicy = crawler.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
 		inputs.IPFamilies = crawler.Spec.ChiaExporterConfig.Service.IPFamilies
-	}
 
-	// Labels
-	var additionalServiceLabels = make(map[string]string)
-	if crawler.Spec.ChiaExporterConfig.Service != nil && crawler.Spec.ChiaExporterConfig.Service.Labels != nil {
-		additionalServiceLabels = crawler.Spec.ChiaExporterConfig.Service.Labels
-	}
-	inputs.Labels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+		// Labels
+		var additionalServiceLabels = make(map[string]string)
+		if crawler.Spec.ChiaExporterConfig.Service.Labels != nil {
+			additionalServiceLabels = crawler.Spec.ChiaExporterConfig.Service.Labels
+		}
+		inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+		inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
 
-	// Annotations
-	var additionalServiceAnnotations = make(map[string]string)
-	if crawler.Spec.ChiaExporterConfig.Service != nil && crawler.Spec.ChiaExporterConfig.Service.Annotations != nil {
-		additionalServiceAnnotations = crawler.Spec.ChiaExporterConfig.Service.Annotations
-	}
-	inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
-
-	// Ports
-	inputs.Ports = []corev1.ServicePort{
-		{
-			Port:       consts.ChiaExporterPort,
-			TargetPort: intstr.FromString("metrics"),
-			Protocol:   "TCP",
-			Name:       "metrics",
-		},
+		// Annotations
+		var additionalServiceAnnotations = make(map[string]string)
+		if crawler.Spec.ChiaExporterConfig.Service.Annotations != nil {
+			additionalServiceAnnotations = crawler.Spec.ChiaExporterConfig.Service.Annotations
+		}
+		inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 	}
 
 	return kube.AssembleCommonService(inputs)
 }
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaCrawler CR
-func (r *ChiaCrawlerReconciler) assembleVolumeClaim(ctx context.Context, crawler k8schianetv1.ChiaCrawler) (corev1.PersistentVolumeClaim, error) {
+func assembleVolumeClaim(crawler k8schianetv1.ChiaCrawler) (corev1.PersistentVolumeClaim, error) {
 	resourceReq, err := resource.ParseQuantity(crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
 	if err != nil {
 		return corev1.PersistentVolumeClaim{}, err
 	}
 
-	var accessModes []corev1.PersistentVolumeAccessMode
+	accessModes := []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
 	if len(crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes) != 0 {
 		accessModes = crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
-	} else {
-		accessModes = []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
 	}
 
 	return corev1.PersistentVolumeClaim{
@@ -228,54 +195,28 @@ func (r *ChiaCrawlerReconciler) assembleVolumeClaim(ctx context.Context, crawler
 	}, nil
 }
 
-// assembleDeployment assembles the Deployment resource for a ChiaCrawler CR
-func (r *ChiaCrawlerReconciler) assembleDeployment(ctx context.Context, crawler k8schianetv1.ChiaCrawler) appsv1.Deployment {
-	var deploy appsv1.Deployment = appsv1.Deployment{
+// assembleDeployment assembles the crawler Deployment resource for a ChiaCrawler CR
+func assembleDeployment(crawler k8schianetv1.ChiaCrawler) appsv1.Deployment {
+	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
 			Namespace:   crawler.Namespace,
-			Labels:      kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
+			Labels:      kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
 			Annotations: crawler.Spec.AdditionalMetadata.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta),
+				MatchLabels: kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta),
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(ctx, crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
+					Labels:      kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels),
 					Annotations: crawler.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					// TODO add: imagePullSecret, serviceAccountName config
-					Containers: []corev1.Container{
-						{
-							Name:            "chia",
-							Image:           crawler.Spec.ChiaConfig.Image,
-							ImagePullPolicy: crawler.Spec.ImagePullPolicy,
-							Env:             r.getChiaEnv(ctx, crawler),
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "daemon",
-									ContainerPort: consts.DaemonPort,
-									Protocol:      "TCP",
-								},
-								{
-									Name:          "peers",
-									ContainerPort: r.getFullNodePort(ctx, crawler),
-									Protocol:      "TCP",
-								},
-								{
-									Name:          "rpc",
-									ContainerPort: consts.CrawlerRPCPort,
-									Protocol:      "TCP",
-								},
-							},
-							VolumeMounts: r.getChiaVolumeMounts(ctx, crawler),
-						},
-					},
+					Containers:   []corev1.Container{assembleChiaContainer(crawler)},
 					NodeSelector: crawler.Spec.NodeSelector,
-					Volumes:      r.getChiaVolumes(ctx, crawler),
+					Volumes:      getChiaVolumes(crawler),
 				},
 			},
 		},
@@ -288,55 +229,25 @@ func (r *ChiaCrawlerReconciler) assembleDeployment(ctx context.Context, crawler 
 
 			// Share chia volume mounts if enabled
 			if cont.ShareVolumeMounts {
-				cont.Container.VolumeMounts = r.getChiaVolumeMounts(ctx, crawler)
+				cont.Container.VolumeMounts = getChiaVolumeMounts(crawler)
 			}
 
 			// Share chia env if enabled
 			if cont.ShareEnv {
-				cont.Container.Env = append(cont.Container.Env, r.getChiaEnv(ctx, crawler)...)
+				cont.Container.Env = append(cont.Container.Env, getChiaEnv(crawler)...)
 			}
 
 			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
 		}
 	}
 
+	if crawler.Spec.ChiaExporterConfig.Enabled {
+		chiaExporterContainer := assembleChiaExporterContainer(crawler)
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
+	}
+
 	if crawler.Spec.Strategy != nil {
 		deploy.Spec.Strategy = *crawler.Spec.Strategy
-	}
-
-	var containerSecurityContext *corev1.SecurityContext
-	if crawler.Spec.ChiaConfig.SecurityContext != nil {
-		containerSecurityContext = crawler.Spec.ChiaConfig.SecurityContext
-		deploy.Spec.Template.Spec.Containers[0].SecurityContext = crawler.Spec.ChiaConfig.SecurityContext
-	}
-
-	if crawler.Spec.ChiaConfig.LivenessProbe != nil {
-		deploy.Spec.Template.Spec.Containers[0].LivenessProbe = crawler.Spec.ChiaConfig.LivenessProbe
-	}
-
-	if crawler.Spec.ChiaConfig.ReadinessProbe != nil {
-		deploy.Spec.Template.Spec.Containers[0].ReadinessProbe = crawler.Spec.ChiaConfig.ReadinessProbe
-	}
-
-	if crawler.Spec.ChiaConfig.StartupProbe != nil {
-		deploy.Spec.Template.Spec.Containers[0].StartupProbe = crawler.Spec.ChiaConfig.StartupProbe
-	}
-
-	var containerResorces corev1.ResourceRequirements
-	if crawler.Spec.ChiaConfig.Resources != nil {
-		containerResorces = *crawler.Spec.ChiaConfig.Resources
-		deploy.Spec.Template.Spec.Containers[0].Resources = *crawler.Spec.ChiaConfig.Resources
-	}
-
-	if crawler.Spec.ChiaExporterConfig.Enabled {
-		exporterContainer := kube.AssembleChiaExporterContainer(kube.AssembleChiaExporterContainerInputs{
-			Image:                crawler.Spec.ChiaExporterConfig.Image,
-			ConfigSecretName:     crawler.Spec.ChiaExporterConfig.ConfigSecretName,
-			SecurityContext:      containerSecurityContext,
-			PullPolicy:           crawler.Spec.ImagePullPolicy,
-			ResourceRequirements: containerResorces,
-		})
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, exporterContainer)
 	}
 
 	if crawler.Spec.PodSecurityContext != nil {
@@ -350,4 +261,70 @@ func (r *ChiaCrawlerReconciler) assembleDeployment(ctx context.Context, crawler 
 	// TODO add pod affinity, tolerations
 
 	return deploy
+}
+
+func assembleChiaContainer(crawler k8schianetv1.ChiaCrawler) corev1.Container {
+	input := kube.AssembleChiaContainerInputs{
+		Image:           crawler.Spec.ChiaConfig.Image,
+		ImagePullPolicy: crawler.Spec.ImagePullPolicy,
+		Env:             getChiaEnv(crawler),
+		Ports: []corev1.ContainerPort{
+			{
+				Name:          "daemon",
+				ContainerPort: consts.DaemonPort,
+				Protocol:      "TCP",
+			},
+			{
+				Name:          "peers",
+				ContainerPort: getFullNodePort(crawler),
+				Protocol:      "TCP",
+			},
+			{
+				Name:          "rpc",
+				ContainerPort: consts.CrawlerRPCPort,
+				Protocol:      "TCP",
+			},
+		},
+		VolumeMounts: getChiaVolumeMounts(crawler),
+	}
+
+	if crawler.Spec.ChiaConfig.SecurityContext != nil {
+		input.SecurityContext = crawler.Spec.ChiaConfig.SecurityContext
+	}
+
+	if crawler.Spec.ChiaConfig.LivenessProbe != nil {
+		input.LivenessProbe = crawler.Spec.ChiaConfig.LivenessProbe
+	}
+
+	if crawler.Spec.ChiaConfig.ReadinessProbe != nil {
+		input.ReadinessProbe = crawler.Spec.ChiaConfig.ReadinessProbe
+	}
+
+	if crawler.Spec.ChiaConfig.StartupProbe != nil {
+		input.StartupProbe = crawler.Spec.ChiaConfig.StartupProbe
+	}
+
+	if crawler.Spec.ChiaConfig.Resources != nil {
+		input.ResourceRequirements = crawler.Spec.ChiaConfig.Resources
+	}
+
+	return kube.AssembleChiaContainer(input)
+}
+
+func assembleChiaExporterContainer(crawler k8schianetv1.ChiaCrawler) corev1.Container {
+	input := kube.AssembleChiaExporterContainerInputs{
+		Image:            crawler.Spec.ChiaExporterConfig.Image,
+		ConfigSecretName: crawler.Spec.ChiaExporterConfig.ConfigSecretName,
+		ImagePullPolicy:  crawler.Spec.ImagePullPolicy,
+	}
+
+	if crawler.Spec.ChiaConfig.SecurityContext != nil {
+		input.SecurityContext = crawler.Spec.ChiaConfig.SecurityContext
+	}
+
+	if crawler.Spec.ChiaConfig.Resources != nil {
+		input.ResourceRequirements = *crawler.Spec.ChiaConfig.Resources
+	}
+
+	return kube.AssembleChiaExporterContainer(input)
 }

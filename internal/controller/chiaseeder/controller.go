@@ -26,6 +26,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -49,7 +50,7 @@ type ChiaSeederReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var chiaseeders map[string]bool = make(map[string]bool)
+var chiaseeders = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaseeders,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaseeders/status,verbs=get;update;patch
@@ -58,12 +59,11 @@ var chiaseeders map[string]bool = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
+// Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s", req.NamespacedName.String()))
+	log.Info(fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
 	var seeder k8schianetv1.ChiaSeeder
@@ -91,7 +91,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.PeerService) {
-		srv := r.assemblePeerService(ctx, seeder)
+		srv := assemblePeerService(seeder)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -121,7 +121,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.DaemonService) {
-		srv := r.assembleDaemonService(ctx, seeder)
+		srv := assembleDaemonService(seeder)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -153,7 +153,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.RPCService) {
-		srv := r.assembleRPCService(ctx, seeder)
+		srv := assembleRPCService(seeder)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -185,7 +185,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaExporterConfig.Service) {
-		srv := r.assembleChiaExporterService(ctx, seeder)
+		srv := assembleChiaExporterService(seeder)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -218,7 +218,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if seeder.Spec.Storage != nil && seeder.Spec.Storage.ChiaRoot != nil && seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
-		pvc, err := r.assembleVolumeClaim(ctx, seeder)
+		pvc, err := assembleVolumeClaim(seeder)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder PVC -- Check operator logs.")
@@ -236,7 +236,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	deploy := r.assembleDeployment(ctx, seeder)
+	deploy := assembleDeployment(seeder)
 
 	if err := controllerutil.SetControllerReference(&seeder, &deploy, r.Scheme); err != nil {
 		return ctrl.Result{}, err
@@ -270,5 +270,39 @@ func (r *ChiaSeederReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8schianetv1.ChiaSeeder{}).
 		Owns(&appsv1.Deployment{}).
+		Watches(
+			&corev1.Service{},
+			handler.EnqueueRequestsFromMapFunc(r.findObjectsForService),
+		).
 		Complete(r)
+}
+
+// findObjectsForService since we get an event for any changes to every Service in the cluster,
+// this lists the Chia custom resource this controller manages in the same namespace as the Service, and then
+// checks if this Service has an OwnerReference to any of the Chia custom resources returned in the list,
+// and sends a reconcile request for the resource this Service was owned by, if any
+func (r *ChiaSeederReconciler) findObjectsForService(ctx context.Context, obj client.Object) []reconcile.Request {
+	listOps := &client.ListOptions{
+		Namespace: obj.GetNamespace(),
+	}
+	list := &k8schianetv1.ChiaSeederList{}
+	err := r.List(ctx, list, listOps)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(list.Items))
+	for i, item := range list.Items {
+		for _, ref := range obj.GetOwnerReferences() {
+			if ref.Kind == item.Kind && ref.Name == item.GetName() {
+				requests[i] = reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Name:      item.GetName(),
+						Namespace: item.GetNamespace(),
+					},
+				}
+			}
+		}
+	}
+	return requests
 }

@@ -165,6 +165,23 @@ type SpecChiaExporter struct {
 	ConfigSecretName *string `json:"configSecretName,omitempty"`
 }
 
+// SpecChiaHealthcheck defines the desired state of Chia healthcheck configuration
+type SpecChiaHealthcheck struct {
+	// Enabled defines whether a chia-exporter sidecar container should run with the chia container
+	// +kubebuilder:default=false
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Image defines the image to use for the chia exporter containers
+	// +kubebuilder:default="ghcr.io/chia-network/chia-healthcheck:latest"
+	// +optional
+	Image string `json:"image,omitempty"`
+
+	// DNSHostname is the hostname to check for DNS responses. Disabled if not provided.
+	// +optional
+	DNSHostname *string `json:"dnsHostname,omitempty"`
+}
+
 // ChiaSecretKey defines the name of a kubernetes secret and key in that namespace that contains the Chia mnemonic
 type ChiaSecretKey struct {
 	// SecretName is the name of the kubernetes secret containing a mnemonic key

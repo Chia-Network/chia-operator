@@ -10,6 +10,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -33,7 +34,7 @@ type ChiaHarvesterReconciler struct {
 	Recorder record.EventRecorder
 }
 
-var chiaharvesters map[string]bool = make(map[string]bool)
+var chiaharvesters = make(map[string]bool)
 
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaharvesters,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiaharvesters/status,verbs=get;update;patch
@@ -42,12 +43,11 @@ var chiaharvesters map[string]bool = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
+// Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s", req.NamespacedName.String()))
+	log.Info(fmt.Sprintf("ChiaHarvesterReconciler ChiaHarvester=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
 	var harvester k8schianetv1.ChiaHarvester
@@ -76,7 +76,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	// Reconcile ChiaHarvester owned objects
 	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.PeerService) {
-		srv := r.assemblePeerService(ctx, harvester)
+		srv := assemblePeerService(harvester)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -106,7 +106,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.DaemonService) {
-		srv := r.assembleDaemonService(ctx, harvester)
+		srv := assembleDaemonService(harvester)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -138,7 +138,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.RPCService) {
-		srv := r.assembleRPCService(ctx, harvester)
+		srv := assembleRPCService(harvester)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -170,7 +170,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	if kube.ShouldMakeService(harvester.Spec.ChiaExporterConfig.Service) {
-		srv := r.assembleChiaExporterService(ctx, harvester)
+		srv := assembleChiaExporterService(harvester)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -203,7 +203,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if harvester.Spec.Storage != nil && harvester.Spec.Storage.ChiaRoot != nil && harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
-		pvc, err := r.assembleVolumeClaim(ctx, harvester)
+		pvc, err := assembleVolumeClaim(harvester)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester PVC -- Check operator logs.")
@@ -221,7 +221,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		}
 	}
 
-	deploy := r.assembleDeployment(ctx, harvester)
+	deploy := assembleDeployment(harvester)
 
 	if err := controllerutil.SetControllerReference(&harvester, &deploy, r.Scheme); err != nil {
 		return ctrl.Result{}, err
@@ -255,5 +255,39 @@ func (r *ChiaHarvesterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8schianetv1.ChiaHarvester{}).
 		Owns(&appsv1.Deployment{}).
+		Watches(
+			&corev1.Service{},
+			handler.EnqueueRequestsFromMapFunc(r.findObjectsForService),
+		).
 		Complete(r)
+}
+
+// findObjectsForService since we get an event for any changes to every Service in the cluster,
+// this lists the Chia custom resource this controller manages in the same namespace as the Service, and then
+// checks if this Service has an OwnerReference to any of the Chia custom resources returned in the list,
+// and sends a reconcile request for the resource this Service was owned by, if any
+func (r *ChiaHarvesterReconciler) findObjectsForService(ctx context.Context, obj client.Object) []reconcile.Request {
+	listOps := &client.ListOptions{
+		Namespace: obj.GetNamespace(),
+	}
+	list := &k8schianetv1.ChiaHarvesterList{}
+	err := r.List(ctx, list, listOps)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(list.Items))
+	for i, item := range list.Items {
+		for _, ref := range obj.GetOwnerReferences() {
+			if ref.Kind == item.Kind && ref.Name == item.GetName() {
+				requests[i] = reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Name:      item.GetName(),
+						Namespace: item.GetNamespace(),
+					},
+				}
+			}
+		}
+	}
+	return requests
 }

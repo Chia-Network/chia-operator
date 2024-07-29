@@ -25,7 +25,7 @@ git clone https://github.com/Chia-Network/chia-operator.git
 cd chia-operator
 ```
 
-You're currently on the main branch which defaults to the latest versions of this operator, chia, and chia-exporter. You can switch to the latest release tag for a more stable experience:
+You're currently on the main branch which defaults to the latest versions of this operator, chia, and all sidecars (chia-exporter, chia-healthcheck, etc.) You can switch to the latest release tag for a more stable experience:
 
 ```bash
 git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
