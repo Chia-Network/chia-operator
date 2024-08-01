@@ -1002,6 +1002,46 @@ spec:
                     description: Image defines the image to use for the chia exporter
                       containers
                     type: string
+                  service:
+                    description: |-
+                      Service defines settings for the Service installed with any chia-healthcheck resource.
+                      This Service contains the port for chia-healthcheck's web server.
+                      This Service will default to being disabled.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations is a map of string keys and values
+                          to attach to created objects
+                        type: object
+                      enabled:
+                        description: Enabled is a boolean selector for a Service if
+                          it should be generated.
+                        type: boolean
+                      ipFamilies:
+                        description: IPFamilies represents a list of IP families (IPv4
+                          and/or IPv6) required by a Service
+                        items:
+                          description: |-
+                            IPFamily represents the IP Family (IPv4 or IPv6). This type is used
+                            to express the family of an IP expressed by a type (e.g. service.spec.ipFamilies).
+                          type: string
+                        type: array
+                      ipFamilyPolicy:
+                        description: IPFamilyPolicy represents the dual-stack-ness
+                          requested or required by a Service
+                        type: string
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels is a map of string keys and values to
+                          attach to created objects
+                        type: object
+                      type:
+                        description: ServiceType is the Type of the Service. Defaults
+                          to ClusterIP
+                        type: string
+                    type: object
                 type: object
               imagePullPolicy:
                 default: Always
