@@ -180,6 +180,12 @@ type SpecChiaHealthcheck struct {
 	// DNSHostname is the hostname to check for DNS responses. Disabled if not provided.
 	// +optional
 	DNSHostname *string `json:"dnsHostname,omitempty"`
+
+	// Service defines settings for the Service installed with any chia-healthcheck resource.
+	// This Service contains the port for chia-healthcheck's web server.
+	// This Service will default to being disabled.
+	// +optional
+	Service *Service `json:"service,omitempty"`
 }
 
 // ChiaSecretKey defines the name of a kubernetes secret and key in that namespace that contains the Chia mnemonic

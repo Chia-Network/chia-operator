@@ -178,6 +178,39 @@ func assembleChiaExporterService(seeder k8schianetv1.ChiaSeeder) corev1.Service 
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleChiaHealthcheckService assembles the chia-healthcheck Service resource for a ChiaSeeder CR
+func assembleChiaHealthcheckService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:           fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-healthcheck",
+		Namespace:      seeder.Namespace,
+		OwnerReference: getOwnerReference(seeder),
+		Ports:          kube.GetChiaHealthcheckServicePorts(),
+	}
+
+	if seeder.Spec.ChiaHealthcheckConfig.Service != nil {
+		inputs.ServiceType = seeder.Spec.ChiaHealthcheckConfig.Service.ServiceType
+		inputs.IPFamilyPolicy = seeder.Spec.ChiaHealthcheckConfig.Service.IPFamilyPolicy
+		inputs.IPFamilies = seeder.Spec.ChiaHealthcheckConfig.Service.IPFamilies
+
+		// Labels
+		var additionalServiceLabels = make(map[string]string)
+		if seeder.Spec.ChiaHealthcheckConfig.Service.Labels != nil {
+			additionalServiceLabels = seeder.Spec.ChiaHealthcheckConfig.Service.Labels
+		}
+		inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+		inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+		// Annotations
+		var additionalServiceAnnotations = make(map[string]string)
+		if seeder.Spec.ChiaHealthcheckConfig.Service.Annotations != nil {
+			additionalServiceAnnotations = seeder.Spec.ChiaHealthcheckConfig.Service.Annotations
+		}
+		inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleVolumeClaim assembles the PVC resource for a ChiaSeeder CR
 func assembleVolumeClaim(seeder k8schianetv1.ChiaSeeder) (corev1.PersistentVolumeClaim, error) {
 	resourceReq, err := resource.ParseQuantity(seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)

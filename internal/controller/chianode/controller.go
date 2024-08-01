@@ -261,6 +261,38 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
+	if kube.ShouldMakeService(node.Spec.ChiaHealthcheckConfig.Service) {
+		srv := assembleChiaHealthcheckService(node)
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node healthcheck Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node healthcheck Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-healthcheck",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to GET ChiaNode healthcheck Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to DELETE ChiaNode healthcheck Service resource", req.NamespacedName))
+			}
+		}
+	}
+
 	stateful := assembleStatefulset(ctx, node)
 
 	if err := controllerutil.SetControllerReference(&node, &stateful, r.Scheme); err != nil {

@@ -166,6 +166,39 @@ func assembleChiaExporterService(node k8schianetv1.ChiaNode) corev1.Service {
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleChiaHealthcheckService assembles the chia-healthcheck Service resource for a ChiaNode CR
+func assembleChiaHealthcheckService(node k8schianetv1.ChiaNode) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:           fmt.Sprintf(chianodeNamePattern, node.Name) + "-healthcheck",
+		Namespace:      node.Namespace,
+		OwnerReference: getOwnerReference(node),
+		Ports:          kube.GetChiaHealthcheckServicePorts(),
+	}
+
+	if node.Spec.ChiaHealthcheckConfig.Service != nil {
+		inputs.ServiceType = node.Spec.ChiaHealthcheckConfig.Service.ServiceType
+		inputs.IPFamilyPolicy = node.Spec.ChiaHealthcheckConfig.Service.IPFamilyPolicy
+		inputs.IPFamilies = node.Spec.ChiaHealthcheckConfig.Service.IPFamilies
+
+		// Labels
+		var additionalServiceLabels = make(map[string]string)
+		if node.Spec.ChiaHealthcheckConfig.Service.Labels != nil {
+			additionalServiceLabels = node.Spec.ChiaHealthcheckConfig.Service.Labels
+		}
+		inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+		inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+
+		// Annotations
+		var additionalServiceAnnotations = make(map[string]string)
+		if node.Spec.ChiaHealthcheckConfig.Service.Annotations != nil {
+			additionalServiceAnnotations = node.Spec.ChiaHealthcheckConfig.Service.Annotations
+		}
+		inputs.Annotations = kube.CombineMaps(node.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	}
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleHeadlessPeerService assembles the headless peer Service for a Chianode CR
 func assembleHeadlessPeerService(node k8schianetv1.ChiaNode) corev1.Service {
 	srv := assemblePeerService(node)

@@ -56,6 +56,18 @@ func GetChiaExporterServicePorts() []corev1.ServicePort {
 	}
 }
 
+// GetChiaHealthcheckServicePorts returns the Service ports for chia-healthcheck Services
+func GetChiaHealthcheckServicePorts() []corev1.ServicePort {
+	return []corev1.ServicePort{
+		{
+			Port:       consts.ChiaHealthcheckPort,
+			TargetPort: intstr.FromString("health"),
+			Protocol:   "TCP",
+			Name:       "health",
+		},
+	}
+}
+
 func GetChiaDaemonServicePorts() []corev1.ServicePort {
 	return []corev1.ServicePort{
 		{
