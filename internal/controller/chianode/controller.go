@@ -261,7 +261,8 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	if kube.ShouldMakeService(node.Spec.ChiaHealthcheckConfig.Service) {
+	// Adds a condition check for Service.Enabled field nilness because the default for ShouldMakeService is true for other services, but should actually be false for this one
+	if kube.ShouldMakeService(node.Spec.ChiaHealthcheckConfig.Service) && node.Spec.ChiaHealthcheckConfig.Enabled && node.Spec.ChiaHealthcheckConfig.Service.Enabled != nil {
 		srv := assembleChiaHealthcheckService(node)
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {

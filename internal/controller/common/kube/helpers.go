@@ -38,8 +38,8 @@ func CombineMaps(maps ...map[string]string) map[string]string {
 }
 
 // ShouldMakeService returns true if the related Service was configured to be made
-func ShouldMakeService(srv *k8schianetv1.Service) bool {
-	if srv != nil && srv.Enabled != nil {
+func ShouldMakeService(srv k8schianetv1.Service) bool {
+	if srv.Enabled != nil {
 		return *srv.Enabled
 	}
 	return true // default to true if the Service wasn't declared

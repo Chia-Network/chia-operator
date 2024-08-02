@@ -36,26 +36,24 @@ func assemblePeerService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 		},
 	}
 
-	if crawler.Spec.ChiaConfig.PeerService != nil {
-		inputs.ServiceType = crawler.Spec.ChiaConfig.PeerService.ServiceType
-		inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.PeerService.IPFamilyPolicy
-		inputs.IPFamilies = crawler.Spec.ChiaConfig.PeerService.IPFamilies
+	inputs.ServiceType = crawler.Spec.ChiaConfig.PeerService.ServiceType
+	inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.PeerService.IPFamilyPolicy
+	inputs.IPFamilies = crawler.Spec.ChiaConfig.PeerService.IPFamilies
 
-		// Labels
-		var additionalServiceLabels = make(map[string]string)
-		if crawler.Spec.ChiaConfig.PeerService.Labels != nil {
-			additionalServiceLabels = crawler.Spec.ChiaConfig.PeerService.Labels
-		}
-		inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-		inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
-
-		// Annotations
-		var additionalServiceAnnotations = make(map[string]string)
-		if crawler.Spec.ChiaConfig.PeerService.Annotations != nil {
-			additionalServiceAnnotations = crawler.Spec.ChiaConfig.PeerService.Annotations
-		}
-		inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if crawler.Spec.ChiaConfig.PeerService.Labels != nil {
+		additionalServiceLabels = crawler.Spec.ChiaConfig.PeerService.Labels
 	}
+	inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if crawler.Spec.ChiaConfig.PeerService.Annotations != nil {
+		additionalServiceAnnotations = crawler.Spec.ChiaConfig.PeerService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -69,26 +67,24 @@ func assembleDaemonService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 		Ports:          kube.GetChiaDaemonServicePorts(),
 	}
 
-	if crawler.Spec.ChiaConfig.DaemonService != nil {
-		inputs.ServiceType = crawler.Spec.ChiaConfig.DaemonService.ServiceType
-		inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
-		inputs.IPFamilies = crawler.Spec.ChiaConfig.DaemonService.IPFamilies
+	inputs.ServiceType = crawler.Spec.ChiaConfig.DaemonService.ServiceType
+	inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
+	inputs.IPFamilies = crawler.Spec.ChiaConfig.DaemonService.IPFamilies
 
-		// Labels
-		var additionalServiceLabels = make(map[string]string)
-		if crawler.Spec.ChiaConfig.DaemonService.Labels != nil {
-			additionalServiceLabels = crawler.Spec.ChiaConfig.DaemonService.Labels
-		}
-		inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-		inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
-
-		// Annotations
-		var additionalServiceAnnotations = make(map[string]string)
-		if crawler.Spec.ChiaConfig.DaemonService.Annotations != nil {
-			additionalServiceAnnotations = crawler.Spec.ChiaConfig.DaemonService.Annotations
-		}
-		inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if crawler.Spec.ChiaConfig.DaemonService.Labels != nil {
+		additionalServiceLabels = crawler.Spec.ChiaConfig.DaemonService.Labels
 	}
+	inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if crawler.Spec.ChiaConfig.DaemonService.Annotations != nil {
+		additionalServiceAnnotations = crawler.Spec.ChiaConfig.DaemonService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -109,26 +105,24 @@ func assembleRPCService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 		},
 	}
 
-	if crawler.Spec.ChiaConfig.RPCService != nil {
-		inputs.ServiceType = crawler.Spec.ChiaConfig.RPCService.ServiceType
-		inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.RPCService.IPFamilyPolicy
-		inputs.IPFamilies = crawler.Spec.ChiaConfig.RPCService.IPFamilies
+	inputs.ServiceType = crawler.Spec.ChiaConfig.RPCService.ServiceType
+	inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.RPCService.IPFamilyPolicy
+	inputs.IPFamilies = crawler.Spec.ChiaConfig.RPCService.IPFamilies
 
-		// Labels
-		var additionalServiceLabels = make(map[string]string)
-		if crawler.Spec.ChiaConfig.RPCService.Labels != nil {
-			additionalServiceLabels = crawler.Spec.ChiaConfig.RPCService.Labels
-		}
-		inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-		inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
-
-		// Annotations
-		var additionalServiceAnnotations = make(map[string]string)
-		if crawler.Spec.ChiaConfig.RPCService.Annotations != nil {
-			additionalServiceAnnotations = crawler.Spec.ChiaConfig.RPCService.Annotations
-		}
-		inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if crawler.Spec.ChiaConfig.RPCService.Labels != nil {
+		additionalServiceLabels = crawler.Spec.ChiaConfig.RPCService.Labels
 	}
+	inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if crawler.Spec.ChiaConfig.RPCService.Annotations != nil {
+		additionalServiceAnnotations = crawler.Spec.ChiaConfig.RPCService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -142,26 +136,24 @@ func assembleChiaExporterService(crawler k8schianetv1.ChiaCrawler) corev1.Servic
 		Ports:          kube.GetChiaExporterServicePorts(),
 	}
 
-	if crawler.Spec.ChiaExporterConfig.Service != nil {
-		inputs.ServiceType = crawler.Spec.ChiaExporterConfig.Service.ServiceType
-		inputs.IPFamilyPolicy = crawler.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
-		inputs.IPFamilies = crawler.Spec.ChiaExporterConfig.Service.IPFamilies
+	inputs.ServiceType = crawler.Spec.ChiaExporterConfig.Service.ServiceType
+	inputs.IPFamilyPolicy = crawler.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
+	inputs.IPFamilies = crawler.Spec.ChiaExporterConfig.Service.IPFamilies
 
-		// Labels
-		var additionalServiceLabels = make(map[string]string)
-		if crawler.Spec.ChiaExporterConfig.Service.Labels != nil {
-			additionalServiceLabels = crawler.Spec.ChiaExporterConfig.Service.Labels
-		}
-		inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-		inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
-
-		// Annotations
-		var additionalServiceAnnotations = make(map[string]string)
-		if crawler.Spec.ChiaExporterConfig.Service.Annotations != nil {
-			additionalServiceAnnotations = crawler.Spec.ChiaExporterConfig.Service.Annotations
-		}
-		inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if crawler.Spec.ChiaExporterConfig.Service.Labels != nil {
+		additionalServiceLabels = crawler.Spec.ChiaExporterConfig.Service.Labels
 	}
+	inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if crawler.Spec.ChiaExporterConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = crawler.Spec.ChiaExporterConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
