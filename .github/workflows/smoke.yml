@@ -90,3 +90,4 @@ jobs:
             echo "ChiaNode peer Service was found to have $service_endpoints_number endpoints, expected 1"
             exit 1
           fi
+          echo "Expected 1 endpoint, found $service_endpoints_number"
