@@ -91,3 +91,39 @@ jobs:
             exit 1
           fi
           echo "Expected 1 endpoint, found $service_endpoints_number"
+
+      - name: Check to make sure ChiaNode RPC Service has one endpoint
+        run: |
+          service_endpoints_number=$(kubectl get endpoints chianode-sample-node-rpc -o json | jq '.subsets[].addresses | length')
+          if [ "$service_endpoints_number" -ne 1 ]; then
+            echo "ChiaNode RPC Service was found to have $service_endpoints_number endpoints, expected 1"
+            exit 1
+          fi
+          echo "Expected 1 endpoint, found $service_endpoints_number"
+
+      - name: Check to make sure ChiaNode daemon Service has one endpoint
+        run: |
+          service_endpoints_number=$(kubectl get endpoints chianode-sample-node-daemon -o json | jq '.subsets[].addresses | length')
+          if [ "$service_endpoints_number" -ne 1 ]; then
+            echo "ChiaNode daemon Service was found to have $service_endpoints_number endpoints, expected 1"
+            exit 1
+          fi
+          echo "Expected 1 endpoint, found $service_endpoints_number"
+
+      - name: Check to make sure ChiaNode headless Service has one endpoint
+        run: |
+          service_endpoints_number=$(kubectl get endpoints chianode-sample-node-headless -o json | jq '.subsets[].addresses | length')
+          if [ "$service_endpoints_number" -ne 1 ]; then
+            echo "ChiaNode headless Service was found to have $service_endpoints_number endpoints, expected 1"
+            exit 1
+          fi
+          echo "Expected 1 endpoint, found $service_endpoints_number"
+
+      - name: Check to make sure ChiaNode internal Service has one endpoint
+        run: |
+          service_endpoints_number=$(kubectl get endpoints chianode-sample-node-internal -o json | jq '.subsets[].addresses | length')
+          if [ "$service_endpoints_number" -ne 1 ]; then
+            echo "ChiaNode internal Service was found to have $service_endpoints_number endpoints, expected 1"
+            exit 1
+          fi
+          echo "Expected 1 endpoint, found $service_endpoints_number"
