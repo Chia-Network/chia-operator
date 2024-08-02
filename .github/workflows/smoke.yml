@@ -82,3 +82,11 @@ jobs:
             kubectl get pods
             exit 1
           fi
+
+      - name: Check to make sure ChiaNode peer Service has one endpoint
+        run: |
+          service_endpoints_number=$(kubectl get endpoints chianode-sample-node -o json | jq '.subsets[].addresses | length')
+          if [ "$service_endpoints_number" -ne 1 ]; then
+            echo "ChiaNode peer Service was found to have $service_endpoints_number endpoints, expected 1"
+            exit 1
+          fi

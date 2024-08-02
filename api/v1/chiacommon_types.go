@@ -107,19 +107,19 @@ type CommonSpecChia struct {
 	// This Service usually contains ports for peer connections, or in the case of seeders port 53.
 	// This Service will default to being enabled with a ClusterIP Service type.
 	// +optional
-	PeerService *Service `json:"peerService,omitempty"`
+	PeerService Service `json:"peerService,omitempty"`
 
 	// DaemonService defines settings for the daemon Service installed with any Chia component resource.
 	// This Service usually contains the port for the Chia daemon that runs alongside any Chia instance.
 	// This Service will default to being enabled with a ClusterIP Service type.
 	// +optional
-	DaemonService *Service `json:"daemonService,omitempty"`
+	DaemonService Service `json:"daemonService,omitempty"`
 
 	// RPCService defines settings for the RPC Service installed with any Chia component resource.
 	// This Service contains the port for the Chia RPC API.
 	// This Service will default to being enabled with a ClusterIP Service type.
 	// +optional
-	RPCService *Service `json:"rpcService,omitempty"`
+	RPCService Service `json:"rpcService,omitempty"`
 
 	// Periodic probe of container liveness.
 	// +optional
@@ -158,7 +158,7 @@ type SpecChiaExporter struct {
 	// This Service contains the port for chia-exporter's web exporter.
 	// This Service will default to being enabled with a ClusterIP Service type if chia-exporter is enabled.
 	// +optional
-	Service *Service `json:"service,omitempty"`
+	Service Service `json:"service,omitempty"`
 
 	// ConfigSecretName is the name of an optional Secret that contains the environment variables that will be mounted in the chia-exporter container.
 	// +optional
@@ -185,7 +185,7 @@ type SpecChiaHealthcheck struct {
 	// This Service contains the port for chia-healthcheck's web server.
 	// This Service will default to being disabled.
 	// +optional
-	Service *Service `json:"service,omitempty"`
+	Service Service `json:"service,omitempty"`
 }
 
 // ChiaSecretKey defines the name of a kubernetes secret and key in that namespace that contains the Chia mnemonic

@@ -48,26 +48,24 @@ func assemblePeerService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 		},
 	}
 
-	if seeder.Spec.ChiaConfig.PeerService != nil {
-		inputs.ServiceType = seeder.Spec.ChiaConfig.PeerService.ServiceType
-		inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.PeerService.IPFamilyPolicy
-		inputs.IPFamilies = seeder.Spec.ChiaConfig.PeerService.IPFamilies
+	inputs.ServiceType = seeder.Spec.ChiaConfig.PeerService.ServiceType
+	inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.PeerService.IPFamilyPolicy
+	inputs.IPFamilies = seeder.Spec.ChiaConfig.PeerService.IPFamilies
 
-		// Labels
-		var additionalServiceLabels = make(map[string]string)
-		if seeder.Spec.ChiaConfig.PeerService.Labels != nil {
-			additionalServiceLabels = seeder.Spec.ChiaConfig.PeerService.Labels
-		}
-		inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-		inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
-
-		// Annotations
-		var additionalServiceAnnotations = make(map[string]string)
-		if seeder.Spec.ChiaConfig.PeerService.Annotations != nil {
-			additionalServiceAnnotations = seeder.Spec.ChiaConfig.PeerService.Annotations
-		}
-		inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if seeder.Spec.ChiaConfig.PeerService.Labels != nil {
+		additionalServiceLabels = seeder.Spec.ChiaConfig.PeerService.Labels
 	}
+	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if seeder.Spec.ChiaConfig.PeerService.Annotations != nil {
+		additionalServiceAnnotations = seeder.Spec.ChiaConfig.PeerService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -81,26 +79,24 @@ func assembleDaemonService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 		Ports:          kube.GetChiaDaemonServicePorts(),
 	}
 
-	if seeder.Spec.ChiaConfig.DaemonService != nil {
-		inputs.ServiceType = seeder.Spec.ChiaConfig.DaemonService.ServiceType
-		inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
-		inputs.IPFamilies = seeder.Spec.ChiaConfig.DaemonService.IPFamilies
+	inputs.ServiceType = seeder.Spec.ChiaConfig.DaemonService.ServiceType
+	inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
+	inputs.IPFamilies = seeder.Spec.ChiaConfig.DaemonService.IPFamilies
 
-		// Labels
-		var additionalServiceLabels = make(map[string]string)
-		if seeder.Spec.ChiaConfig.DaemonService.Labels != nil {
-			additionalServiceLabels = seeder.Spec.ChiaConfig.DaemonService.Labels
-		}
-		inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-		inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
-
-		// Annotations
-		var additionalServiceAnnotations = make(map[string]string)
-		if seeder.Spec.ChiaConfig.DaemonService.Annotations != nil {
-			additionalServiceAnnotations = seeder.Spec.ChiaConfig.DaemonService.Annotations
-		}
-		inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if seeder.Spec.ChiaConfig.DaemonService.Labels != nil {
+		additionalServiceLabels = seeder.Spec.ChiaConfig.DaemonService.Labels
 	}
+	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if seeder.Spec.ChiaConfig.DaemonService.Annotations != nil {
+		additionalServiceAnnotations = seeder.Spec.ChiaConfig.DaemonService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -121,26 +117,24 @@ func assembleRPCService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 		},
 	}
 
-	if seeder.Spec.ChiaConfig.RPCService != nil {
-		inputs.ServiceType = seeder.Spec.ChiaConfig.RPCService.ServiceType
-		inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.RPCService.IPFamilyPolicy
-		inputs.IPFamilies = seeder.Spec.ChiaConfig.RPCService.IPFamilies
+	inputs.ServiceType = seeder.Spec.ChiaConfig.RPCService.ServiceType
+	inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.RPCService.IPFamilyPolicy
+	inputs.IPFamilies = seeder.Spec.ChiaConfig.RPCService.IPFamilies
 
-		// Labels
-		var additionalServiceLabels = make(map[string]string)
-		if seeder.Spec.ChiaConfig.RPCService.Labels != nil {
-			additionalServiceLabels = seeder.Spec.ChiaConfig.RPCService.Labels
-		}
-		inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-		inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
-
-		// Annotations
-		var additionalServiceAnnotations = make(map[string]string)
-		if seeder.Spec.ChiaConfig.RPCService.Annotations != nil {
-			additionalServiceAnnotations = seeder.Spec.ChiaConfig.RPCService.Annotations
-		}
-		inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if seeder.Spec.ChiaConfig.RPCService.Labels != nil {
+		additionalServiceLabels = seeder.Spec.ChiaConfig.RPCService.Labels
 	}
+	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if seeder.Spec.ChiaConfig.RPCService.Annotations != nil {
+		additionalServiceAnnotations = seeder.Spec.ChiaConfig.RPCService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -154,26 +148,24 @@ func assembleChiaExporterService(seeder k8schianetv1.ChiaSeeder) corev1.Service 
 		Ports:          kube.GetChiaExporterServicePorts(),
 	}
 
-	if seeder.Spec.ChiaExporterConfig.Service != nil {
-		inputs.ServiceType = seeder.Spec.ChiaExporterConfig.Service.ServiceType
-		inputs.IPFamilyPolicy = seeder.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
-		inputs.IPFamilies = seeder.Spec.ChiaExporterConfig.Service.IPFamilies
+	inputs.ServiceType = seeder.Spec.ChiaExporterConfig.Service.ServiceType
+	inputs.IPFamilyPolicy = seeder.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
+	inputs.IPFamilies = seeder.Spec.ChiaExporterConfig.Service.IPFamilies
 
-		// Labels
-		var additionalServiceLabels = make(map[string]string)
-		if seeder.Spec.ChiaExporterConfig.Service.Labels != nil {
-			additionalServiceLabels = seeder.Spec.ChiaExporterConfig.Service.Labels
-		}
-		inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-		inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
-
-		// Annotations
-		var additionalServiceAnnotations = make(map[string]string)
-		if seeder.Spec.ChiaExporterConfig.Service.Annotations != nil {
-			additionalServiceAnnotations = seeder.Spec.ChiaExporterConfig.Service.Annotations
-		}
-		inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if seeder.Spec.ChiaExporterConfig.Service.Labels != nil {
+		additionalServiceLabels = seeder.Spec.ChiaExporterConfig.Service.Labels
 	}
+	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if seeder.Spec.ChiaExporterConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = seeder.Spec.ChiaExporterConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -187,26 +179,24 @@ func assembleChiaHealthcheckService(seeder k8schianetv1.ChiaSeeder) corev1.Servi
 		Ports:          kube.GetChiaHealthcheckServicePorts(),
 	}
 
-	if seeder.Spec.ChiaHealthcheckConfig.Service != nil {
-		inputs.ServiceType = seeder.Spec.ChiaHealthcheckConfig.Service.ServiceType
-		inputs.IPFamilyPolicy = seeder.Spec.ChiaHealthcheckConfig.Service.IPFamilyPolicy
-		inputs.IPFamilies = seeder.Spec.ChiaHealthcheckConfig.Service.IPFamilies
+	inputs.ServiceType = seeder.Spec.ChiaHealthcheckConfig.Service.ServiceType
+	inputs.IPFamilyPolicy = seeder.Spec.ChiaHealthcheckConfig.Service.IPFamilyPolicy
+	inputs.IPFamilies = seeder.Spec.ChiaHealthcheckConfig.Service.IPFamilies
 
-		// Labels
-		var additionalServiceLabels = make(map[string]string)
-		if seeder.Spec.ChiaHealthcheckConfig.Service.Labels != nil {
-			additionalServiceLabels = seeder.Spec.ChiaHealthcheckConfig.Service.Labels
-		}
-		inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-		inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
-
-		// Annotations
-		var additionalServiceAnnotations = make(map[string]string)
-		if seeder.Spec.ChiaHealthcheckConfig.Service.Annotations != nil {
-			additionalServiceAnnotations = seeder.Spec.ChiaHealthcheckConfig.Service.Annotations
-		}
-		inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if seeder.Spec.ChiaHealthcheckConfig.Service.Labels != nil {
+		additionalServiceLabels = seeder.Spec.ChiaHealthcheckConfig.Service.Labels
 	}
+	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if seeder.Spec.ChiaHealthcheckConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = seeder.Spec.ChiaHealthcheckConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
