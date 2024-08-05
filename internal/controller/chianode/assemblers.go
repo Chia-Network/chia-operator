@@ -23,9 +23,8 @@ const chianodeNamePattern = "%s-node"
 // assemblePeerService assembles the peer Service resource for a ChiaNode CR
 func assemblePeerService(node k8schianetv1.ChiaNode) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chianodeNamePattern, node.Name),
-		Namespace:      node.Namespace,
-		OwnerReference: getOwnerReference(node),
+		Name:      fmt.Sprintf(chianodeNamePattern, node.Name),
+		Namespace: node.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       getFullNodePort(node),
@@ -61,10 +60,9 @@ func assemblePeerService(node k8schianetv1.ChiaNode) corev1.Service {
 // assembleDaemonService assembles the daemon Service resource for a ChiaNode CR
 func assembleDaemonService(node k8schianetv1.ChiaNode) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chianodeNamePattern, node.Name) + "-daemon",
-		Namespace:      node.Namespace,
-		OwnerReference: getOwnerReference(node),
-		Ports:          kube.GetChiaDaemonServicePorts(),
+		Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-daemon",
+		Namespace: node.Namespace,
+		Ports:     kube.GetChiaDaemonServicePorts(),
 	}
 
 	inputs.ServiceType = node.Spec.ChiaConfig.DaemonService.ServiceType
@@ -92,9 +90,8 @@ func assembleDaemonService(node k8schianetv1.ChiaNode) corev1.Service {
 // assembleRPCService assembles the RPC Service resource for a ChiaNode CR
 func assembleRPCService(node k8schianetv1.ChiaNode) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chianodeNamePattern, node.Name) + "-rpc",
-		Namespace:      node.Namespace,
-		OwnerReference: getOwnerReference(node),
+		Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-rpc",
+		Namespace: node.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.NodeRPCPort,
@@ -130,10 +127,9 @@ func assembleRPCService(node k8schianetv1.ChiaNode) corev1.Service {
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaNode CR
 func assembleChiaExporterService(node k8schianetv1.ChiaNode) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chianodeNamePattern, node.Name) + "-metrics",
-		Namespace:      node.Namespace,
-		OwnerReference: getOwnerReference(node),
-		Ports:          kube.GetChiaExporterServicePorts(),
+		Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-metrics",
+		Namespace: node.Namespace,
+		Ports:     kube.GetChiaExporterServicePorts(),
 	}
 
 	inputs.ServiceType = node.Spec.ChiaExporterConfig.Service.ServiceType
@@ -161,10 +157,9 @@ func assembleChiaExporterService(node k8schianetv1.ChiaNode) corev1.Service {
 // assembleChiaHealthcheckService assembles the chia-healthcheck Service resource for a ChiaNode CR
 func assembleChiaHealthcheckService(node k8schianetv1.ChiaNode) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chianodeNamePattern, node.Name) + "-healthcheck",
-		Namespace:      node.Namespace,
-		OwnerReference: getOwnerReference(node),
-		Ports:          kube.GetChiaHealthcheckServicePorts(),
+		Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-healthcheck",
+		Namespace: node.Namespace,
+		Ports:     kube.GetChiaHealthcheckServicePorts(),
 	}
 
 	inputs.ServiceType = node.Spec.ChiaHealthcheckConfig.Service.ServiceType

@@ -8,11 +8,8 @@ import (
 	"fmt"
 	"strconv"
 
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
@@ -178,17 +175,4 @@ func getChiaEnv(tl k8schianetv1.ChiaTimelord) []corev1.EnvVar {
 	})
 
 	return env
-}
-
-// getOwnerReference gives the common owner reference spec for ChiaTimelord related objects
-func getOwnerReference(tl k8schianetv1.ChiaTimelord) []metav1.OwnerReference {
-	return []metav1.OwnerReference{
-		{
-			APIVersion: tl.APIVersion,
-			Kind:       tl.Kind,
-			Name:       tl.Name,
-			UID:        tl.UID,
-			Controller: &consts.ControllerOwner,
-		},
-	}
 }

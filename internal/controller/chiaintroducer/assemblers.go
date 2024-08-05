@@ -23,9 +23,8 @@ const chiaintroducerNamePattern = "%s-introducer"
 // assemblePeerService assembles the peer Service resource for a ChiaIntroducer CR
 func assemblePeerService(introducer k8schianetv1.ChiaIntroducer) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiaintroducerNamePattern, introducer.Name),
-		Namespace:      introducer.Namespace,
-		OwnerReference: getOwnerReference(introducer),
+		Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name),
+		Namespace: introducer.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       getFullNodePort(introducer),
@@ -61,10 +60,9 @@ func assemblePeerService(introducer k8schianetv1.ChiaIntroducer) corev1.Service 
 // assembleDaemonService assembles the daemon Service resource for a ChiaIntroducer CR
 func assembleDaemonService(introducer k8schianetv1.ChiaIntroducer) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiaintroducerNamePattern, introducer.Name) + "-daemon",
-		Namespace:      introducer.Namespace,
-		OwnerReference: getOwnerReference(introducer),
-		Ports:          kube.GetChiaDaemonServicePorts(),
+		Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name) + "-daemon",
+		Namespace: introducer.Namespace,
+		Ports:     kube.GetChiaDaemonServicePorts(),
 	}
 
 	inputs.ServiceType = introducer.Spec.ChiaConfig.DaemonService.ServiceType
@@ -92,10 +90,9 @@ func assembleDaemonService(introducer k8schianetv1.ChiaIntroducer) corev1.Servic
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaIntroducer CR
 func assembleChiaExporterService(introducer k8schianetv1.ChiaIntroducer) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiaintroducerNamePattern, introducer.Name) + "-metrics",
-		Namespace:      introducer.Namespace,
-		OwnerReference: getOwnerReference(introducer),
-		Ports:          kube.GetChiaExporterServicePorts(),
+		Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name) + "-metrics",
+		Namespace: introducer.Namespace,
+		Ports:     kube.GetChiaExporterServicePorts(),
 	}
 
 	inputs.ServiceType = introducer.Spec.ChiaExporterConfig.Service.ServiceType

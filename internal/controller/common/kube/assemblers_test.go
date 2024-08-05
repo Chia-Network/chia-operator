@@ -11,6 +11,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+var testControllerOwner = true
+
 func TestAssembleCommonService_Minimal(t *testing.T) {
 	expected := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -28,7 +30,7 @@ func TestAssembleCommonService_Minimal(t *testing.T) {
 					Kind:       "ChiaTest",
 					Name:       "test",
 					UID:        "testuid",
-					Controller: &consts.ControllerOwner,
+					Controller: &testControllerOwner,
 				},
 			},
 		},
@@ -76,7 +78,7 @@ func TestAssembleCommonService_Full(t *testing.T) {
 					Kind:       "ChiaTest",
 					Name:       "test",
 					UID:        "testuid",
-					Controller: &consts.ControllerOwner,
+					Controller: &testControllerOwner,
 				},
 			},
 		},

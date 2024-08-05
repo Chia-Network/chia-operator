@@ -7,9 +7,12 @@ package chiaca
 import (
 	"context"
 	"fmt"
+	batchv1 "k8s.io/api/batch/v1"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
@@ -76,6 +79,9 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// Reconcile resources, creating them if they don't exist
 	sa := r.assembleServiceAccount(ca)
+	if err := controllerutil.SetControllerReference(&ca, &sa, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
 	res, err := kube.ReconcileServiceAccount(ctx, resourceReconciler, sa)
 	if err != nil {
 		if res == nil {
@@ -87,6 +93,9 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	role := r.assembleRole(ca)
+	if err := controllerutil.SetControllerReference(&ca, &role, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
 	res, err = kube.ReconcileRole(ctx, resourceReconciler, role)
 	if err != nil {
 		if res == nil {
@@ -98,6 +107,9 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	rb := r.assembleRoleBinding(ca)
+	if err := controllerutil.SetControllerReference(&ca, &rb, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
 	res, err = kube.ReconcileRoleBinding(ctx, resourceReconciler, rb)
 	if err != nil {
 		if res == nil {
@@ -118,6 +130,9 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Create CA generating Job if Secret does not already exist
 	if notFound {
 		job := r.assembleJob(ca)
+		if err := controllerutil.SetControllerReference(&ca, &job, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err = kube.ReconcileJob(ctx, resourceReconciler, job)
 		if err != nil {
 			if res == nil {
@@ -165,5 +180,9 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 func (r *ChiaCAReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8schianetv1.ChiaCA{}).
+		Owns(&batchv1.Job{}).
+		Owns(&corev1.ServiceAccount{}).
+		Owns(&rbacv1.Role{}).
+		Owns(&rbacv1.RoleBinding{}).
 		Complete(r)
 }

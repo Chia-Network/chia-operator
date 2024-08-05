@@ -7,7 +7,6 @@ package chiaintroducer
 import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strconv"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
@@ -193,19 +192,6 @@ func getChiaEnv(introducer k8schianetv1.ChiaIntroducer) []corev1.EnvVar {
 	}
 
 	return env
-}
-
-// getOwnerReference gives the common owner reference spec for ChiaIntroducer related objects
-func getOwnerReference(introducer k8schianetv1.ChiaIntroducer) []metav1.OwnerReference {
-	return []metav1.OwnerReference{
-		{
-			APIVersion: introducer.APIVersion,
-			Kind:       introducer.Kind,
-			Name:       introducer.Name,
-			UID:        introducer.UID,
-			Controller: &consts.ControllerOwner,
-		},
-	}
 }
 
 // getFullNodePort determines the correct full_node port to use

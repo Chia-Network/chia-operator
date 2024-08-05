@@ -22,10 +22,9 @@ const chiacaNamePattern = "%s-chiaca-generator"
 func (r *ChiaCAReconciler) assembleJob(ca k8schianetv1.ChiaCA) batchv1.Job {
 	var job = batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
-			Namespace:       ca.Namespace,
-			Labels:          kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
-			OwnerReferences: getOwnerReference(ca),
+			Name:      fmt.Sprintf(chiacaNamePattern, ca.Name),
+			Namespace: ca.Namespace,
+			Labels:    kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
 		},
 		Spec: batchv1.JobSpec{
 			Template: corev1.PodTemplateSpec{
@@ -71,10 +70,9 @@ func (r *ChiaCAReconciler) assembleJob(ca k8schianetv1.ChiaCA) batchv1.Job {
 func (r *ChiaCAReconciler) assembleServiceAccount(ca k8schianetv1.ChiaCA) corev1.ServiceAccount {
 	return corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
-			Namespace:       ca.Namespace,
-			Labels:          kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
-			OwnerReferences: getOwnerReference(ca),
+			Name:      fmt.Sprintf(chiacaNamePattern, ca.Name),
+			Namespace: ca.Namespace,
+			Labels:    kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
 		},
 	}
 }
@@ -83,10 +81,9 @@ func (r *ChiaCAReconciler) assembleServiceAccount(ca k8schianetv1.ChiaCA) corev1
 func (r *ChiaCAReconciler) assembleRole(ca k8schianetv1.ChiaCA) rbacv1.Role {
 	return rbacv1.Role{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
-			Namespace:       ca.Namespace,
-			Labels:          kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
-			OwnerReferences: getOwnerReference(ca),
+			Name:      fmt.Sprintf(chiacaNamePattern, ca.Name),
+			Namespace: ca.Namespace,
+			Labels:    kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
 		},
 		Rules: []rbacv1.PolicyRule{
 			{
@@ -108,10 +105,9 @@ func (r *ChiaCAReconciler) assembleRole(ca k8schianetv1.ChiaCA) rbacv1.Role {
 func (r *ChiaCAReconciler) assembleRoleBinding(ca k8schianetv1.ChiaCA) rbacv1.RoleBinding {
 	return rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            fmt.Sprintf(chiacaNamePattern, ca.Name),
-			Namespace:       ca.Namespace,
-			Labels:          kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
-			OwnerReferences: getOwnerReference(ca),
+			Name:      fmt.Sprintf(chiacaNamePattern, ca.Name),
+			Namespace: ca.Namespace,
+			Labels:    kube.GetCommonLabels(ca.Kind, ca.ObjectMeta),
 		},
 		Subjects: []rbacv1.Subject{
 			{

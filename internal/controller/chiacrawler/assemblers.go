@@ -23,9 +23,8 @@ const chiacrawlerNamePattern = "%s-crawler"
 // assemblePeerService assembles the peer Service resource for a ChiaCrawler CR
 func assemblePeerService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
-		Namespace:      crawler.Namespace,
-		OwnerReference: getOwnerReference(crawler),
+		Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
+		Namespace: crawler.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       getFullNodePort(crawler),
@@ -61,10 +60,9 @@ func assemblePeerService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 // assembleDaemonService assembles the daemon Service resource for a ChiaCrawler CR
 func assembleDaemonService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-daemon",
-		Namespace:      crawler.Namespace,
-		OwnerReference: getOwnerReference(crawler),
-		Ports:          kube.GetChiaDaemonServicePorts(),
+		Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-daemon",
+		Namespace: crawler.Namespace,
+		Ports:     kube.GetChiaDaemonServicePorts(),
 	}
 
 	inputs.ServiceType = crawler.Spec.ChiaConfig.DaemonService.ServiceType
@@ -92,9 +90,8 @@ func assembleDaemonService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 // assembleRPCService assembles the RPC Service resource for a ChiaCrawler CR
 func assembleRPCService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-rpc",
-		Namespace:      crawler.Namespace,
-		OwnerReference: getOwnerReference(crawler),
+		Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-rpc",
+		Namespace: crawler.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.CrawlerRPCPort,
@@ -130,10 +127,9 @@ func assembleRPCService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaCrawler CR
 func assembleChiaExporterService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-metrics",
-		Namespace:      crawler.Namespace,
-		OwnerReference: getOwnerReference(crawler),
-		Ports:          kube.GetChiaExporterServicePorts(),
+		Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-metrics",
+		Namespace: crawler.Namespace,
+		Ports:     kube.GetChiaExporterServicePorts(),
 	}
 
 	inputs.ServiceType = crawler.Spec.ChiaExporterConfig.Service.ServiceType

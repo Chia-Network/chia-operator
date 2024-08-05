@@ -11,11 +11,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"strconv"
 
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // getChiaPorts returns the ports to a chia container
@@ -238,17 +236,4 @@ func getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.En
 	}
 
 	return env
-}
-
-// getOwnerReference gives the common owner reference spec for ChiaWallet related objects
-func getOwnerReference(wallet k8schianetv1.ChiaWallet) []metav1.OwnerReference {
-	return []metav1.OwnerReference{
-		{
-			APIVersion: wallet.APIVersion,
-			Kind:       wallet.Kind,
-			Name:       wallet.Name,
-			UID:        wallet.UID,
-			Controller: &consts.ControllerOwner,
-		},
-	}
 }

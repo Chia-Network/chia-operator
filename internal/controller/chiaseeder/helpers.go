@@ -7,7 +7,6 @@ package chiaseeder
 import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strconv"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
@@ -228,19 +227,6 @@ func getChiaEnv(seeder k8schianetv1.ChiaSeeder) []corev1.EnvVar {
 	}
 
 	return env
-}
-
-// getOwnerReference gives the common owner reference spec for ChiaSeeder related objects
-func getOwnerReference(seeder k8schianetv1.ChiaSeeder) []metav1.OwnerReference {
-	return []metav1.OwnerReference{
-		{
-			APIVersion: seeder.APIVersion,
-			Kind:       seeder.Kind,
-			Name:       seeder.Name,
-			UID:        seeder.UID,
-			Controller: &consts.ControllerOwner,
-		},
-	}
 }
 
 // getFullNodePort determines the correct full_node port to use
