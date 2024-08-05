@@ -52,7 +52,7 @@ func (r *ChiaCAReconciler) assembleJob(ca k8schianetv1.ChiaCA) batchv1.Job {
 		},
 	}
 
-	if ca.Spec.Image != nil {
+	if ca.Spec.Image != nil && *ca.Spec.Image != "" {
 		job.Spec.Template.Spec.Containers[0].Image = *ca.Spec.Image
 	} else {
 		job.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", consts.DefaultChiaCAImageName, consts.DefaultChiaCAImageTag)
