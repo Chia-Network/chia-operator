@@ -6,7 +6,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -43,7 +42,6 @@ var _ = Describe("ChiaCA controller", func() {
 			}
 			expect := &apiv1.ChiaCA{
 				Spec: apiv1.ChiaCASpec{
-					Image:  fmt.Sprintf("ghcr.io/chia-network/chia-operator/ca-gen:%s", defaultChiaCAImageTag),
 					Secret: "test-secret",
 				},
 			}

@@ -103,7 +103,6 @@ spec:
                       In Kubernetes this is likely to be <node service name>.<namespace>.svc.cluster.local:8555
                     type: string
                   image:
-                    default: ghcr.io/chia-network/chia:latest
                     description: Image defines the image to use for the chia component
                       containers
                     type: string
@@ -954,7 +953,6 @@ spec:
                       should run with the chia container
                     type: boolean
                   image:
-                    default: ghcr.io/chia-network/chia-exporter:latest
                     description: Image defines the image to use for the chia exporter
                       containers
                     type: string

@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"fmt"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,7 +52,7 @@ func AssembleCommonService(input AssembleCommonServiceInputs) corev1.Service {
 
 // AssembleChiaContainerInputs contains configuration inputs to the AssembleChiaContainer function
 type AssembleChiaContainerInputs struct {
-	Image                string
+	Image                *string
 	ImagePullPolicy      corev1.PullPolicy
 	Env                  []corev1.EnvVar
 	Ports                []corev1.ContainerPort
@@ -67,7 +68,6 @@ type AssembleChiaContainerInputs struct {
 func AssembleChiaContainer(input AssembleChiaContainerInputs) corev1.Container {
 	container := corev1.Container{
 		Name:            "chia",
-		Image:           input.Image,
 		ImagePullPolicy: input.ImagePullPolicy,
 		Env:             input.Env,
 		Ports:           input.Ports,
@@ -76,6 +76,12 @@ func AssembleChiaContainer(input AssembleChiaContainerInputs) corev1.Container {
 		LivenessProbe:   input.LivenessProbe,
 		ReadinessProbe:  input.ReadinessProbe,
 		StartupProbe:    input.StartupProbe,
+	}
+
+	if input.Image != nil && *input.Image != "" {
+		container.Image = *input.Image
+	} else {
+		container.Image = fmt.Sprintf("%s:%s", consts.DefaultChiaImageName, consts.DefaultChiaImageTag)
 	}
 
 	if input.ResourceRequirements != nil {
@@ -87,7 +93,7 @@ func AssembleChiaContainer(input AssembleChiaContainerInputs) corev1.Container {
 
 // AssembleChiaExporterContainerInputs contains configuration inputs to the AssembleChiaExporterContainer function
 type AssembleChiaExporterContainerInputs struct {
-	Image                string
+	Image                *string
 	ImagePullPolicy      corev1.PullPolicy
 	ResourceRequirements corev1.ResourceRequirements
 	ConfigSecretName     *string
@@ -99,7 +105,6 @@ func AssembleChiaExporterContainer(input AssembleChiaExporterContainerInputs) co
 	container := corev1.Container{
 		Name:            "chia-exporter",
 		SecurityContext: input.SecurityContext,
-		Image:           input.Image,
 		ImagePullPolicy: input.ImagePullPolicy,
 		Env: []corev1.EnvVar{
 			{
@@ -149,6 +154,12 @@ func AssembleChiaExporterContainer(input AssembleChiaExporterContainerInputs) co
 		},
 	}
 
+	if input.Image != nil && *input.Image != "" {
+		container.Image = *input.Image
+	} else {
+		container.Image = fmt.Sprintf("%s:%s", consts.DefaultChiaExporterImageName, consts.DefaultChiaExporterImageTag)
+	}
+
 	if input.ConfigSecretName != nil && *input.ConfigSecretName != "" {
 		container.EnvFrom = append(container.EnvFrom, corev1.EnvFromSource{
 			SecretRef: &corev1.SecretEnvSource{
@@ -164,7 +175,7 @@ func AssembleChiaExporterContainer(input AssembleChiaExporterContainerInputs) co
 
 // AssembleChiaHealthcheckContainerInputs contains configuration inputs to the AssembleChiaHealthcheckContainer function
 type AssembleChiaHealthcheckContainerInputs struct {
-	Image                string
+	Image                *string
 	ImagePullPolicy      corev1.PullPolicy
 	ResourceRequirements corev1.ResourceRequirements
 	DNSHostname          *string
@@ -176,7 +187,6 @@ func AssembleChiaHealthcheckContainer(input AssembleChiaHealthcheckContainerInpu
 	container := corev1.Container{
 		Name:            "chia-healthcheck",
 		SecurityContext: input.SecurityContext,
-		Image:           input.Image,
 		ImagePullPolicy: input.ImagePullPolicy,
 		Env: []corev1.EnvVar{
 			{
@@ -202,6 +212,12 @@ func AssembleChiaHealthcheckContainer(input AssembleChiaHealthcheckContainerInpu
 				MountPath: "/chia-data",
 			},
 		},
+	}
+
+	if input.Image != nil && *input.Image != "" {
+		container.Image = *input.Image
+	} else {
+		container.Image = fmt.Sprintf("%s:%s", consts.DefaultChiaHealthcheckImageName, consts.DefaultChiaHealthcheckImageTag)
 	}
 
 	if input.DNSHostname != nil && *input.DNSHostname != "" {

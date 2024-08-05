@@ -6,7 +6,13 @@ package controller
 
 import (
 	"context"
+	"github.com/chia-network/chia-operator/internal/controller/chiaca"
+	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
+	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
 	"github.com/chia-network/chia-operator/internal/controller/chiaintroducer"
+	"github.com/chia-network/chia-operator/internal/controller/chianode"
+	"github.com/chia-network/chia-operator/internal/controller/chiatimelord"
+	"github.com/chia-network/chia-operator/internal/controller/chiawallet"
 	"log"
 	"path/filepath"
 	"testing"
@@ -24,13 +30,7 @@ import (
 
 	apiv1 "github.com/chia-network/chia-operator/api/v1"
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/chiaca"
-	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
-	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
-	"github.com/chia-network/chia-operator/internal/controller/chianode"
 	"github.com/chia-network/chia-operator/internal/controller/chiaseeder"
-	"github.com/chia-network/chia-operator/internal/controller/chiatimelord"
-	"github.com/chia-network/chia-operator/internal/controller/chiawallet"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -43,13 +43,6 @@ var (
 	testEnv   *envtest.Environment
 	ctx       context.Context
 	cancel    context.CancelFunc
-)
-
-const (
-	defaultChiaImageTag            = "latest"
-	defaultChiaExporterImageTag    = "latest"
-	defaultChiaHealthcheckImageTag = "latest"
-	defaultChiaCAImageTag          = "latest"
 )
 
 func TestAPIs(t *testing.T) {

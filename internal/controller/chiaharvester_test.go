@@ -6,7 +6,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -47,9 +46,6 @@ var _ = Describe("ChiaHarvester controller", func() {
 			expect := &apiv1.ChiaHarvester{
 				Spec: apiv1.ChiaHarvesterSpec{
 					ChiaConfig: apiv1.ChiaHarvesterSpecChia{
-						CommonSpecChia: apiv1.CommonSpecChia{
-							Image: fmt.Sprintf("ghcr.io/chia-network/chia:%s", defaultChiaImageTag),
-						},
 						CASecretName:  "test-secret",
 						FarmerAddress: "farmer.default.svc.cluster.local",
 					},
@@ -57,7 +53,6 @@ var _ = Describe("ChiaHarvester controller", func() {
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
 							Enabled: true,
-							Image:   fmt.Sprintf("ghcr.io/chia-network/chia-exporter:%s", defaultChiaExporterImageTag),
 						},
 					},
 				},

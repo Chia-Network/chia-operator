@@ -69,9 +69,8 @@ type Sidecars struct {
 // CommonSpecChia represents the common configuration options for a chia spec
 type CommonSpecChia struct {
 	// Image defines the image to use for the chia component containers
-	// +kubebuilder:default="ghcr.io/chia-network/chia:latest"
 	// +optional
-	Image string `json:"image,omitempty"`
+	Image *string `json:"image,omitempty"`
 
 	// Testnet is set to true if the Chia container should switch to the latest default testnet's settings
 	// +optional
@@ -150,9 +149,8 @@ type SpecChiaExporter struct {
 	Enabled bool `json:"enabled,omitempty"`
 
 	// Image defines the image to use for the chia exporter containers
-	// +kubebuilder:default="ghcr.io/chia-network/chia-exporter:latest"
 	// +optional
-	Image string `json:"image,omitempty"`
+	Image *string `json:"image,omitempty"`
 
 	// Service defines settings for the Service installed with any chia-exporter resource.
 	// This Service contains the port for chia-exporter's web exporter.
@@ -173,9 +171,8 @@ type SpecChiaHealthcheck struct {
 	Enabled bool `json:"enabled,omitempty"`
 
 	// Image defines the image to use for the chia exporter containers
-	// +kubebuilder:default="ghcr.io/chia-network/chia-healthcheck:latest"
 	// +optional
-	Image string `json:"image,omitempty"`
+	Image *string `json:"image,omitempty"`
 
 	// DNSHostname is the hostname to check for DNS responses. Disabled if not provided.
 	// +optional

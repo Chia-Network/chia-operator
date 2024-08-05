@@ -29,6 +29,7 @@ spec:
   secret: chiaca-secret
 `)
 
+	image := "ca-gen-image:latest"
 	expect := ChiaCA{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "k8s.chia.net/v1",
@@ -44,7 +45,7 @@ spec:
 			},
 		},
 		Spec: ChiaCASpec{
-			Image:           "ca-gen-image:latest",
+			Image:           &image,
 			ImagePullSecret: "registrypullsecret",
 			Secret:          "chiaca-secret",
 		},

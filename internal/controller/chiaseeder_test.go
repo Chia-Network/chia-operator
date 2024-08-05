@@ -6,7 +6,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -52,23 +51,18 @@ var _ = Describe("ChiaSeeder controller", func() {
 			expect := &apiv1.ChiaSeeder{
 				Spec: apiv1.ChiaSeederSpec{
 					ChiaConfig: apiv1.ChiaSeederSpecChia{
-						CommonSpecChia: apiv1.CommonSpecChia{
-							Image: fmt.Sprintf("ghcr.io/chia-network/chia:%s", defaultChiaImageTag),
-						},
 						CASecretName: &caSecret,
 						DomainName:   domainName,
 						Nameserver:   nameserver,
 					},
 					ChiaHealthcheckConfig: apiv1.SpecChiaHealthcheck{
 						Enabled:     false,
-						Image:       fmt.Sprintf("ghcr.io/chia-network/chia-healthcheck:%s", defaultChiaHealthcheckImageTag),
 						DNSHostname: nil,
 					},
 					CommonSpec: apiv1.CommonSpec{
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
 							Enabled: true,
-							Image:   fmt.Sprintf("ghcr.io/chia-network/chia-exporter:%s", defaultChiaExporterImageTag),
 						},
 					},
 				},

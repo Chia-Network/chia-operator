@@ -33,6 +33,33 @@ const (
 	ChiaWalletKind ChiaKind = "ChiaWallet"
 )
 
+// API default image constants
+const (
+	// DefaultChiaCAImageName contains the default image name for the ca-gen image
+	DefaultChiaCAImageName = "ghcr.io/chia-network/chia-operator/ca-gen"
+
+	// DefaultChiaCAImageTag contains the default tag name for the ca-gen image
+	DefaultChiaCAImageTag = "latest"
+
+	// DefaultChiaImageName contains the default image name for the chia-docker image
+	DefaultChiaImageName = "ghcr.io/chia-network/chia"
+
+	// DefaultChiaImageTag contains the default tag name for the chia-docker image
+	DefaultChiaImageTag = "latest"
+
+	// DefaultChiaExporterImageName contains the default image name for the chia-exporter image
+	DefaultChiaExporterImageName = "ghcr.io/chia-network/chia-exporter"
+
+	// DefaultChiaExporterImageTag contains the default tag name for the chia-exporter image
+	DefaultChiaExporterImageTag = "latest"
+
+	// DefaultChiaHealthcheckImageName contains the default image name for the chia-healthcheck image
+	DefaultChiaHealthcheckImageName = "ghcr.io/chia-network/chia-healthcheck"
+
+	// DefaultChiaHealthcheckImageTag contains the default tag name for the chia-healthcheck image
+	DefaultChiaHealthcheckImageTag = "latest"
+)
+
 const (
 	// DaemonPort defines the port for the Chia daemon
 	DaemonPort = 55400
