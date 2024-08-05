@@ -6,7 +6,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -48,16 +47,12 @@ var _ = Describe("ChiaIntroducer controller", func() {
 			expect := &apiv1.ChiaIntroducer{
 				Spec: apiv1.ChiaIntroducerSpec{
 					ChiaConfig: apiv1.ChiaIntroducerSpecChia{
-						CommonSpecChia: apiv1.CommonSpecChia{
-							Image: fmt.Sprintf("ghcr.io/chia-network/chia:%s", defaultChiaImageTag),
-						},
 						CASecretName: &caSecret,
 					},
 					CommonSpec: apiv1.CommonSpec{
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
 							Enabled: true,
-							Image:   fmt.Sprintf("ghcr.io/chia-network/chia-exporter:%s", defaultChiaExporterImageTag),
 						},
 					},
 				},

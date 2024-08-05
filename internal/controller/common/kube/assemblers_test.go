@@ -143,7 +143,7 @@ func TestAssembleChiaContainer_Minimal(t *testing.T) {
 		},
 	}
 	actual := AssembleChiaContainer(AssembleChiaContainerInputs{
-		Image:           expected.Image,
+		Image:           &expected.Image,
 		ImagePullPolicy: expected.ImagePullPolicy,
 		Env:             expected.Env,
 		Ports:           expected.Ports,
@@ -219,7 +219,7 @@ func TestAssembleChiaContainer_Full(t *testing.T) {
 		},
 	}
 	actual := AssembleChiaContainer(AssembleChiaContainerInputs{
-		Image:                expected.Image,
+		Image:                &expected.Image,
 		ImagePullPolicy:      expected.ImagePullPolicy,
 		Env:                  expected.Env,
 		Ports:                expected.Ports,
@@ -285,7 +285,7 @@ func TestAssembleChiaExporterContainer_Minimal(t *testing.T) {
 		},
 	}
 	actual := AssembleChiaExporterContainer(AssembleChiaExporterContainerInputs{
-		Image:           expected.Image,
+		Image:           &expected.Image,
 		ImagePullPolicy: expected.ImagePullPolicy,
 	})
 	require.Equal(t, expected, actual)
@@ -370,7 +370,7 @@ func TestAssembleChiaExporterContainer_Full(t *testing.T) {
 		},
 	}
 	actual := AssembleChiaExporterContainer(AssembleChiaExporterContainerInputs{
-		Image:                expected.Image,
+		Image:                &expected.Image,
 		ImagePullPolicy:      expected.ImagePullPolicy,
 		ResourceRequirements: expected.Resources,
 		ConfigSecretName:     &secretName,
@@ -409,7 +409,7 @@ func TestAssembleChiaHealthcheckContainer_Minimal(t *testing.T) {
 		},
 	}
 	actual := AssembleChiaHealthcheckContainer(AssembleChiaHealthcheckContainerInputs{
-		Image:           expected.Image,
+		Image:           &expected.Image,
 		ImagePullPolicy: expected.ImagePullPolicy,
 	})
 	require.Equal(t, expected, actual)
@@ -467,7 +467,7 @@ func TestAssembleChiaHealthcheckContainer_Full(t *testing.T) {
 		},
 	}
 	actual := AssembleChiaHealthcheckContainer(AssembleChiaHealthcheckContainerInputs{
-		Image:                expected.Image,
+		Image:                &expected.Image,
 		ImagePullPolicy:      expected.ImagePullPolicy,
 		ResourceRequirements: expected.Resources,
 		SecurityContext:      expected.SecurityContext,

@@ -6,6 +6,7 @@ package chiaca
 
 import (
 	"fmt"
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
@@ -33,8 +34,7 @@ func (r *ChiaCAReconciler) assembleJob(ca k8schianetv1.ChiaCA) batchv1.Job {
 					ServiceAccountName: fmt.Sprintf(chiacaNamePattern, ca.Name),
 					Containers: []corev1.Container{
 						{
-							Name:  "chiaca-generator",
-							Image: ca.Spec.Image,
+							Name: "chiaca-generator",
 							Env: []corev1.EnvVar{
 								{
 									Name:  "NAMESPACE",
@@ -51,6 +51,13 @@ func (r *ChiaCAReconciler) assembleJob(ca k8schianetv1.ChiaCA) batchv1.Job {
 			},
 		},
 	}
+
+	if ca.Spec.Image != nil && *ca.Spec.Image != "" {
+		job.Spec.Template.Spec.Containers[0].Image = *ca.Spec.Image
+	} else {
+		job.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", consts.DefaultChiaCAImageName, consts.DefaultChiaCAImageTag)
+	}
+
 	if ca.Spec.ImagePullSecret != "" {
 		job.Spec.Template.Spec.ImagePullSecrets = []corev1.LocalObjectReference{
 			{
