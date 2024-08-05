@@ -210,19 +210,6 @@ func getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar
 	return env
 }
 
-// getOwnerReference gives the common owner reference spec for ChiaNode related objects
-func getOwnerReference(node k8schianetv1.ChiaNode) []metav1.OwnerReference {
-	return []metav1.OwnerReference{
-		{
-			APIVersion: node.APIVersion,
-			Kind:       node.Kind,
-			Name:       node.Name,
-			UID:        node.UID,
-			Controller: &consts.ControllerOwner,
-		},
-	}
-}
-
 // getFullNodePort determines the correct full node port to use
 func getFullNodePort(node k8schianetv1.ChiaNode) int32 {
 	if node.Spec.ChiaConfig.Testnet != nil && *node.Spec.ChiaConfig.Testnet {

@@ -8,11 +8,9 @@ import (
 	"fmt"
 	"strconv"
 
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
@@ -262,17 +260,4 @@ func getChiaEnv(harvester k8schianetv1.ChiaHarvester) []corev1.EnvVar {
 	})
 
 	return env
-}
-
-// getOwnerReference gives the common owner reference spec for ChiaHarvester related objects
-func getOwnerReference(harvester k8schianetv1.ChiaHarvester) []metav1.OwnerReference {
-	return []metav1.OwnerReference{
-		{
-			APIVersion: harvester.APIVersion,
-			Kind:       harvester.Kind,
-			Name:       harvester.Name,
-			UID:        harvester.UID,
-			Controller: &consts.ControllerOwner,
-		},
-	}
 }

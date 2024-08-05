@@ -7,7 +7,6 @@ package chiacrawler
 import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strconv"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
@@ -186,19 +185,6 @@ func getChiaEnv(crawler k8schianetv1.ChiaCrawler) []corev1.EnvVar {
 	}
 
 	return env
-}
-
-// getOwnerReference gives the common owner reference spec for ChiaCrawler related objects
-func getOwnerReference(crawler k8schianetv1.ChiaCrawler) []metav1.OwnerReference {
-	return []metav1.OwnerReference{
-		{
-			APIVersion: crawler.APIVersion,
-			Kind:       crawler.Kind,
-			Name:       crawler.Name,
-			UID:        crawler.UID,
-			Controller: &consts.ControllerOwner,
-		},
-	}
 }
 
 // getFullNodePort determines the correct full_node port to use

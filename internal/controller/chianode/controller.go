@@ -8,16 +8,14 @@ import (
 	"context"
 	"fmt"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -77,6 +75,9 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Reconcile ChiaNode owned objects
 	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
 		srv := assemblePeerService(node)
+		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -107,6 +108,9 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
 		srv := assembleHeadlessPeerService(node)
+		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -137,6 +141,9 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
 		srv := assembleLocalPeerService(node)
+		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -167,6 +174,9 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if kube.ShouldMakeService(node.Spec.ChiaConfig.DaemonService) {
 		srv := assembleDaemonService(node)
+		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -199,6 +209,9 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if kube.ShouldMakeService(node.Spec.ChiaConfig.RPCService) {
 		srv := assembleRPCService(node)
+		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -231,6 +244,9 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if kube.ShouldMakeService(node.Spec.ChiaExporterConfig.Service) {
 		srv := assembleChiaExporterService(node)
+		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -264,6 +280,9 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Adds a condition check for Service.Enabled field nilness because the default for ShouldMakeService is true for other services, but should actually be false for this one
 	if kube.ShouldMakeService(node.Spec.ChiaHealthcheckConfig.Service) && node.Spec.ChiaHealthcheckConfig.Enabled && node.Spec.ChiaHealthcheckConfig.Service.Enabled != nil {
 		srv := assembleChiaHealthcheckService(node)
+		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -328,39 +347,6 @@ func (r *ChiaNodeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8schianetv1.ChiaNode{}).
 		Owns(&appsv1.StatefulSet{}).
-		Watches(
-			&corev1.Service{},
-			handler.EnqueueRequestsFromMapFunc(r.findObjectsForService),
-		).
+		Owns(&corev1.Service{}).
 		Complete(r)
-}
-
-// findObjectsForService since we get an event for any changes to every Service in the cluster,
-// this lists the Chia custom resource this controller manages in the same namespace as the Service, and then
-// checks if this Service has an OwnerReference to any of the Chia custom resources returned in the list,
-// and sends a reconcile request for the resource this Service was owned by, if any
-func (r *ChiaNodeReconciler) findObjectsForService(ctx context.Context, obj client.Object) []reconcile.Request {
-	listOps := &client.ListOptions{
-		Namespace: obj.GetNamespace(),
-	}
-	list := &k8schianetv1.ChiaNodeList{}
-	err := r.List(ctx, list, listOps)
-	if err != nil {
-		return []reconcile.Request{}
-	}
-
-	requests := make([]reconcile.Request, len(list.Items))
-	for i, item := range list.Items {
-		for _, ref := range obj.GetOwnerReferences() {
-			if ref.Kind == item.Kind && ref.Name == item.GetName() {
-				requests[i] = reconcile.Request{
-					NamespacedName: types.NamespacedName{
-						Name:      item.GetName(),
-						Namespace: item.GetNamespace(),
-					},
-				}
-			}
-		}
-	}
-	return requests
 }

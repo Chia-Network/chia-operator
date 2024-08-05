@@ -23,9 +23,8 @@ const chiafarmerNamePattern = "%s-farmer"
 // assemblePeerService assembles the peer Service resource for a ChiaFarmer CR
 func assemblePeerService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
-		Namespace:      farmer.Namespace,
-		OwnerReference: getOwnerReference(farmer),
+		Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
+		Namespace: farmer.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.FarmerPort,
@@ -61,10 +60,9 @@ func assemblePeerService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 // assembleDaemonService assembles the daemon Service resource for a ChiaFarmer CR
 func assembleDaemonService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-daemon",
-		Namespace:      farmer.Namespace,
-		OwnerReference: getOwnerReference(farmer),
-		Ports:          kube.GetChiaDaemonServicePorts(),
+		Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-daemon",
+		Namespace: farmer.Namespace,
+		Ports:     kube.GetChiaDaemonServicePorts(),
 	}
 
 	inputs.ServiceType = farmer.Spec.ChiaConfig.DaemonService.ServiceType
@@ -92,9 +90,8 @@ func assembleDaemonService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 // assembleRPCService assembles the RPC Service resource for a ChiaFarmer CR
 func assembleRPCService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-rpc",
-		Namespace:      farmer.Namespace,
-		OwnerReference: getOwnerReference(farmer),
+		Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-rpc",
+		Namespace: farmer.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.FarmerRPCPort,
@@ -130,10 +127,9 @@ func assembleRPCService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaFarmer CR
 func assembleChiaExporterService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-metrics",
-		Namespace:      farmer.Namespace,
-		OwnerReference: getOwnerReference(farmer),
-		Ports:          kube.GetChiaExporterServicePorts(),
+		Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-metrics",
+		Namespace: farmer.Namespace,
+		Ports:     kube.GetChiaExporterServicePorts(),
 	}
 
 	inputs.ServiceType = farmer.Spec.ChiaExporterConfig.Service.ServiceType

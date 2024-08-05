@@ -4,9 +4,6 @@ Copyright 2023 Chia Network Inc.
 
 package consts
 
-// ControllerOwner bool to help set the controller owner for a create kubernetes Kind
-var ControllerOwner = true
-
 // ChiaKind enumerates the list of Chia component custom resources this operator controls
 type ChiaKind string
 

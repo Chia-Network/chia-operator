@@ -23,9 +23,8 @@ const chiatimelordNamePattern = "%s-timelord"
 // assemblePeerService assembles the peer Service resource for a ChiaTimelord CR
 func assemblePeerService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiatimelordNamePattern, tl.Name),
-		Namespace:      tl.Namespace,
-		OwnerReference: getOwnerReference(tl),
+		Name:      fmt.Sprintf(chiatimelordNamePattern, tl.Name),
+		Namespace: tl.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.TimelordPort,
@@ -61,10 +60,9 @@ func assemblePeerService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 // assembleDaemonService assembles the daemon Service resource for a ChiaTimelord CR
 func assembleDaemonService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-daemon",
-		Namespace:      tl.Namespace,
-		OwnerReference: getOwnerReference(tl),
-		Ports:          kube.GetChiaDaemonServicePorts(),
+		Name:      fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-daemon",
+		Namespace: tl.Namespace,
+		Ports:     kube.GetChiaDaemonServicePorts(),
 	}
 
 	inputs.ServiceType = tl.Spec.ChiaConfig.DaemonService.ServiceType
@@ -92,9 +90,8 @@ func assembleDaemonService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 // assembleRPCService assembles the RPC Service resource for a ChiaTimelord CR
 func assembleRPCService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-rpc",
-		Namespace:      tl.Namespace,
-		OwnerReference: getOwnerReference(tl),
+		Name:      fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-rpc",
+		Namespace: tl.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.TimelordRPCPort,
@@ -130,10 +127,9 @@ func assembleRPCService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaTimelord CR
 func assembleChiaExporterService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-metrics",
-		Namespace:      tl.Namespace,
-		OwnerReference: getOwnerReference(tl),
-		Ports:          kube.GetChiaExporterServicePorts(),
+		Name:      fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-metrics",
+		Namespace: tl.Namespace,
+		Ports:     kube.GetChiaExporterServicePorts(),
 	}
 
 	inputs.ServiceType = tl.Spec.ChiaExporterConfig.Service.ServiceType

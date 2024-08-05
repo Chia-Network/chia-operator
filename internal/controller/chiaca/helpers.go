@@ -9,11 +9,9 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 )
 
 // getCASecret fetches the k8s Secret that matches this ChiaCA deployment. Returns Secret, boolean, and error (if any).
@@ -32,17 +30,4 @@ func (r *ChiaCAReconciler) getCASecret(ctx context.Context, ca k8schianetv1.Chia
 	}
 
 	return caSecret, false, nil
-}
-
-// getOwnerReference gives the common owner reference spec for ChiaCA related objects
-func getOwnerReference(ca k8schianetv1.ChiaCA) []metav1.OwnerReference {
-	return []metav1.OwnerReference{
-		{
-			APIVersion: ca.APIVersion,
-			Kind:       ca.Kind,
-			Name:       ca.Name,
-			UID:        ca.UID,
-			Controller: &consts.ControllerOwner,
-		},
-	}
 }

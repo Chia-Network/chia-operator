@@ -23,9 +23,8 @@ const chiawalletNamePattern = "%s-wallet"
 // assemblePeerService assembles the peer Service resource for a ChiaWallet CR
 func assemblePeerService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiawalletNamePattern, wallet.Name),
-		Namespace:      wallet.Namespace,
-		OwnerReference: getOwnerReference(wallet),
+		Name:      fmt.Sprintf(chiawalletNamePattern, wallet.Name),
+		Namespace: wallet.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.WalletPort,
@@ -61,10 +60,9 @@ func assemblePeerService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 // assembleDaemonService assembles the daemon Service resource for a ChiaWallet CR
 func assembleDaemonService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-daemon",
-		Namespace:      wallet.Namespace,
-		OwnerReference: getOwnerReference(wallet),
-		Ports:          kube.GetChiaDaemonServicePorts(),
+		Name:      fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-daemon",
+		Namespace: wallet.Namespace,
+		Ports:     kube.GetChiaDaemonServicePorts(),
 	}
 
 	inputs.ServiceType = wallet.Spec.ChiaConfig.DaemonService.ServiceType
@@ -92,9 +90,8 @@ func assembleDaemonService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 // assembleRPCService assembles the RPC Service resource for a ChiaWallet CR
 func assembleRPCService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-rpc",
-		Namespace:      wallet.Namespace,
-		OwnerReference: getOwnerReference(wallet),
+		Name:      fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-rpc",
+		Namespace: wallet.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.WalletRPCPort,
@@ -130,10 +127,9 @@ func assembleRPCService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaWallet CR
 func assembleChiaExporterService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-metrics",
-		Namespace:      wallet.Namespace,
-		OwnerReference: getOwnerReference(wallet),
-		Ports:          kube.GetChiaExporterServicePorts(),
+		Name:      fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-metrics",
+		Namespace: wallet.Namespace,
+		Ports:     kube.GetChiaExporterServicePorts(),
 	}
 
 	inputs.ServiceType = wallet.Spec.ChiaExporterConfig.Service.ServiceType

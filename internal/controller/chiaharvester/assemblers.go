@@ -23,9 +23,8 @@ const chiaharvesterNamePattern = "%s-harvester"
 // assemblePeerService assembles the peer Service resource for a ChiaHarvester CR
 func assemblePeerService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
-		Namespace:      harvester.Namespace,
-		OwnerReference: getOwnerReference(harvester),
+		Name:      fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
+		Namespace: harvester.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.HarvesterPort,
@@ -61,10 +60,9 @@ func assemblePeerService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 // assembleDaemonService assembles the daemon Service resource for a ChiaHarvester CR
 func assembleDaemonService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-daemon",
-		Namespace:      harvester.Namespace,
-		OwnerReference: getOwnerReference(harvester),
-		Ports:          kube.GetChiaDaemonServicePorts(),
+		Name:      fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-daemon",
+		Namespace: harvester.Namespace,
+		Ports:     kube.GetChiaDaemonServicePorts(),
 	}
 
 	inputs.ServiceType = harvester.Spec.ChiaConfig.DaemonService.ServiceType
@@ -92,9 +90,8 @@ func assembleDaemonService(harvester k8schianetv1.ChiaHarvester) corev1.Service 
 // assembleRPCService assembles the RPC Service resource for a ChiaHarvester CR
 func assembleRPCService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-rpc",
-		Namespace:      harvester.Namespace,
-		OwnerReference: getOwnerReference(harvester),
+		Name:      fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-rpc",
+		Namespace: harvester.Namespace,
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.HarvesterRPCPort,
@@ -130,10 +127,9 @@ func assembleRPCService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaHarvester CR
 func assembleChiaExporterService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
-		Name:           fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-metrics",
-		Namespace:      harvester.Namespace,
-		OwnerReference: getOwnerReference(harvester),
-		Ports:          kube.GetChiaExporterServicePorts(),
+		Name:      fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-metrics",
+		Namespace: harvester.Namespace,
+		Ports:     kube.GetChiaExporterServicePorts(),
 	}
 
 	inputs.ServiceType = harvester.Spec.ChiaExporterConfig.Service.ServiceType

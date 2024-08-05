@@ -24,16 +24,14 @@ import (
 	"context"
 	"fmt"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -92,6 +90,9 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.PeerService) {
 		srv := assemblePeerService(seeder)
+		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -122,6 +123,9 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.DaemonService) {
 		srv := assembleDaemonService(seeder)
+		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -154,6 +158,9 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.RPCService) {
 		srv := assembleRPCService(seeder)
+		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -186,6 +193,9 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	if kube.ShouldMakeService(seeder.Spec.ChiaExporterConfig.Service) {
 		srv := assembleChiaExporterService(seeder)
+		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -219,6 +229,9 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Adds a condition check for Service.Enabled field nilness because the default for ShouldMakeService is true for other services, but should actually be false for this one
 	if kube.ShouldMakeService(seeder.Spec.ChiaHealthcheckConfig.Service) && seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.Service.Enabled != nil {
 		srv := assembleChiaHealthcheckService(seeder)
+		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
 		if err != nil {
 			if res == nil {
@@ -303,39 +316,6 @@ func (r *ChiaSeederReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8schianetv1.ChiaSeeder{}).
 		Owns(&appsv1.Deployment{}).
-		Watches(
-			&corev1.Service{},
-			handler.EnqueueRequestsFromMapFunc(r.findObjectsForService),
-		).
+		Owns(&corev1.Service{}).
 		Complete(r)
-}
-
-// findObjectsForService since we get an event for any changes to every Service in the cluster,
-// this lists the Chia custom resource this controller manages in the same namespace as the Service, and then
-// checks if this Service has an OwnerReference to any of the Chia custom resources returned in the list,
-// and sends a reconcile request for the resource this Service was owned by, if any
-func (r *ChiaSeederReconciler) findObjectsForService(ctx context.Context, obj client.Object) []reconcile.Request {
-	listOps := &client.ListOptions{
-		Namespace: obj.GetNamespace(),
-	}
-	list := &k8schianetv1.ChiaSeederList{}
-	err := r.List(ctx, list, listOps)
-	if err != nil {
-		return []reconcile.Request{}
-	}
-
-	requests := make([]reconcile.Request, len(list.Items))
-	for i, item := range list.Items {
-		for _, ref := range obj.GetOwnerReferences() {
-			if ref.Kind == item.Kind && ref.Name == item.GetName() {
-				requests[i] = reconcile.Request{
-					NamespacedName: types.NamespacedName{
-						Name:      item.GetName(),
-						Namespace: item.GetNamespace(),
-					},
-				}
-			}
-		}
-	}
-	return requests
 }
