@@ -37,12 +37,20 @@ func CombineMaps(maps ...map[string]string) map[string]string {
 	return keyvalues
 }
 
-// ShouldMakeService returns true if the related Service was configured to be made
-func ShouldMakeService(srv k8schianetv1.Service) bool {
+// ShouldMakeService returns true if the related Service was configured to be made, otherwise returns the specified default value
+func ShouldMakeService(srv k8schianetv1.Service, def bool) bool {
 	if srv.Enabled != nil {
 		return *srv.Enabled
 	}
-	return true // default to true if the Service wasn't declared
+	return def
+}
+
+// ShouldRollIntoMainPeerService returns true if the related Service's ports were meant to be rolled into the main peer Service's ports
+func ShouldRollIntoMainPeerService(srv k8schianetv1.Service) bool {
+	if srv.Enabled != nil && *srv.Enabled && srv.RollIntoPeerService != nil && *srv.RollIntoPeerService {
+		return true
+	}
+	return false
 }
 
 func GetChiaExporterServicePorts() []corev1.ServicePort {

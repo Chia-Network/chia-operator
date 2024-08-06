@@ -58,3 +58,20 @@ spec:
 ```
 
 This configures the hostname used to check for DNS responses, and corresponds to the `--dns-hostname` flag from chia-healthcheck. The seeder healthcheck will be disabled if not provided.
+
+## Roll Healthcheck Service ports into the Peer Service
+
+Often times there is a need to expose the peer Service publicly (so peers outside your network can connect to you.) In some deployments, users may use load balancers of some variety to expose the Service publicly, which will be fronted by a public IP address. Similarly, it may be desired in some deployments to expose the chia-healthcheck Service publicly, for example if you wish to use an external health monitoring tool like Uptime Robot or Uptime Kuma. Rather than keep the peer and healthcheck Services separately in this scenario, you may want to create one Service that exposes your peer ports and healthcheck port on the same Service.
+
+For that use case, there is an option that works for the chia-healthcheck Service's configuration to "roll up" the chia-healthcheck Service port into the main peer Service's ports. To do that, set the following in your custom resource that supports chia-healthcheck:
+
+```yaml
+spec:
+  chiaHealthcheck:
+    enabled: true
+    service:
+      enabled: true
+      rollIntoPeerService: true
+```
+
+NOTE: If you had custom labels/annotations for your healthcheck Service, you should add them to the Peer Service configuration instead.

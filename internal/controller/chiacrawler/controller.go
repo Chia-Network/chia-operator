@@ -71,7 +71,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		metrics.ChiaCrawlers.Add(1.0)
 	}
 
-	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.PeerService) {
+	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.PeerService, true) {
 		srv := assemblePeerService(crawler)
 		if err := controllerutil.SetControllerReference(&crawler, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -104,7 +104,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 	}
 
-	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.DaemonService) {
+	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(crawler)
 		if err := controllerutil.SetControllerReference(&crawler, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -139,7 +139,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 	}
 
-	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.RPCService) {
+	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.RPCService, true) {
 		srv := assembleRPCService(crawler)
 		if err := controllerutil.SetControllerReference(&crawler, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -174,7 +174,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 	}
 
-	if kube.ShouldMakeService(crawler.Spec.ChiaExporterConfig.Service) {
+	if kube.ShouldMakeService(crawler.Spec.ChiaExporterConfig.Service, true) {
 		srv := assembleChiaExporterService(crawler)
 		if err := controllerutil.SetControllerReference(&crawler, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err

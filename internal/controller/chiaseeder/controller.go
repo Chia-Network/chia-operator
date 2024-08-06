@@ -88,7 +88,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		metrics.ChiaSeeders.Add(1.0)
 	}
 
-	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.PeerService) {
+	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.PeerService, true) {
 		srv := assemblePeerService(seeder)
 		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -121,7 +121,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.DaemonService) {
+	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(seeder)
 		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -156,7 +156,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.RPCService) {
+	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.RPCService, true) {
 		srv := assembleRPCService(seeder)
 		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -191,7 +191,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if kube.ShouldMakeService(seeder.Spec.ChiaExporterConfig.Service) {
+	if kube.ShouldMakeService(seeder.Spec.ChiaExporterConfig.Service, true) {
 		srv := assembleChiaExporterService(seeder)
 		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -226,8 +226,8 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	// Adds a condition check for Service.Enabled field nilness because the default for ShouldMakeService is true for other services, but should actually be false for this one
-	if kube.ShouldMakeService(seeder.Spec.ChiaHealthcheckConfig.Service) && seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.Service.Enabled != nil {
+	// Defaults the Service to false, and adds a check for the RollIntoPeerService parameter
+	if kube.ShouldMakeService(seeder.Spec.ChiaHealthcheckConfig.Service, false) && !kube.ShouldRollIntoMainPeerService(seeder.Spec.ChiaHealthcheckConfig.Service) {
 		srv := assembleChiaHealthcheckService(seeder)
 		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err

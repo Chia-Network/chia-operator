@@ -255,6 +255,12 @@ type Service struct {
 	// IPFamilies represents a list of IP families (IPv4 and/or IPv6) required by a Service
 	// +optional
 	IPFamilies *[]corev1.IPFamily `json:"ipFamilies,omitempty"`
+
+	// RollIntoPeerService tells the controller to not actually generate this Service, but instead roll the Service ports of this Service into the peer Service.
+	// The peer Service is often considered the primary Service generated for a chia resource, as it is the most likely Service to expose publicly.
+	// This option is default, and only provides its functionality on chia-healthcheck Services. It may be included to other Services someday if a use case arises.
+	// +optional
+	RollIntoPeerService *bool `json:"rollIntoPeerService,omitempty"`
 }
 
 // ChiaRootConfig optional config for CHIA_ROOT persistent storage, likely only needed for Chia full_nodes, but may help in startup time for other components.

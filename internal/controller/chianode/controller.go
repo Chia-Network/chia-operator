@@ -73,7 +73,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Reconcile ChiaNode owned objects
-	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
+	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService, true) {
 		srv := assemblePeerService(node)
 		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -106,7 +106,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
+	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService, true) {
 		srv := assembleHeadlessPeerService(node)
 		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -139,7 +139,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService) {
+	if kube.ShouldMakeService(node.Spec.ChiaConfig.PeerService, true) {
 		srv := assembleLocalPeerService(node)
 		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -172,7 +172,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	if kube.ShouldMakeService(node.Spec.ChiaConfig.DaemonService) {
+	if kube.ShouldMakeService(node.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(node)
 		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -207,7 +207,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	if kube.ShouldMakeService(node.Spec.ChiaConfig.RPCService) {
+	if kube.ShouldMakeService(node.Spec.ChiaConfig.RPCService, true) {
 		srv := assembleRPCService(node)
 		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -242,7 +242,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	if kube.ShouldMakeService(node.Spec.ChiaExporterConfig.Service) {
+	if kube.ShouldMakeService(node.Spec.ChiaExporterConfig.Service, true) {
 		srv := assembleChiaExporterService(node)
 		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -277,8 +277,8 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	// Adds a condition check for Service.Enabled field nilness because the default for ShouldMakeService is true for other services, but should actually be false for this one
-	if kube.ShouldMakeService(node.Spec.ChiaHealthcheckConfig.Service) && node.Spec.ChiaHealthcheckConfig.Enabled && node.Spec.ChiaHealthcheckConfig.Service.Enabled != nil {
+	// Defaults the Service to false, and adds a check for the RollIntoPeerService parameter
+	if kube.ShouldMakeService(node.Spec.ChiaHealthcheckConfig.Service, false) && !kube.ShouldRollIntoMainPeerService(node.Spec.ChiaHealthcheckConfig.Service) {
 		srv := assembleChiaHealthcheckService(node)
 		if err := controllerutil.SetControllerReference(&node, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
