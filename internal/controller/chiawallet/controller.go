@@ -73,7 +73,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Reconcile ChiaWallet owned objects
-	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.PeerService) {
+	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.PeerService, true) {
 		srv := assemblePeerService(wallet)
 		if err := controllerutil.SetControllerReference(&wallet, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -106,7 +106,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.DaemonService) {
+	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(wallet)
 		if err := controllerutil.SetControllerReference(&wallet, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -141,7 +141,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.RPCService) {
+	if kube.ShouldMakeService(wallet.Spec.ChiaConfig.RPCService, true) {
 		srv := assembleRPCService(wallet)
 		if err := controllerutil.SetControllerReference(&wallet, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -176,7 +176,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if kube.ShouldMakeService(wallet.Spec.ChiaExporterConfig.Service) {
+	if kube.ShouldMakeService(wallet.Spec.ChiaExporterConfig.Service, true) {
 		srv := assembleChiaExporterService(wallet)
 		if err := controllerutil.SetControllerReference(&wallet, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err

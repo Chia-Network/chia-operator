@@ -73,7 +73,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Reconcile ChiaTimelord owned objects
-	if kube.ShouldMakeService(tl.Spec.ChiaConfig.PeerService) {
+	if kube.ShouldMakeService(tl.Spec.ChiaConfig.PeerService, true) {
 		srv := assemblePeerService(tl)
 		if err := controllerutil.SetControllerReference(&tl, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -106,7 +106,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}
 
-	if kube.ShouldMakeService(tl.Spec.ChiaConfig.DaemonService) {
+	if kube.ShouldMakeService(tl.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(tl)
 		if err := controllerutil.SetControllerReference(&tl, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -141,7 +141,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}
 
-	if kube.ShouldMakeService(tl.Spec.ChiaConfig.RPCService) {
+	if kube.ShouldMakeService(tl.Spec.ChiaConfig.RPCService, true) {
 		srv := assembleRPCService(tl)
 		if err := controllerutil.SetControllerReference(&tl, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -176,7 +176,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}
 
-	if kube.ShouldMakeService(tl.Spec.ChiaExporterConfig.Service) {
+	if kube.ShouldMakeService(tl.Spec.ChiaExporterConfig.Service, true) {
 		srv := assembleChiaExporterService(tl)
 		if err := controllerutil.SetControllerReference(&tl, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err

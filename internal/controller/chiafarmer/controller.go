@@ -73,7 +73,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Reconcile ChiaFarmer owned objects
-	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.PeerService) {
+	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.PeerService, true) {
 		srv := assemblePeerService(farmer)
 		if err := controllerutil.SetControllerReference(&farmer, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -106,7 +106,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.DaemonService) {
+	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(farmer)
 		if err := controllerutil.SetControllerReference(&farmer, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -141,7 +141,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.RPCService) {
+	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.RPCService, true) {
 		srv := assembleRPCService(farmer)
 		if err := controllerutil.SetControllerReference(&farmer, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -176,7 +176,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if kube.ShouldMakeService(farmer.Spec.ChiaExporterConfig.Service) {
+	if kube.ShouldMakeService(farmer.Spec.ChiaExporterConfig.Service, true) {
 		srv := assembleChiaExporterService(farmer)
 		if err := controllerutil.SetControllerReference(&farmer, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err

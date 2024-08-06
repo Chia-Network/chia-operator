@@ -72,7 +72,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		metrics.ChiaIntroducers.Add(1.0)
 	}
 
-	if kube.ShouldMakeService(introducer.Spec.ChiaConfig.PeerService) {
+	if kube.ShouldMakeService(introducer.Spec.ChiaConfig.PeerService, true) {
 		srv := assemblePeerService(introducer)
 		if err := controllerutil.SetControllerReference(&introducer, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -105,7 +105,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		}
 	}
 
-	if kube.ShouldMakeService(introducer.Spec.ChiaConfig.DaemonService) {
+	if kube.ShouldMakeService(introducer.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(introducer)
 		if err := controllerutil.SetControllerReference(&introducer, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -140,7 +140,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		}
 	}
 
-	if kube.ShouldMakeService(introducer.Spec.ChiaExporterConfig.Service) {
+	if kube.ShouldMakeService(introducer.Spec.ChiaExporterConfig.Service, true) {
 		srv := assembleChiaExporterService(introducer)
 		if err := controllerutil.SetControllerReference(&introducer, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err

@@ -54,6 +54,11 @@ func assemblePeerService(node k8schianetv1.ChiaNode) corev1.Service {
 	}
 	inputs.Annotations = kube.CombineMaps(node.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
+	// Handle the Service rollup feature
+	if kube.ShouldMakeService(node.Spec.ChiaHealthcheckConfig.Service, false) && kube.ShouldRollIntoMainPeerService(node.Spec.ChiaHealthcheckConfig.Service) {
+		inputs.Ports = append(inputs.Ports, kube.GetChiaHealthcheckServicePorts()...)
+	}
+
 	return kube.AssembleCommonService(inputs)
 }
 

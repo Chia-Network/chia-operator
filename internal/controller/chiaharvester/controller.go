@@ -73,7 +73,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Reconcile ChiaHarvester owned objects
-	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.PeerService) {
+	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.PeerService, true) {
 		srv := assemblePeerService(harvester)
 		if err := controllerutil.SetControllerReference(&harvester, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -106,7 +106,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		}
 	}
 
-	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.DaemonService) {
+	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(harvester)
 		if err := controllerutil.SetControllerReference(&harvester, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -141,7 +141,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		}
 	}
 
-	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.RPCService) {
+	if kube.ShouldMakeService(harvester.Spec.ChiaConfig.RPCService, true) {
 		srv := assembleRPCService(harvester)
 		if err := controllerutil.SetControllerReference(&harvester, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
@@ -176,7 +176,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		}
 	}
 
-	if kube.ShouldMakeService(harvester.Spec.ChiaExporterConfig.Service) {
+	if kube.ShouldMakeService(harvester.Spec.ChiaExporterConfig.Service, true) {
 		srv := assembleChiaExporterService(harvester)
 		if err := controllerutil.SetControllerReference(&harvester, &srv, r.Scheme); err != nil {
 			return ctrl.Result{}, err
