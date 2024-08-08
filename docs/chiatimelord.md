@@ -17,7 +17,7 @@ spec:
 
 ## More Info
 
-This page contains documentation specific to this resource. Please see the rest of the doucmentation for information on more available configurations.
+This page contains documentation specific to this resource. Please see the rest of the documentation for information on more available configurations.
 
 * [Generic options for all chia-operator resources.](all.md)
 * [chia-exporter configuration](chia-exporter.md)
