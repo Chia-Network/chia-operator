@@ -166,6 +166,7 @@ func assembleDeployment(introducer k8schianetv1.ChiaIntroducer) appsv1.Deploymen
 				},
 				Spec: corev1.PodSpec{
 					Containers:   []corev1.Container{assembleChiaContainer(introducer)},
+					Affinity:     introducer.Spec.Affinity,
 					NodeSelector: introducer.Spec.NodeSelector,
 					Volumes:      getChiaVolumes(introducer),
 				},

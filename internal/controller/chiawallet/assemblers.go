@@ -203,6 +203,7 @@ func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet) app
 				},
 				Spec: corev1.PodSpec{
 					Containers:   []corev1.Container{assembleChiaContainer(ctx, wallet)},
+					Affinity:     wallet.Spec.Affinity,
 					NodeSelector: wallet.Spec.NodeSelector,
 					Volumes:      getChiaVolumes(wallet),
 				},

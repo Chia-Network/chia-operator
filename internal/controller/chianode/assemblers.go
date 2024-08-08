@@ -236,6 +236,7 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode) appsv1
 				Spec: corev1.PodSpec{
 					// TODO add: imagePullSecret, serviceAccountName config
 					Containers:   []corev1.Container{assembleChiaContainer(ctx, node)},
+					Affinity:     node.Spec.Affinity,
 					NodeSelector: node.Spec.NodeSelector,
 					Volumes:      vols,
 				},

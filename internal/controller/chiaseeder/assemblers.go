@@ -250,6 +250,7 @@ func assembleDeployment(seeder k8schianetv1.ChiaSeeder) appsv1.Deployment {
 				},
 				Spec: corev1.PodSpec{
 					Containers:   []corev1.Container{assembleChiaContainer(seeder)},
+					Affinity:     seeder.Spec.Affinity,
 					NodeSelector: seeder.Spec.NodeSelector,
 					Volumes:      getChiaVolumes(seeder),
 				},

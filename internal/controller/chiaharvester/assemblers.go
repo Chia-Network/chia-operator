@@ -203,6 +203,7 @@ func assembleDeployment(harvester k8schianetv1.ChiaHarvester) appsv1.Deployment 
 				},
 				Spec: corev1.PodSpec{
 					Containers:   []corev1.Container{assembleChiaContainer(harvester)},
+					Affinity:     harvester.Spec.Affinity,
 					NodeSelector: harvester.Spec.NodeSelector,
 					Volumes:      getChiaVolumes(harvester),
 				},
