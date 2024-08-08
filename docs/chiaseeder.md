@@ -48,4 +48,3 @@ This page contains documentation specific to this resource. Please see the rest 
 * [chia-healthcheck configuration](chia-healthcheck.md)
 * [Services and networking](services-networking.md)
 * [Storage](storage.md)
-
