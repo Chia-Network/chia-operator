@@ -184,6 +184,14 @@ func getChiaEnv(crawler k8schianetv1.ChiaCrawler) []corev1.EnvVar {
 		})
 	}
 
+	// self_hostname env var
+	if crawler.Spec.ChiaConfig.SelfHostname != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "self_hostname",
+			Value: *crawler.Spec.ChiaConfig.SelfHostname,
+		})
+	}
+
 	return env
 }
 

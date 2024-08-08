@@ -1227,6 +1227,11 @@ func (in *CommonSpecChia) DeepCopyInto(out *CommonSpecChia) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SelfHostname != nil {
+		in, out := &in.SelfHostname, &out.SelfHostname
+		*out = new(string)
+		**out = **in
+	}
 	in.PeerService.DeepCopyInto(&out.PeerService)
 	in.DaemonService.DeepCopyInto(&out.DaemonService)
 	in.RPCService.DeepCopyInto(&out.RPCService)

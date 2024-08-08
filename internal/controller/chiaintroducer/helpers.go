@@ -191,6 +191,14 @@ func getChiaEnv(introducer k8schianetv1.ChiaIntroducer) []corev1.EnvVar {
 		})
 	}
 
+	// self_hostname env var
+	if introducer.Spec.ChiaConfig.SelfHostname != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "self_hostname",
+			Value: *introducer.Spec.ChiaConfig.SelfHostname,
+		})
+	}
+
 	return env
 }
 

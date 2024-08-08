@@ -12,6 +12,7 @@ spec:
     testnet: true # Switches to the default testnet in the Chia configuration file.
     timezone: "UTC" # Switches the tzdata timezone in the container.
     logLevel: "INFO" # Sets the Chia log level.
+    selfHostname: "0.0.0.0" # Sets the self_hostname setting in the config, which affects what network interfaces chia services are bound to.
 ```
 
 ### Selecting a network
