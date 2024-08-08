@@ -1696,6 +1696,11 @@ spec:
                             type: string
                         type: object
                     type: object
+                  selfHostname:
+                    description: |-
+                      SelfHostname defines the bind address of chia services in the container
+                      Setting to `0.0.0.0` binds chia services to all interfaces
+                    type: string
                   startupProbe:
                     description: StartupProbe indicates that the Pod has successfully
                       initialized.

@@ -106,6 +106,11 @@ type CommonSpecChia struct {
 	// +optional
 	LogLevel *string `json:"logLevel,omitempty"`
 
+	// SelfHostname defines the bind address of chia services in the container
+	// Setting to `0.0.0.0` binds chia services to all interfaces
+	// +optional
+	SelfHostname *string `json:"selfHostname,omitempty"`
+
 	// PeerService defines settings for the default Service installed with any Chia component resource.
 	// This Service usually contains ports for peer connections, or in the case of seeders port 53.
 	// This Service will default to being enabled with a ClusterIP Service type.

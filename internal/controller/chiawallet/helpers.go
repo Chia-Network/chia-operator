@@ -221,6 +221,14 @@ func getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.En
 		})
 	}
 
+	// self_hostname env var
+	if wallet.Spec.ChiaConfig.SelfHostname != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "self_hostname",
+			Value: *wallet.Spec.ChiaConfig.SelfHostname,
+		})
+	}
+
 	// keys env var
 	env = append(env, corev1.EnvVar{
 		Name:  "keys",
