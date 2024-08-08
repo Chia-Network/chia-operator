@@ -38,6 +38,10 @@ type CommonSpec struct {
 	// PodSecurityContext defines the security context for the pod
 	// +optional
 	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
+
+	// Affinity defines a group of affinity or anti-affinity rules
+	// +optional
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 }
 
 // InitContainer allows defining a container that will run as an init container for a kubernetes resource

@@ -203,6 +203,7 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord) appsv1.Deployment {
 				},
 				Spec: corev1.PodSpec{
 					Containers:   []corev1.Container{assembleChiaContainer(tl)},
+					Affinity:     tl.Spec.Affinity,
 					NodeSelector: tl.Spec.NodeSelector,
 					Volumes:      getChiaVolumes(tl),
 				},

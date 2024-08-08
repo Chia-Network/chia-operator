@@ -203,6 +203,7 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler) appsv1.Deployment {
 				},
 				Spec: corev1.PodSpec{
 					Containers:   []corev1.Container{assembleChiaContainer(crawler)},
+					Affinity:     crawler.Spec.Affinity,
 					NodeSelector: crawler.Spec.NodeSelector,
 					Volumes:      getChiaVolumes(crawler),
 				},
