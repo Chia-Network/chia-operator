@@ -14,18 +14,6 @@ spec:
     caSecretName: chiaca-secret # A kubernetes Secret containing certificate authority files
 ```
 
-## Chia configuration
-
-Some of Chia's configuration can be changed from within the CR.
-
-```yaml
-spec:
-  chia:
-    testnet: true # Switches to the default testnet in the Chia configuration file.
-    timezone: "UTC" # Switches the tzdata timezone in the container.
-    logLevel: "INFO" # Sets the Chia log level.
-```
-
 ## CHIA_ROOT storage
 
 `CHIA_ROOT` is an environment variable that tells chia services where to expect a data directory to be for local chia state. You can store your chia state persistently a couple of different ways: either with a host mount or a persistent volume claim.
@@ -59,58 +47,12 @@ spec:
     kubernetes.io/hostname: "node-with-hostpath"
 ```
 
-## Selecting a network
+## More Info
 
-You can select a network from your chia configuration with the following options:
+This page contains documentation specific to this resource. Please see the rest of the doucmentation for information on more available configurations.
 
-```yaml
-spec:
-  chia:
-    network: "testnetZZ" # Switches to the network with a matching name in the chia config file.
-    networkPort: 58445 # Switches the default network port full_nodes connect with.
-    introducerAddress: "introducer.default.svc.cluster.local" # Sets the introducer address used in the chia config file.
-    dnsIntroducerAddress: "dns-introducer.default.svc.cluster.local" # Sets the DNS introducer address used in the chia config file.
-```
-
-## Configure Readiness, Liveness, and Startup probes
-
-By default, if chia-exporter is enabled it comes with its own readiness and liveness probes. But you can configure readiness, liveness, and startup probes for the chia container in your deployed Pods, too:
-
-```yaml
-spec:
-  chia:
-    livenessProbe:
-      exec:
-        command:
-          - /bin/sh
-          - '-c'
-          - /usr/local/bin/docker-healthcheck.sh || exit 1
-      initialDelaySeconds: 30
-    readinessProbe:
-      exec:
-        command:
-          - /bin/sh
-          - '-c'
-          - /usr/local/bin/docker-healthcheck.sh || exit 1
-      initialDelaySeconds: 30
-    startupProbe:
-      exec:
-        command:
-          - /bin/sh
-          - '-c'
-          - /usr/local/bin/docker-healthcheck.sh || exit 1
-```
-
-## Update Strategy
-
-You can set a custom update strategy using [kubernetes Statefulset update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) definitions.
-
-Example:
-
-```yaml
-spec:
-  updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      partition: 0
-```
+* [Generic options for all chia-operator resources.](all.md)
+* [chia-exporter configuration](chia-exporter.md)
+* [chia-healthcheck configuration](chia-healthcheck.md)
+* [Services and networking](services-networking.md)
+* [Storage](storage.md)
