@@ -11,8 +11,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Build ca-gen
+        uses: docker/build-push-action@v6
+        with:
+          push: false
+          tags: cagentest:1
+          context: chiaca-generator/
+          file: chiaca-generator/Dockerfile
+
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1
+        with:
+          cluster_name: kind # the action defaults to "chart-testing" which causes the load command below to fail
+
+      - name: Load CA gen image
+        run: kind load docker-image cagentest:1
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
@@ -27,8 +40,8 @@ jobs:
 
       - name: Install chia components
         run: |
-          kubectl apply -f ./config/samples/chiaca.yaml
-          kubectl apply -f ./config/samples/chianode.yaml
+          kubectl apply -f ./tests/chiaca.yaml
+          kubectl apply -f ./tests/chianode.yaml
 
       - name: Wait for ChiaCA Secret
         run: |
@@ -60,7 +73,7 @@ jobs:
           timeout=300
           endtime=$((SECONDS+timeout))
           while [ $SECONDS -lt $endtime ]; do
-            pod_status=$(kubectl get pod chianode-sample-node-0 -o jsonpath='{.status.phase}')
+            pod_status=$(kubectl get pod chianode-test-node-0 -o jsonpath='{.status.phase}')
             if [ "$pod_status" = "Running" ]; then
               echo "Pod is running."
               found=1
@@ -85,7 +98,7 @@ jobs:
 
       - name: Check to make sure ChiaNode peer Service has one endpoint
         run: |
-          service_endpoints_number=$(kubectl get endpoints chianode-sample-node -o json | jq '.subsets[].addresses | length')
+          service_endpoints_number=$(kubectl get endpoints chianode-test-node -o json | jq '.subsets[].addresses | length')
           if [ "$service_endpoints_number" -ne 1 ]; then
             echo "ChiaNode peer Service was found to have $service_endpoints_number endpoints, expected 1"
             exit 1
@@ -94,7 +107,7 @@ jobs:
 
       - name: Check to make sure ChiaNode RPC Service has one endpoint
         run: |
-          service_endpoints_number=$(kubectl get endpoints chianode-sample-node-rpc -o json | jq '.subsets[].addresses | length')
+          service_endpoints_number=$(kubectl get endpoints chianode-test-node-rpc -o json | jq '.subsets[].addresses | length')
           if [ "$service_endpoints_number" -ne 1 ]; then
             echo "ChiaNode RPC Service was found to have $service_endpoints_number endpoints, expected 1"
             exit 1
@@ -103,7 +116,7 @@ jobs:
 
       - name: Check to make sure ChiaNode daemon Service has one endpoint
         run: |
-          service_endpoints_number=$(kubectl get endpoints chianode-sample-node-daemon -o json | jq '.subsets[].addresses | length')
+          service_endpoints_number=$(kubectl get endpoints chianode-test-node-daemon -o json | jq '.subsets[].addresses | length')
           if [ "$service_endpoints_number" -ne 1 ]; then
             echo "ChiaNode daemon Service was found to have $service_endpoints_number endpoints, expected 1"
             exit 1
@@ -112,7 +125,7 @@ jobs:
 
       - name: Check to make sure ChiaNode headless Service has one endpoint
         run: |
-          service_endpoints_number=$(kubectl get endpoints chianode-sample-node-headless -o json | jq '.subsets[].addresses | length')
+          service_endpoints_number=$(kubectl get endpoints chianode-test-node-headless -o json | jq '.subsets[].addresses | length')
           if [ "$service_endpoints_number" -ne 1 ]; then
             echo "ChiaNode headless Service was found to have $service_endpoints_number endpoints, expected 1"
             exit 1
@@ -121,7 +134,7 @@ jobs:
 
       - name: Check to make sure ChiaNode internal Service has one endpoint
         run: |
-          service_endpoints_number=$(kubectl get endpoints chianode-sample-node-internal -o json | jq '.subsets[].addresses | length')
+          service_endpoints_number=$(kubectl get endpoints chianode-test-node-internal -o json | jq '.subsets[].addresses | length')
           if [ "$service_endpoints_number" -ne 1 ]; then
             echo "ChiaNode internal Service was found to have $service_endpoints_number endpoints, expected 1"
             exit 1

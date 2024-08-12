@@ -1,0 +1,16 @@
+apiVersion: k8s.chia.net/v1
+kind: ChiaNode
+metadata:
+  name: chianode-test
+spec:
+  replicas: 1
+  chia:
+    caSecretName: chiaca-secret
+    testnet: true
+    timezone: "UTC"
+    logLevel: "INFO"
+  storage:
+    chiaRoot:
+      persistentVolumeClaim:
+        storageClass: "standard"
+        resourceRequest: "250Gi"
