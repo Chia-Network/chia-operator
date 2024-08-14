@@ -15,7 +15,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -72,142 +71,60 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		metrics.ChiaCrawlers.Add(1.0)
 	}
 
-	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.PeerService, true) {
-		srv := assemblePeerService(crawler)
-		if err := controllerutil.SetControllerReference(&crawler, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler peer Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error reconciling crawler peer Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				log.Error(err, fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s unable to GET ChiaCrawler peer Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				log.Error(err, fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s unable to DELETE ChiaCrawler peer Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Peer Service
+	peerSrv := assemblePeerService(crawler)
+	if err := controllerutil.SetControllerReference(&crawler, &peerSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to assemble crawler peer Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Peer Service
+	err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaConfig.PeerService, peerSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.DaemonService, true) {
-		srv := assembleDaemonService(crawler)
-		if err := controllerutil.SetControllerReference(&crawler, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler daemon Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error reconciling crawler daemon Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-daemon",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s unable to GET ChiaCrawler daemon Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s unable to DELETE ChiaCrawler daemon Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Daemon Service
+	daemonSrv := assembleDaemonService(crawler)
+	if err := controllerutil.SetControllerReference(&crawler, &daemonSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to assemble crawler daemon Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Daemon Service
+	err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaConfig.DaemonService, daemonSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.RPCService, true) {
-		srv := assembleRPCService(crawler)
-		if err := controllerutil.SetControllerReference(&crawler, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler RPC Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error reconciling crawler RPC Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-rpc",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s unable to GET ChiaCrawler RPC Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s unable to DELETE ChiaCrawler RPC Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble RPC Service
+	rpcSrv := assembleRPCService(crawler)
+	if err := controllerutil.SetControllerReference(&crawler, &rpcSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to assemble crawler RPC Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error assembling RPC Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile RPC Service
+	err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaConfig.RPCService, rpcSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(crawler.Spec.ChiaExporterConfig.Service, true) {
-		srv := assembleChiaExporterService(crawler)
-		if err := controllerutil.SetControllerReference(&crawler, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler metrics Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error reconciling crawler metrics Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-metrics",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s unable to GET ChiaCrawler metrics Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s unable to DELETE ChiaCrawler metrics Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Chia-Exporter Service
+	exporterSrv := assembleChiaExporterService(crawler)
+	if err := controllerutil.SetControllerReference(&crawler, &exporterSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to assemble crawler chia-exporter Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Chia-Exporter Service
+	err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaExporterConfig.Service, exporterSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true

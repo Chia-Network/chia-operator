@@ -155,10 +155,14 @@ func assembleChiaExporterService(farmer k8schianetv1.ChiaFarmer) corev1.Service 
 }
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaFarmer CR
-func assembleVolumeClaim(farmer k8schianetv1.ChiaFarmer) (corev1.PersistentVolumeClaim, error) {
+func assembleVolumeClaim(farmer k8schianetv1.ChiaFarmer) (*corev1.PersistentVolumeClaim, error) {
+	if farmer.Spec.Storage != nil && farmer.Spec.Storage.ChiaRoot != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+		return nil, nil
+	}
+
 	resourceReq, err := resource.ParseQuantity(farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
 	if err != nil {
-		return corev1.PersistentVolumeClaim{}, err
+		return nil, err
 	}
 
 	accessModes := []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
@@ -166,7 +170,7 @@ func assembleVolumeClaim(farmer k8schianetv1.ChiaFarmer) (corev1.PersistentVolum
 		accessModes = farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
 	}
 
-	return corev1.PersistentVolumeClaim{
+	pvc := corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
 			Namespace: farmer.Namespace,
@@ -180,7 +184,9 @@ func assembleVolumeClaim(farmer k8schianetv1.ChiaFarmer) (corev1.PersistentVolum
 				},
 			},
 		},
-	}, nil
+	}
+
+	return &pvc, nil
 }
 
 // assembleDeployment assembles the farmer Deployment resource for a ChiaFarmer CR

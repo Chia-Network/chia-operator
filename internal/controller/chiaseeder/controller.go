@@ -27,7 +27,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -89,177 +88,75 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		metrics.ChiaSeeders.Add(1.0)
 	}
 
-	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.PeerService, true) {
-		srv := assemblePeerService(seeder)
-		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder peer Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling seeder peer Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiaseederNamePattern, seeder.Name),
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to GET ChiaSeeder peer Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to DELETE ChiaSeeder peer Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Peer Service
+	peerSrv := assemblePeerService(seeder)
+	if err := controllerutil.SetControllerReference(&seeder, &peerSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder peer Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Peer Service
+	err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaConfig.PeerService, peerSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.DaemonService, true) {
-		srv := assembleDaemonService(seeder)
-		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder daemon Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling seeder daemon Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-daemon",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to GET ChiaSeeder daemon Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to DELETE ChiaSeeder daemon Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Daemon Service
+	daemonSrv := assembleDaemonService(seeder)
+	if err := controllerutil.SetControllerReference(&seeder, &daemonSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder daemon Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Daemon Service
+	err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaConfig.DaemonService, daemonSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.RPCService, true) {
-		srv := assembleRPCService(seeder)
-		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder RPC Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling seeder RPC Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-rpc",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to GET ChiaSeeder RPC Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to DELETE ChiaSeeder RPC Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble RPC Service
+	rpcSrv := assembleRPCService(seeder)
+	if err := controllerutil.SetControllerReference(&seeder, &rpcSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder RPC Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling RPC Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile RPC Service
+	err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaConfig.RPCService, rpcSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(seeder.Spec.ChiaExporterConfig.Service, true) {
-		srv := assembleChiaExporterService(seeder)
-		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder metrics Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling seeder metrics Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-metrics",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to GET ChiaSeeder metrics Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to DELETE ChiaSeeder metrics Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Chia-Exporter Service
+	exporterSrv := assembleChiaExporterService(seeder)
+	if err := controllerutil.SetControllerReference(&seeder, &exporterSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder chia-exporter Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Chia-Exporter Service
+	err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaExporterConfig.Service, exporterSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 
-	// Defaults the Service to false, and adds a check for the RollIntoPeerService parameter
-	if kube.ShouldMakeService(seeder.Spec.ChiaHealthcheckConfig.Service, false) && !kube.ShouldRollIntoMainPeerService(seeder.Spec.ChiaHealthcheckConfig.Service) {
-		srv := assembleChiaHealthcheckService(seeder)
-		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+	// Assemble Chia-Healthcheck Service
+	healthcheckSrv := assembleChiaHealthcheckService(seeder)
+	if err := controllerutil.SetControllerReference(&seeder, &healthcheckSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder chia-healthcheck Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling chia-healthcheck Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Chia-Healthcheck Service
+	if !kube.ShouldRollIntoMainPeerService(seeder.Spec.ChiaHealthcheckConfig.Service) {
+		err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaHealthcheckConfig.Service, healthcheckSrv, false)
 		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
 			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder healthcheck Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling seeder healthcheck Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-healthcheck",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to GET ChiaSeeder healthcheck Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to DELETE ChiaSeeder healthcheck Service resource", req.NamespacedName))
-			}
+			return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 		}
 	}
 

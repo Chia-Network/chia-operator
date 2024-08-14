@@ -118,10 +118,14 @@ func assembleChiaExporterService(introducer k8schianetv1.ChiaIntroducer) corev1.
 }
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaIntroducer CR
-func assembleVolumeClaim(introducer k8schianetv1.ChiaIntroducer) (corev1.PersistentVolumeClaim, error) {
+func assembleVolumeClaim(introducer k8schianetv1.ChiaIntroducer) (*corev1.PersistentVolumeClaim, error) {
+	if introducer.Spec.Storage != nil && introducer.Spec.Storage.ChiaRoot != nil && introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+		return nil, nil
+	}
+
 	resourceReq, err := resource.ParseQuantity(introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
 	if err != nil {
-		return corev1.PersistentVolumeClaim{}, err
+		return nil, err
 	}
 
 	accessModes := []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
@@ -129,7 +133,7 @@ func assembleVolumeClaim(introducer k8schianetv1.ChiaIntroducer) (corev1.Persist
 		accessModes = introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
 	}
 
-	return corev1.PersistentVolumeClaim{
+	pvc := corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name),
 			Namespace: introducer.Namespace,
@@ -143,7 +147,9 @@ func assembleVolumeClaim(introducer k8schianetv1.ChiaIntroducer) (corev1.Persist
 				},
 			},
 		},
-	}, nil
+	}
+
+	return &pvc, nil
 }
 
 // assembleDeployment assembles the introducer Deployment resource for a ChiaIntroducer CR

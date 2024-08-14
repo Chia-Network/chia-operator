@@ -155,10 +155,14 @@ func assembleChiaExporterService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 }
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaTimelord CR
-func assembleVolumeClaim(tl k8schianetv1.ChiaTimelord) (corev1.PersistentVolumeClaim, error) {
+func assembleVolumeClaim(tl k8schianetv1.ChiaTimelord) (*corev1.PersistentVolumeClaim, error) {
+	if tl.Spec.Storage != nil && tl.Spec.Storage.ChiaRoot != nil && tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+		return nil, nil
+	}
+
 	resourceReq, err := resource.ParseQuantity(tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
 	if err != nil {
-		return corev1.PersistentVolumeClaim{}, err
+		return nil, err
 	}
 
 	accessModes := []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
@@ -166,7 +170,7 @@ func assembleVolumeClaim(tl k8schianetv1.ChiaTimelord) (corev1.PersistentVolumeC
 		accessModes = tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
 	}
 
-	return corev1.PersistentVolumeClaim{
+	pvc := corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiatimelordNamePattern, tl.Name),
 			Namespace: tl.Namespace,
@@ -180,7 +184,9 @@ func assembleVolumeClaim(tl k8schianetv1.ChiaTimelord) (corev1.PersistentVolumeC
 				},
 			},
 		},
-	}, nil
+	}
+
+	return &pvc, nil
 }
 
 // assembleDeployment assembles the tl Deployment resource for a ChiaTimelord CR

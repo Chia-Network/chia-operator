@@ -37,6 +37,14 @@ func CombineMaps(maps ...map[string]string) map[string]string {
 	return keyvalues
 }
 
+// ShouldMakeVolumeClaim returns true if the related PersistentVolumeClaim was configured to be made
+func ShouldMakeVolumeClaim(storage *k8schianetv1.StorageConfig) bool {
+	if storage != nil && storage.ChiaRoot != nil && storage.ChiaRoot.PersistentVolumeClaim != nil && storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+		return storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims
+	}
+	return false
+}
+
 // ShouldMakeService returns true if the related Service was configured to be made, otherwise returns the specified default value
 func ShouldMakeService(srv k8schianetv1.Service, def bool) bool {
 	if srv.Enabled != nil {

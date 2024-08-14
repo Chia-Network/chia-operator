@@ -155,10 +155,14 @@ func assembleChiaExporterService(crawler k8schianetv1.ChiaCrawler) corev1.Servic
 }
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaCrawler CR
-func assembleVolumeClaim(crawler k8schianetv1.ChiaCrawler) (corev1.PersistentVolumeClaim, error) {
+func assembleVolumeClaim(crawler k8schianetv1.ChiaCrawler) (*corev1.PersistentVolumeClaim, error) {
+	if crawler.Spec.Storage != nil && crawler.Spec.Storage.ChiaRoot != nil && crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+		return nil, nil
+	}
+
 	resourceReq, err := resource.ParseQuantity(crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
 	if err != nil {
-		return corev1.PersistentVolumeClaim{}, err
+		return nil, err
 	}
 
 	accessModes := []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
@@ -166,7 +170,7 @@ func assembleVolumeClaim(crawler k8schianetv1.ChiaCrawler) (corev1.PersistentVol
 		accessModes = crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
 	}
 
-	return corev1.PersistentVolumeClaim{
+	pvc := corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
 			Namespace: crawler.Namespace,
@@ -180,7 +184,9 @@ func assembleVolumeClaim(crawler k8schianetv1.ChiaCrawler) (corev1.PersistentVol
 				},
 			},
 		},
-	}, nil
+	}
+
+	return &pvc, nil
 }
 
 // assembleDeployment assembles the crawler Deployment resource for a ChiaCrawler CR

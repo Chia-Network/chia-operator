@@ -155,10 +155,14 @@ func assembleChiaExporterService(harvester k8schianetv1.ChiaHarvester) corev1.Se
 }
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaHarvester CR
-func assembleVolumeClaim(harvester k8schianetv1.ChiaHarvester) (corev1.PersistentVolumeClaim, error) {
+func assembleVolumeClaim(harvester k8schianetv1.ChiaHarvester) (*corev1.PersistentVolumeClaim, error) {
+	if harvester.Spec.Storage != nil && harvester.Spec.Storage.ChiaRoot != nil && harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+		return nil, nil
+	}
+
 	resourceReq, err := resource.ParseQuantity(harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
 	if err != nil {
-		return corev1.PersistentVolumeClaim{}, err
+		return nil, err
 	}
 
 	accessModes := []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
@@ -166,7 +170,7 @@ func assembleVolumeClaim(harvester k8schianetv1.ChiaHarvester) (corev1.Persisten
 		accessModes = harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
 	}
 
-	return corev1.PersistentVolumeClaim{
+	pvc := corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
 			Namespace: harvester.Namespace,
@@ -180,7 +184,9 @@ func assembleVolumeClaim(harvester k8schianetv1.ChiaHarvester) (corev1.Persisten
 				},
 			},
 		},
-	}, nil
+	}
+
+	return &pvc, nil
 }
 
 // assembleDeployment assembles the harvester Deployment resource for a ChiaHarvester CR
