@@ -21,7 +21,6 @@ import (
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"github.com/chia-network/chia-operator/internal/metrics"
-	"github.com/cisco-open/operator-tools/pkg/reconciler"
 )
 
 // ChiaTimelordReconciler reconciles a ChiaTimelord object
@@ -44,7 +43,6 @@ var chiatimelords = make(map[string]bool)
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
-	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
 	log.Info(fmt.Sprintf("ChiaTimelordController ChiaTimelord=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
@@ -129,11 +127,11 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
-	if timelord.Spec.Storage != nil && timelord.Spec.Storage.ChiaRoot != nil && timelord.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && timelord.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+	if kube.ShouldMakeVolumeClaim(timelord.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(timelord)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to create timelord PVC -- Check operator logs.")
+			r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord PVC -- Check operator logs.")
 			return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 		}
 
@@ -147,20 +145,19 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}
 
+	// Assemble Deployment
 	deploy := assembleDeployment(timelord)
-
 	if err := controllerutil.SetControllerReference(&timelord, &deploy, r.Scheme); err != nil {
-		return ctrl.Result{}, err
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord Deployment -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 	}
-
-	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
+	// Reconcile Deployment
+	err = kube.ReconcileDeployment(ctx, r.Client, deploy)
 	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
-		}
 		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to create timelord Deployment -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaTimelordController ChiaTimelord=%s encountered error reconciling node StatefulSet: %v", req.NamespacedName, err)
+		return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 	}
 
 	// Update CR status

@@ -11,7 +11,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,7 +21,6 @@ import (
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"github.com/chia-network/chia-operator/internal/metrics"
-	"github.com/cisco-open/operator-tools/pkg/reconciler"
 )
 
 // ChiaFarmerReconciler reconciles a ChiaFarmer object
@@ -45,7 +43,6 @@ var chiafarmers = make(map[string]bool)
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
-	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
 	log.Info(fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
@@ -130,11 +127,11 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
-	if farmer.Spec.Storage != nil && farmer.Spec.Storage.ChiaRoot != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+	if kube.ShouldMakeVolumeClaim(farmer.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(farmer)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer PVC -- Check operator logs.")
+			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer PVC -- Check operator logs.")
 			return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 		}
 
@@ -153,26 +150,14 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if err := controllerutil.SetControllerReference(&farmer, &deploy, r.Scheme); err != nil {
 		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer Deployment -- Check operator logs.")
-		return ctrl.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error assembling Deployment: %v", req.NamespacedName, err)
+		return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 	}
-
-	// Get existing Deployment
-	var currentDeploy appsv1.Deployment
-	getDeployErr := r.Get(ctx, types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, &currentDeploy)
-	if getDeployErr != nil && !errors.IsNotFound(getDeployErr) {
-		metrics.OperatorErrors.Add(1.0)
-		return ctrl.Result{}, getDeployErr
-	}
-
 	// Reconcile Deployment
-	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
+	err = kube.ReconcileDeployment(ctx, r.Client, deploy)
 	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
-		}
 		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer Deployment -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer Deployment: %v", req.NamespacedName, err)
+		return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 	}
 
 	// Update CR status

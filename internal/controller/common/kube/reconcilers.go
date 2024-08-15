@@ -70,13 +70,69 @@ func ReconcileService(ctx context.Context, c client.Client, service k8schianetv1
 }
 
 // ReconcileDeployment uses the ResourceReconciler to determine if the deployment resource needs to be created or updated
-func ReconcileDeployment(ctx context.Context, rec reconciler.ResourceReconciler, deploy appsv1.Deployment) (*reconcile.Result, error) {
-	return rec.ReconcileResource(&deploy, reconciler.StatePresent)
+func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.Deployment) error {
+	klog := log.FromContext(ctx).WithValues("Deployment.Namespace", desired.Namespace, "Deployment.Name", desired.Name)
+
+	// Get existing PVC
+	var current appsv1.Deployment
+	err := c.Get(ctx, types.NamespacedName{
+		Name:      desired.Name,
+		Namespace: desired.Namespace,
+	}, &current)
+	if err != nil && errors.IsNotFound(err) {
+		klog.Info("Creating new Deployment")
+		if err := c.Create(ctx, &desired); err != nil {
+			return fmt.Errorf("error creating Deployment \"%s\": %v", desired.Name, err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("error getting existing Deployment \"%s\": %v", desired.Name, err)
+	}
+
+	// Deployment exists, so we need to update it if there are any changes
+	if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desired.Annotations) {
+		klog.Info("Updating Deployment with new spec or metadata")
+		current.Labels = desired.Labels
+		current.Annotations = desired.Annotations
+		current.Spec = desired.Spec
+		if err := c.Update(ctx, &current); err != nil {
+			return fmt.Errorf("error updating Deployment \"%s\": %v", desired.Name, err)
+		}
+	}
+
+	return nil
 }
 
 // ReconcileStatefulset uses the ResourceReconciler to determine if the statefulset resource needs to be created or updated
-func ReconcileStatefulset(ctx context.Context, rec reconciler.ResourceReconciler, stateful appsv1.StatefulSet) (*reconcile.Result, error) {
-	return rec.ReconcileResource(&stateful, reconciler.StatePresent)
+func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.StatefulSet) error {
+	klog := log.FromContext(ctx).WithValues("StatefulSet.Namespace", desired.Namespace, "StatefulSet.Name", desired.Name)
+
+	// Get existing PVC
+	var current appsv1.StatefulSet
+	err := c.Get(ctx, types.NamespacedName{
+		Name:      desired.Name,
+		Namespace: desired.Namespace,
+	}, &current)
+	if err != nil && errors.IsNotFound(err) {
+		klog.Info("Creating new StatefulSet")
+		if err := c.Create(ctx, &desired); err != nil {
+			return fmt.Errorf("error creating StatefulSet \"%s\": %v", desired.Name, err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("error getting existing StatefulSet \"%s\": %v", desired.Name, err)
+	}
+
+	// StatefulSet exists, so we need to update it if there are any changes
+	if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desired.Annotations) {
+		klog.Info("Updating StatefulSet with new spec or metadata")
+		current.Labels = desired.Labels
+		current.Annotations = desired.Annotations
+		current.Spec = desired.Spec
+		if err := c.Update(ctx, &current); err != nil {
+			return fmt.Errorf("error updating StatefulSet \"%s\": %v", desired.Name, err)
+		}
+	}
+
+	return nil
 }
 
 // ReconcileServiceAccount uses the ResourceReconciler to determine if the serviceaccount resource needs to be created or updated

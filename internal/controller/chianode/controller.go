@@ -21,7 +21,6 @@ import (
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"github.com/chia-network/chia-operator/internal/metrics"
-	"github.com/cisco-open/operator-tools/pkg/reconciler"
 )
 
 // ChiaNodeReconciler reconciles a ChiaNode object
@@ -44,7 +43,6 @@ var chianodes = make(map[string]bool)
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
-	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
 	log.Info(fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s running reconciler...", req.NamespacedName.String()))
 
 	// Get the custom resource
@@ -172,19 +170,19 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
+	// Assemble Deployment
 	stateful := assembleStatefulset(ctx, node)
 	if err := controllerutil.SetControllerReference(&node, &stateful, r.Scheme); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	res, err := kube.ReconcileStatefulset(ctx, resourceReconciler, stateful)
-	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
-		}
 		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create node Statefulset -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error reconciling node StatefulSet: %v", req.NamespacedName, err)
+		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder Statefulset -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
+	}
+	// Reconcile Deployment
+	err = kube.ReconcileStatefulset(ctx, r.Client, stateful)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create seeder Statefulset -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
