@@ -77,10 +77,10 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Peer Service
-	err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaConfig.PeerService, peerSrv, true)
+	res, err := kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaConfig.PeerService, peerSrv, true)
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
-		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Daemon Service
@@ -91,10 +91,10 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Daemon Service
-	err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaConfig.DaemonService, daemonSrv, true)
+	res, err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaConfig.DaemonService, daemonSrv, true)
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
-		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble RPC Service
@@ -105,10 +105,10 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error assembling RPC Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile RPC Service
-	err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaConfig.RPCService, rpcSrv, true)
+	res, err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaConfig.RPCService, rpcSrv, true)
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
-		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Chia-Exporter Service
@@ -119,10 +119,10 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Chia-Exporter Service
-	err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaExporterConfig.Service, exporterSrv, true)
+	res, err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaExporterConfig.Service, exporterSrv, true)
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
-		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
@@ -135,12 +135,14 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 
 		if pvc != nil {
-			err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, crawler.Spec.Storage, *pvc)
+			res, err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, crawler.Spec.Storage, *pvc)
 			if err != nil {
 				metrics.OperatorErrors.Add(1.0)
 				r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler PVC -- Check operator logs.")
-				return reconcile.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
+				return res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 			}
+		} else {
+			return reconcile.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s PVC could not be created", req.NamespacedName)
 		}
 	}
 
@@ -152,11 +154,11 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return reconcile.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 	}
 	// Reconcile Deployment
-	err = kube.ReconcileDeployment(ctx, r.Client, deploy)
+	res, err = kube.ReconcileDeployment(ctx, r.Client, deploy)
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler Deployment -- Check operator logs.")
-		return reconcile.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 	}
 
 	// Update CR status

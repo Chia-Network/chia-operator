@@ -94,10 +94,10 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Peer Service
-	err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaConfig.PeerService, peerSrv, true)
+	res, err := kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaConfig.PeerService, peerSrv, true)
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
-		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Daemon Service
@@ -108,10 +108,10 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Daemon Service
-	err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaConfig.DaemonService, daemonSrv, true)
+	res, err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaConfig.DaemonService, daemonSrv, true)
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
-		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble RPC Service
@@ -122,10 +122,10 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling RPC Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile RPC Service
-	err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaConfig.RPCService, rpcSrv, true)
+	res, err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaConfig.RPCService, rpcSrv, true)
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
-		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Chia-Exporter Service
@@ -136,10 +136,10 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Chia-Exporter Service
-	err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaExporterConfig.Service, exporterSrv, true)
+	res, err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaExporterConfig.Service, exporterSrv, true)
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
-		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Chia-Healthcheck Service
@@ -151,10 +151,10 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 	// Reconcile Chia-Healthcheck Service
 	if !kube.ShouldRollIntoMainPeerService(seeder.Spec.ChiaHealthcheckConfig.Service) {
-		err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaHealthcheckConfig.Service, healthcheckSrv, false)
+		res, err = kube.ReconcileService(ctx, r.Client, seeder.Spec.ChiaHealthcheckConfig.Service, healthcheckSrv, false)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
-			return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
+			return res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 		}
 	}
 
@@ -168,12 +168,14 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 
 		if pvc != nil {
-			err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, seeder.Spec.Storage, *pvc)
+			res, err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, seeder.Spec.Storage, *pvc)
 			if err != nil {
 				metrics.OperatorErrors.Add(1.0)
 				r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder PVC -- Check operator logs.")
-				return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
+				return res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 			}
+		} else {
+			return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s PVC could not be created", req.NamespacedName)
 		}
 	}
 
@@ -185,11 +187,11 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 	// Reconcile Deployment
-	err = kube.ReconcileDeployment(ctx, r.Client, deploy)
+	res, err = kube.ReconcileDeployment(ctx, r.Client, deploy)
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder Deployment -- Check operator logs.")
-		return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 
 	// Update CR status

@@ -156,7 +156,7 @@ func assembleChiaExporterService(crawler k8schianetv1.ChiaCrawler) corev1.Servic
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaCrawler CR
 func assembleVolumeClaim(crawler k8schianetv1.ChiaCrawler) (*corev1.PersistentVolumeClaim, error) {
-	if crawler.Spec.Storage != nil && crawler.Spec.Storage.ChiaRoot != nil && crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+	if crawler.Spec.Storage == nil || crawler.Spec.Storage.ChiaRoot == nil || crawler.Spec.Storage.ChiaRoot.PersistentVolumeClaim == nil {
 		return nil, nil
 	}
 
