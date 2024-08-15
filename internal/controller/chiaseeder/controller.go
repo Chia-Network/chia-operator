@@ -166,17 +166,16 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder PVC -- Check operator logs.")
-			return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error scaffolding a generated PersistentVolumeClaim: %v", req.NamespacedName, err)
+			return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 		}
 
-		res, err := kube.ReconcilePersistentVolumeClaim(ctx, resourceReconciler, pvc)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
+		if pvc != nil {
+			err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, seeder.Spec.Storage, *pvc)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder PVC -- Check operator logs.")
+				return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder PVC -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling PersistentVolumeClaim: %v", req.NamespacedName, err)
 		}
 	}
 

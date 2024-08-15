@@ -100,6 +100,48 @@ func ReconcileJob(ctx context.Context, rec reconciler.ResourceReconciler, job ba
 }
 
 // ReconcilePersistentVolumeClaim uses the ResourceReconciler to determine if the PVC resource needs to be created or updated
-func ReconcilePersistentVolumeClaim(ctx context.Context, rec reconciler.ResourceReconciler, pvc corev1.PersistentVolumeClaim) (*reconcile.Result, error) {
-	return rec.ReconcileResource(&pvc, reconciler.StatePresent)
+func ReconcilePersistentVolumeClaim(ctx context.Context, c client.Client, storage *k8schianetv1.StorageConfig, desired corev1.PersistentVolumeClaim) error {
+	klog := log.FromContext(ctx).WithValues("PersistentVolumeClaim.Namespace", desired.Namespace, "PersistentVolumeClaim.Name", desired.Name)
+	ensurePVCExists := ShouldMakeVolumeClaim(storage)
+
+	// Get existing PVC
+	var current corev1.PersistentVolumeClaim
+	err := c.Get(ctx, types.NamespacedName{
+		Name:      desired.Name,
+		Namespace: desired.Namespace,
+	}, &current)
+	if err != nil && errors.IsNotFound(err) {
+		// PVC not found - create if it should exist, or return here if it shouldn't
+		if ensurePVCExists {
+			klog.Info("Creating new PersistentVolumeClaim")
+			if err := c.Create(ctx, &desired); err != nil {
+				return fmt.Errorf("error creating PersistentVolumeClaim \"%s\": %v", desired.Name, err)
+			}
+		} else {
+			return nil
+		}
+	} else if err != nil {
+		// Getting PVC failed, but it wasn't because it doesn't exist, can't do anything
+		return fmt.Errorf("error getting existing PersistentVolumeClaim \"%s\": %v", desired.Name, err)
+	}
+
+	// PVC exists, so we need to update it if there are any changes, or delete if it was disabled
+	if ensurePVCExists {
+		if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desired.Annotations) {
+			klog.Info("Updating PersistentVolumeClaim with new spec or metadata")
+			current.Labels = desired.Labels
+			current.Annotations = desired.Annotations
+			current.Spec = desired.Spec
+			if err := c.Update(ctx, &current); err != nil {
+				return fmt.Errorf("error updating PersistentVolumeClaim \"%s\": %v", desired.Name, err)
+			}
+		}
+	} else {
+		klog.Info("Deleting PersistentVolumeClaim because it was disabled")
+		if err := c.Delete(ctx, &current); err != nil {
+			return fmt.Errorf("error deleting PersistentVolumeClaim \"%s\": %v", desired.Name, err)
+		}
+	}
+
+	return nil
 }

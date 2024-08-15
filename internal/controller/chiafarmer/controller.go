@@ -129,25 +129,23 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 	}
 
-	// Assemble Generated PersistentVolumeClaim
-	pvc, err := assembleVolumeClaim(farmer) // We don't call SetControllerReference on PVCs to ensure they're not deleted if a chia-operator resource is deleted
-	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer PVC -- Check operator logs.")
-		return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error assembling PersistentVolumeClaim: %v", req.NamespacedName, err)
-	}
+	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
+	if farmer.Spec.Storage != nil && farmer.Spec.Storage.ChiaRoot != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+		pvc, err := assembleVolumeClaim(farmer)
+		if err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer PVC -- Check operator logs.")
+			return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
+		}
 
-	// Get existing PersistentVolumeClaim
-	var currentPVC corev1.PersistentVolumeClaim
-	getPVCErr := r.Get(ctx, types.NamespacedName{Name: pvc.Name, Namespace: pvc.Namespace}, &currentPVC)
-	if getPVCErr != nil && !errors.IsNotFound(getPVCErr) {
-		metrics.OperatorErrors.Add(1.0)
-		return ctrl.Result{}, getPVCErr
-	}
-
-	// Reconcile PersistentVolumeClaim
-	if kube.ShouldMakeVolumeClaim(farmer.Spec.Storage) {
-
+		if pvc != nil {
+			err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, farmer.Spec.Storage, *pvc)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer PVC -- Check operator logs.")
+				return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
+			}
+		}
 	}
 
 	// Assemble Deployment

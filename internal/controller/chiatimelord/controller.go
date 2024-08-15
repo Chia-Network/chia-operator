@@ -134,17 +134,16 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to create timelord PVC -- Check operator logs.")
-			return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error scaffolding a generated PersistentVolumeClaim: %v", req.NamespacedName, err)
+			return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 		}
 
-		res, err := kube.ReconcilePersistentVolumeClaim(ctx, resourceReconciler, pvc)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
+		if pvc != nil {
+			err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, timelord.Spec.Storage, *pvc)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to create timelord PVC -- Check operator logs.")
+				return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to create timelord PVC -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error reconciling PersistentVolumeClaim: %v", req.NamespacedName, err)
 		}
 	}
 

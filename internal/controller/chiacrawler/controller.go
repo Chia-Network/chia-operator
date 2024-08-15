@@ -133,17 +133,16 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler PVC -- Check operator logs.")
-			return reconcile.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error scaffolding a generated PersistentVolumeClaim: %v", req.NamespacedName, err)
+			return reconcile.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 		}
 
-		res, err := kube.ReconcilePersistentVolumeClaim(ctx, resourceReconciler, pvc)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
+		if pvc != nil {
+			err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, crawler.Spec.Storage, *pvc)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler PVC -- Check operator logs.")
+				return reconcile.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler PVC -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error reconciling PersistentVolumeClaim: %v", req.NamespacedName, err)
 		}
 	}
 

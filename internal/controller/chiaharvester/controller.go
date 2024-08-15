@@ -134,17 +134,16 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester PVC -- Check operator logs.")
-			return reconcile.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error scaffolding a generated PersistentVolumeClaim: %v", req.NamespacedName, err)
+			return reconcile.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)
 		}
 
-		res, err := kube.ReconcilePersistentVolumeClaim(ctx, resourceReconciler, pvc)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
+		if pvc != nil {
+			err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, harvester.Spec.Storage, *pvc)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester PVC -- Check operator logs.")
+				return reconcile.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)
 			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester PVC -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error reconciling PersistentVolumeClaim: %v", req.NamespacedName, err)
 		}
 	}
 
