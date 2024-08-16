@@ -43,7 +43,7 @@ var chiafarmers = make(map[string]bool)
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
-	log.Info(fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s running reconciler...", req.NamespacedName.String()))
+	log.Info("Running reconciler...")
 
 	// Get the custom resource
 	var farmer k8schianetv1.ChiaFarmer

@@ -20,7 +20,7 @@ import (
 const chiacaNamePattern = "%s-chiaca-generator"
 
 // assembleJob assembles the Job resource for a ChiaCA CR
-func (r *ChiaCAReconciler) assembleJob(ca k8schianetv1.ChiaCA) batchv1.Job {
+func assembleJob(ca k8schianetv1.ChiaCA) batchv1.Job {
 	var job = batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiacaNamePattern, ca.Name),
@@ -74,7 +74,7 @@ func (r *ChiaCAReconciler) assembleJob(ca k8schianetv1.ChiaCA) batchv1.Job {
 }
 
 // assembleServiceAccount assembles the ServiceAccount resource for a ChiaCA CR
-func (r *ChiaCAReconciler) assembleServiceAccount(ca k8schianetv1.ChiaCA) corev1.ServiceAccount {
+func assembleServiceAccount(ca k8schianetv1.ChiaCA) corev1.ServiceAccount {
 	return corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiacaNamePattern, ca.Name),
@@ -85,7 +85,7 @@ func (r *ChiaCAReconciler) assembleServiceAccount(ca k8schianetv1.ChiaCA) corev1
 }
 
 // assembleRole assembles the Role resource for a ChiaCA CR
-func (r *ChiaCAReconciler) assembleRole(ca k8schianetv1.ChiaCA) rbacv1.Role {
+func assembleRole(ca k8schianetv1.ChiaCA) rbacv1.Role {
 	return rbacv1.Role{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiacaNamePattern, ca.Name),
@@ -109,7 +109,7 @@ func (r *ChiaCAReconciler) assembleRole(ca k8schianetv1.ChiaCA) rbacv1.Role {
 }
 
 // assembleRoleBinding assembles the RoleBinding resource for a ChiaCA CR
-func (r *ChiaCAReconciler) assembleRoleBinding(ca k8schianetv1.ChiaCA) rbacv1.RoleBinding {
+func assembleRoleBinding(ca k8schianetv1.ChiaCA) rbacv1.RoleBinding {
 	return rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiacaNamePattern, ca.Name),

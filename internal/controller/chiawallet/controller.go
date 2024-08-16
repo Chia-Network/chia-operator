@@ -43,7 +43,7 @@ var chiawallets = make(map[string]bool)
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
-	log.Info(fmt.Sprintf("ChiaWalletReconciler ChiaWallet=%s running reconciler...", req.NamespacedName.String()))
+	log.Info("Running reconciler...")
 
 	// Get the custom resource
 	var wallet k8schianetv1.ChiaWallet

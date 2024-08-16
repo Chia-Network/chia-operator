@@ -17,7 +17,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cisco-open/operator-tools/pkg/reconciler"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -31,7 +30,7 @@ const (
 	ObjectModifiedTryAgainError = "the object has been modified; please apply your changes to the latest version and try again"
 )
 
-// ReconcileService uses the ResourceReconciler to determine if the service resource needs to be created or updated
+// ReconcileService uses the controller-runtime client to determine if the service resource needs to be created or updated
 func ReconcileService(ctx context.Context, c client.Client, service k8schianetv1.Service, desired corev1.Service, defaultEnabled bool) (reconcile.Result, error) {
 	klog := log.FromContext(ctx).WithValues("Service.Namespace", desired.Namespace, "Service.Name", desired.Name)
 	ensureServiceExists := ShouldMakeService(service, defaultEnabled)
@@ -81,7 +80,7 @@ func ReconcileService(ctx context.Context, c client.Client, service k8schianetv1
 	return ctrl.Result{}, nil
 }
 
-// ReconcileDeployment uses the ResourceReconciler to determine if the deployment resource needs to be created or updated
+// ReconcileDeployment uses the controller-runtime client to determine if the deployment resource needs to be created or updated
 func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.Deployment) (reconcile.Result, error) {
 	klog := log.FromContext(ctx).WithValues("Deployment.Namespace", desired.Namespace, "Deployment.Name", desired.Name)
 
@@ -117,7 +116,7 @@ func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.De
 	return ctrl.Result{}, nil
 }
 
-// ReconcileStatefulset uses the ResourceReconciler to determine if the statefulset resource needs to be created or updated
+// ReconcileStatefulset uses the controller-runtime client to determine if the statefulset resource needs to be created or updated
 func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.StatefulSet) (reconcile.Result, error) {
 	klog := log.FromContext(ctx).WithValues("StatefulSet.Namespace", desired.Namespace, "StatefulSet.Name", desired.Name)
 
@@ -153,27 +152,91 @@ func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.S
 	return ctrl.Result{}, nil
 }
 
-// ReconcileServiceAccount uses the ResourceReconciler to determine if the serviceaccount resource needs to be created or updated
-func ReconcileServiceAccount(ctx context.Context, rec reconciler.ResourceReconciler, sa corev1.ServiceAccount) (*reconcile.Result, error) {
-	return rec.ReconcileResource(&sa, reconciler.StatePresent)
+// ReconcileServiceAccount uses the controller-runtime client to determine if the serviceaccount resource needs to be created or updated
+func ReconcileServiceAccount(ctx context.Context, c client.Client, desired corev1.ServiceAccount) (reconcile.Result, error) {
+	klog := log.FromContext(ctx).WithValues("ServiceAccount.Namespace", desired.Namespace, "ServiceAccount.Name", desired.Name)
+
+	var current corev1.ServiceAccount
+	err := c.Get(ctx, types.NamespacedName{
+		Name:      desired.Name,
+		Namespace: desired.Namespace,
+	}, &current)
+	if err != nil && errors.IsNotFound(err) {
+		klog.Info("Creating new ServiceAccount")
+		if err := c.Create(ctx, &desired); err != nil {
+			return ctrl.Result{}, fmt.Errorf("error creating ServiceAccount \"%s\": %v", desired.Name, err)
+		}
+	} else if err != nil {
+		return ctrl.Result{}, fmt.Errorf("error getting existing ServiceAccount \"%s\": %v", desired.Name, err)
+	}
+
+	return ctrl.Result{}, nil
 }
 
-// ReconcileRole uses the ResourceReconciler to determine if the role resource needs to be created or updated
-func ReconcileRole(ctx context.Context, rec reconciler.ResourceReconciler, role rbacv1.Role) (*reconcile.Result, error) {
-	return rec.ReconcileResource(&role, reconciler.StatePresent)
+// ReconcileRole uses the controller-runtime client to determine if the role resource needs to be created or updated
+func ReconcileRole(ctx context.Context, c client.Client, desired rbacv1.Role) (reconcile.Result, error) {
+	klog := log.FromContext(ctx).WithValues("Role.Namespace", desired.Namespace, "Role.Name", desired.Name)
+
+	var current rbacv1.Role
+	err := c.Get(ctx, types.NamespacedName{
+		Name:      desired.Name,
+		Namespace: desired.Namespace,
+	}, &current)
+	if err != nil && errors.IsNotFound(err) {
+		klog.Info("Creating new Role")
+		if err := c.Create(ctx, &desired); err != nil {
+			return ctrl.Result{}, fmt.Errorf("error creating Role \"%s\": %v", desired.Name, err)
+		}
+	} else if err != nil {
+		return ctrl.Result{}, fmt.Errorf("error getting existing Role \"%s\": %v", desired.Name, err)
+	}
+
+	return ctrl.Result{}, nil
 }
 
-// ReconcileRoleBinding uses the ResourceReconciler to determine if the rolebinding resource needs to be created or updated
-func ReconcileRoleBinding(ctx context.Context, rec reconciler.ResourceReconciler, rb rbacv1.RoleBinding) (*reconcile.Result, error) {
-	return rec.ReconcileResource(&rb, reconciler.StatePresent)
+// ReconcileRoleBinding uses the controller-runtime client to determine if the rolebinding resource needs to be created or updated
+func ReconcileRoleBinding(ctx context.Context, c client.Client, desired rbacv1.RoleBinding) (reconcile.Result, error) {
+	klog := log.FromContext(ctx).WithValues("RoleBinding.Namespace", desired.Namespace, "RoleBinding.Name", desired.Name)
+
+	var current rbacv1.RoleBinding
+	err := c.Get(ctx, types.NamespacedName{
+		Name:      desired.Name,
+		Namespace: desired.Namespace,
+	}, &current)
+	if err != nil && errors.IsNotFound(err) {
+		klog.Info("Creating new RoleBinding")
+		if err := c.Create(ctx, &desired); err != nil {
+			return ctrl.Result{}, fmt.Errorf("error creating RoleBinding \"%s\": %v", desired.Name, err)
+		}
+	} else if err != nil {
+		return ctrl.Result{}, fmt.Errorf("error getting existing RoleBinding \"%s\": %v", desired.Name, err)
+	}
+
+	return ctrl.Result{}, nil
 }
 
-// ReconcileJob uses the ResourceReconciler to determine if the job resource needs to be created or updated
-func ReconcileJob(ctx context.Context, rec reconciler.ResourceReconciler, job batchv1.Job) (*reconcile.Result, error) {
-	return rec.ReconcileResource(&job, reconciler.StatePresent)
+// ReconcileJob uses the controller-runtime client to determine if the job resource needs to be created or updated
+func ReconcileJob(ctx context.Context, c client.Client, desired batchv1.Job) (reconcile.Result, error) {
+	klog := log.FromContext(ctx).WithValues("Job.Namespace", desired.Namespace, "Job.Name", desired.Name)
+
+	var current batchv1.Job
+	err := c.Get(ctx, types.NamespacedName{
+		Name:      desired.Name,
+		Namespace: desired.Namespace,
+	}, &current)
+	if err != nil && errors.IsNotFound(err) {
+		klog.Info("Creating new Job")
+		if err := c.Create(ctx, &desired); err != nil {
+			return ctrl.Result{}, fmt.Errorf("error creating Job \"%s\": %v", desired.Name, err)
+		}
+	} else if err != nil {
+		return ctrl.Result{}, fmt.Errorf("error getting existing Job \"%s\": %v", desired.Name, err)
+	}
+
+	return ctrl.Result{}, nil
 }
 
-// ReconcilePersistentVolumeClaim uses the ResourceReconciler to determine if the PVC resource needs to be created or updated
+// ReconcilePersistentVolumeClaim uses the controller-runtime client to determine if the PVC resource needs to be created or updated
 func ReconcilePersistentVolumeClaim(ctx context.Context, c client.Client, storage *k8schianetv1.StorageConfig, desired corev1.PersistentVolumeClaim) (reconcile.Result, error) {
 	klog := log.FromContext(ctx).WithValues("PersistentVolumeClaim.Namespace", desired.Namespace, "PersistentVolumeClaim.Name", desired.Name)
 	ensurePVCExists := ShouldMakeVolumeClaim(storage)
