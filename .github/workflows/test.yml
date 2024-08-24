@@ -8,22 +8,41 @@ permissions:
   contents: read
 
 jobs:
-  run:
+  test:
     name: Run tests
     runs-on: "ubuntu-latest"
     timeout-minutes: 10
     container: golang:1
-    env:
-      GOFLAGS: "-buildvcs=false"
     steps:
+      - name: Add safe git directory
+        uses: Chia-Network/actions/git-mark-workspace-safe@main
+
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Lint/test
+      - name: Run tests
         run: |
           make test
+
+  lint:
+    name: Run linters
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 10
+    container: golang:1
+    steps:
+      - name: Add safe git directory
+        uses: Chia-Network/actions/git-mark-workspace-safe@main
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run tests
+        run: |
+          make lint
 
   test-controller-gen-ran:
     runs-on: "ubuntu-latest"
