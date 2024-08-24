@@ -16,8 +16,7 @@ import (
 
 // GetCommonLabels gives some common labels for chia-operator related objects
 func GetCommonLabels(kind string, meta metav1.ObjectMeta, additionalLabels ...map[string]string) map[string]string {
-	var labels = make(map[string]string)
-	labels = CombineMaps(additionalLabels...)
+	labels := CombineMaps(additionalLabels...)
 	labels["app.kubernetes.io/instance"] = meta.Name
 	labels["app.kubernetes.io/name"] = meta.Name
 	labels["app.kubernetes.io/managed-by"] = "chia-operator"
