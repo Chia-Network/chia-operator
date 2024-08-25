@@ -9,8 +9,6 @@ spec:
     testnet: true
     timezone: "UTC"
     logLevel: "INFO"
-  chiaExporter:
-    enabled: true
   storage:
     chiaRoot:
       persistentVolumeClaim:
