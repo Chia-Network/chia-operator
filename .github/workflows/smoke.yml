@@ -96,6 +96,30 @@ jobs:
             exit 1
           fi
 
+      - name: Wait for Ready ChiaNode
+        run: |
+          found=0
+          timeout=300
+          endtime=$((SECONDS+timeout))
+          while [ $SECONDS -lt $endtime ]; do
+            ready_status=$(kubectl get pod chianode-test-node-0 -o=jsonpath='{.status.containerStatuses[*].ready}')
+            statuses_grep_false=$(echo "$ready_status" | grep false)
+            if [ "$statuses_grep_false" = "" ]; then
+              echo "All containers in Pod are ready: $ready_status"
+              found=1
+              break
+            else
+              echo "Container ready states: $ready_status. Waiting..."
+            fi
+            sleep 5
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "Timeout reached waiting for ChiaNode containers to enter Ready status."
+            echo "Getting Kubernetes Pods from the default namespace:"
+            kubectl get pods
+            exit 1
+          fi
+
       - name: Check to make sure ChiaNode peer Service has one endpoint
         run: |
           service_endpoints_number=$(kubectl get endpoints chianode-test-node -o json | jq '.subsets[].addresses | length')
