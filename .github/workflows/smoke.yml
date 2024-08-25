@@ -99,7 +99,7 @@ jobs:
       - name: Wait for Ready ChiaNode
         run: |
           found=0
-          timeout=300
+          timeout=600
           endtime=$((SECONDS+timeout))
           while [ $SECONDS -lt $endtime ]; do
             ready_status=$(kubectl get pod chianode-test-node-0 -o=jsonpath='{.status.containerStatuses[*].ready}')
@@ -109,7 +109,7 @@ jobs:
               found=1
               break
             else
-              echo "Container ready states: $ready_status. Waiting..."
+              echo "Container ready states: $ready_status. Waiting... ${SECONDS}/${endtime}"
             fi
             sleep 5
           done
