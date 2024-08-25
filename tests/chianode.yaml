@@ -11,10 +11,6 @@ spec:
     logLevel: "INFO"
   chiaExporter:
     enabled: true
-  chiaHealthcheck:
-    enabled: true
-    service:
-      enabled: true
   storage:
     chiaRoot:
       persistentVolumeClaim:

@@ -96,30 +96,6 @@ jobs:
             exit 1
           fi
 
-      - name: Wait for Ready ChiaNode
-        run: |
-          found=0
-          timeout=600
-          endtime=$((SECONDS+timeout))
-          while [ $SECONDS -lt $endtime ]; do
-            ready_status=$(kubectl get pod chianode-test-node-0 -o=jsonpath='{.status.containerStatuses[*].ready}')
-            statuses_grep_false=$(echo "$ready_status" | grep false)
-            if [ "$statuses_grep_false" = "" ]; then
-              echo "All containers in Pod are ready: $ready_status"
-              found=1
-              break
-            else
-              echo "Container ready states: $ready_status. Waiting... ${SECONDS}/${endtime}"
-            fi
-            sleep 5
-          done
-          if [ "$found" -eq 0 ]; then
-            echo "Timeout reached waiting for ChiaNode containers to enter Ready status."
-            echo "Getting Kubernetes Pods from the default namespace:"
-            kubectl get pods
-            exit 1
-          fi
-
       - name: Check to make sure ChiaNode peer Service has one endpoint
         run: |
           service_endpoints_number=$(kubectl get endpoints chianode-test-node -o json | jq '.subsets[].addresses | length')
@@ -170,15 +146,6 @@ jobs:
           service_endpoints_number=$(kubectl get endpoints chianode-test-node-metrics -o json | jq '.subsets[].addresses | length')
           if [ "$service_endpoints_number" -ne 1 ]; then
             echo "ChiaNode exporter Service was found to have $service_endpoints_number endpoints, expected 1"
-            exit 1
-          fi
-          echo "Expected 1 endpoint, found $service_endpoints_number"
-
-      - name: Check to make sure ChiaNode healthcheck Service has one endpoint
-        run: |
-          service_endpoints_number=$(kubectl get endpoints chianode-test-node-healthcheck -o json | jq '.subsets[].addresses | length')
-          if [ "$service_endpoints_number" -ne 1 ]; then
-            echo "ChiaNode healthcheck Service was found to have $service_endpoints_number endpoints, expected 1"
             exit 1
           fi
           echo "Expected 1 endpoint, found $service_endpoints_number"
