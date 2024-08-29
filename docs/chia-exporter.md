@@ -63,3 +63,20 @@ stringData:
 ```
 
 This just sets a few non-default options in the environment variables of a chia-exporter sidecar container.
+
+## Specify the version of chia-exporter
+
+Operator releases tend to pin to the current latest version of chia-exporter (at the time the release was published) but if you'd like to manage the version of chia-exporter yourself, there's a field to do so:
+
+```yaml
+apiVersion: k8s.chia.net/v1
+kind: ChiaNode
+metadata:
+  name: my-seeder
+spec:
+  chiaExporter:
+    enabled: true
+    image: ghcr.io/chia-network/chia-exporter:0.14.3
+```
+
+The example shows a ChiaNode (full_node) resource on 0.2.1 of chia, but this field is also available on other resources.
