@@ -75,3 +75,20 @@ spec:
 ```
 
 NOTE: If you had custom labels/annotations for your healthcheck Service, you should add them to the Peer Service configuration instead.
+
+## Specify the version of chia-healthcheck
+
+Operator releases tend to pin to the current latest version of chia-healthcheck (at the time the release was published) but if you'd like to manage the version of chia-healthcheck yourself, there's a field to do so:
+
+```yaml
+apiVersion: k8s.chia.net/v1
+kind: ChiaSeeder
+metadata:
+  name: my-seeder
+spec:
+  chiaHealthcheck:
+    enabled: true
+    image: ghcr.io/chia-network/chia-healthcheck:0.2.1
+```
+
+The example shows a ChiaSeeder (seeder) resource on 0.2.1 of chia, but this field is also available on other resources that support chia-healthcheck.

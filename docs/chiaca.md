@@ -26,3 +26,26 @@ spec:
   chia:
     caSecretName: my-ca
 ```
+
+## Manually create a CA Secret
+
+The ChiaCA custom resource (CR) exists as an option of convenience, but if you have your own CA you'd like to use instead, you'll need to create a Secret that contains all the files in the `$CHIA_ROOT/config/ssl/ca` directory, like so:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-ca
+stringData:
+  chia_ca.crt: |
+    <redacted file output>
+  chia_ca.key: |
+    <redacted file output>
+  private_ca.crt: |
+    <redacted file output>
+  private_ca.key: |
+    <redacted file output>
+type: Opaque
+```
+
+You only need to do this if you don't want to use the ChiaCA CR to make it for you.

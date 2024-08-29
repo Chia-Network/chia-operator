@@ -107,3 +107,19 @@ spec:
         - name: INIT_CONTAINER_VAR
           value: "init_container_value"
 ```
+
+## Specify the version of Chia
+
+Operator releases tend to pin to the current latest version of chia (at the time the release was published) but if you'd like to manage the version of chia ran yourself, there's a field to do so:
+
+```yaml
+apiVersion: k8s.chia.net/v1
+kind: ChiaNode
+metadata:
+  name: my-node
+spec:
+  chia:
+    image: ghcr.io/chia-network/chia:2.4.3
+```
+
+The example shows a ChiaNode (full_node) resource on v2.4.3 of chia, but this field is also available on other resources.

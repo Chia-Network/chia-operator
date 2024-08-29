@@ -14,6 +14,17 @@ spec:
     caSecretName: chiaca-secret # A kubernetes Secret containing certificate authority files
 ```
 
+## Replicas
+
+To specify the number of replicas that are in the resulting StatefulSet, you can update `.spec.replicas` with an integer number of replicas.
+
+```yaml
+spec:
+  replicas: 1
+```
+
+If you would like to ensure your replicas get scheduled on different kubernetes nodes, view the [Pod Affinity documentation.](all.md#pod-affinity)
+
 ## CHIA_ROOT storage
 
 `CHIA_ROOT` is an environment variable that tells chia services where to expect a data directory to be for local chia state. You can store your chia state persistently a couple of different ways: either with a host mount or a persistent volume claim.

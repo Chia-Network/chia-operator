@@ -44,26 +44,7 @@ spec:
 
 The `spec.secret` key specifies the name of the k8s Secret that will be created. The Secret will be created in the same namespace that the ChiaCA CR was created in. Apply this with `kubectl apply -f ca.yaml`
 
-The ChiaCA exists as an option of convenience, but if you have your own CA you'd like to use instead, you'll need to create a Secret that contains all the files in the `$CHIA_ROOT/config/ssl/ca` directory, like so:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: mainnet-ca
-data:
-  chia_ca.crt: >-
-    <redacted base64'd file output>
-  chia_ca.key: >-
-    <redacted base64'd file output>
-  private_ca.crt: >-
-    <redacted base64'd file output>
-  private_ca.key: >-
-    <redacted base64'd file output>
-type: Opaque
-```
-
-You only need to do this if you don't want to use the ChiaCA CR to make it for you.
+You can also specify a CA Secret without using the ChiaCA custom resource helper. [See the chiaca documentation.](docs/chiaca.md)
 
 #### full_node
 
