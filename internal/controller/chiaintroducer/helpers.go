@@ -6,6 +6,7 @@ package chiaintroducer
 
 import (
 	"fmt"
+	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
 	"strconv"
 
@@ -145,19 +146,12 @@ func getChiaEnv(introducer k8schianetv1.ChiaIntroducer) []corev1.EnvVar {
 	}
 
 	// network_port env var
-	if introducer.Spec.ChiaConfig.NetworkPort != nil && *introducer.Spec.ChiaConfig.NetworkPort != 0 {
-		env = append(env, corev1.EnvVar{
-			Name:  "network_port",
-			Value: strconv.Itoa(int(*introducer.Spec.ChiaConfig.NetworkPort)),
-		})
-	} else {
-		// network_port env var is required for introducers because it sets the introducer's full_node port in the config
-		// The default full_node port in the initial config is 8445, which will often need overwriting
-		env = append(env, corev1.EnvVar{
-			Name:  "network_port",
-			Value: strconv.Itoa(int(getFullNodePort(introducer))),
-		})
-	}
+	// network_port env var is required for introducers because it sets the introducer's full_node port in the config
+	// The default full_node port in the initial config is 8445, which will often need overwriting
+	env = append(env, corev1.EnvVar{
+		Name:  "network_port",
+		Value: strconv.Itoa(int(kube.GetFullNodePort(introducer.Spec.ChiaConfig.CommonSpecChia))),
+	})
 
 	// introducer_address env var
 	if introducer.Spec.ChiaConfig.IntroducerAddress != nil {

@@ -86,3 +86,14 @@ func GetChiaDaemonServicePorts() []corev1.ServicePort {
 		},
 	}
 }
+
+// GetFullNodePort determines the correct full_node port to use
+func GetFullNodePort(chia k8schianetv1.CommonSpecChia) int32 {
+	if chia.NetworkPort != nil {
+		return int32(*chia.NetworkPort)
+	}
+	if chia.Testnet != nil && *chia.Testnet {
+		return consts.TestnetNodePort
+	}
+	return consts.MainnetNodePort
+}

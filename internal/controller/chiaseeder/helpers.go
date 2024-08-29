@@ -6,6 +6,7 @@ package chiaseeder
 
 import (
 	"fmt"
+	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
 	"strconv"
 
@@ -237,14 +238,6 @@ func getChiaEnv(seeder k8schianetv1.ChiaSeeder) []corev1.EnvVar {
 	return env
 }
 
-// getFullNodePort determines the correct full_node port to use
-func getFullNodePort(seeder k8schianetv1.ChiaSeeder) int32 {
-	if seeder.Spec.ChiaConfig.Testnet != nil && *seeder.Spec.ChiaConfig.Testnet {
-		return consts.TestnetNodePort
-	}
-	return consts.MainnetNodePort
-}
-
 // getChiaPorts returns the ports to a chia container
 func getChiaPorts(seeder k8schianetv1.ChiaSeeder) []corev1.ContainerPort {
 	return []corev1.ContainerPort{
@@ -265,7 +258,7 @@ func getChiaPorts(seeder k8schianetv1.ChiaSeeder) []corev1.ContainerPort {
 		},
 		{
 			Name:          "peers",
-			ContainerPort: getFullNodePort(seeder),
+			ContainerPort: kube.GetFullNodePort(seeder.Spec.ChiaConfig.CommonSpecChia),
 			Protocol:      "TCP",
 		},
 		{

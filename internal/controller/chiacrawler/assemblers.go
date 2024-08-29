@@ -27,7 +27,7 @@ func assemblePeerService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 		Namespace: crawler.Namespace,
 		Ports: []corev1.ServicePort{
 			{
-				Port:       getFullNodePort(crawler),
+				Port:       kube.GetFullNodePort(crawler.Spec.ChiaConfig.CommonSpecChia),
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",
@@ -265,7 +265,7 @@ func assembleChiaContainer(crawler k8schianetv1.ChiaCrawler) corev1.Container {
 			},
 			{
 				Name:          "peers",
-				ContainerPort: getFullNodePort(crawler),
+				ContainerPort: kube.GetFullNodePort(crawler.Spec.ChiaConfig.CommonSpecChia),
 				Protocol:      "TCP",
 			},
 			{

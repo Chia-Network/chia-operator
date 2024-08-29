@@ -16,7 +16,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 )
 
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
@@ -216,12 +215,4 @@ func getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar
 	}
 
 	return env
-}
-
-// getFullNodePort determines the correct full node port to use
-func getFullNodePort(node k8schianetv1.ChiaNode) int32 {
-	if node.Spec.ChiaConfig.Testnet != nil && *node.Spec.ChiaConfig.Testnet {
-		return consts.TestnetNodePort
-	}
-	return consts.MainnetNodePort
 }
