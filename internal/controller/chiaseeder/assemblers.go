@@ -39,7 +39,7 @@ func assemblePeerService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 				Name:       "dns-tcp",
 			},
 			{
-				Port:       getFullNodePort(seeder),
+				Port:       kube.GetFullNodePort(seeder.Spec.ChiaConfig.CommonSpecChia),
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",

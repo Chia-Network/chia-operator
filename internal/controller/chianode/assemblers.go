@@ -27,7 +27,7 @@ func assemblePeerService(node k8schianetv1.ChiaNode) corev1.Service {
 		Namespace: node.Namespace,
 		Ports: []corev1.ServicePort{
 			{
-				Port:       getFullNodePort(node),
+				Port:       kube.GetFullNodePort(node.Spec.ChiaConfig.CommonSpecChia),
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",
@@ -302,7 +302,7 @@ func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode) core
 			},
 			{
 				Name:          "peers",
-				ContainerPort: getFullNodePort(node),
+				ContainerPort: kube.GetFullNodePort(node.Spec.ChiaConfig.CommonSpecChia),
 				Protocol:      "TCP",
 			},
 			{
