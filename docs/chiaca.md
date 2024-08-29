@@ -36,15 +36,15 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: my-ca
-data:
+stringData:
   chia_ca.crt: |
-    <redacted base64'd file output>
+    <redacted file output>
   chia_ca.key: |
-    <redacted base64'd file output>
+    <redacted file output>
   private_ca.crt: |
-    <redacted base64'd file output>
+    <redacted file output>
   private_ca.key: |
-    <redacted base64'd file output>
+    <redacted file output>
 type: Opaque
 ```
 
