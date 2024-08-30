@@ -174,6 +174,11 @@ func getChiaEnv(tl k8schianetv1.ChiaTimelord) []corev1.EnvVar {
 			Name:  "self_hostname",
 			Value: *tl.Spec.ChiaConfig.SelfHostname,
 		})
+	} else {
+		env = append(env, corev1.EnvVar{
+			Name:  "self_hostname",
+			Value: "0.0.0.0",
+		})
 	}
 
 	// node peer env var

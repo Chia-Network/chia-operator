@@ -212,6 +212,11 @@ func getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar
 			Name:  "self_hostname",
 			Value: *node.Spec.ChiaConfig.SelfHostname,
 		})
+	} else {
+		env = append(env, corev1.EnvVar{
+			Name:  "self_hostname",
+			Value: "0.0.0.0",
+		})
 	}
 
 	return env

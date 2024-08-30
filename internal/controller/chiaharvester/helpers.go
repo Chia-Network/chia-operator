@@ -248,6 +248,11 @@ func getChiaEnv(harvester k8schianetv1.ChiaHarvester) []corev1.EnvVar {
 			Name:  "self_hostname",
 			Value: *harvester.Spec.ChiaConfig.SelfHostname,
 		})
+	} else {
+		env = append(env, corev1.EnvVar{
+			Name:  "self_hostname",
+			Value: "0.0.0.0",
+		})
 	}
 
 	// recursive_plot_scan env var -- needed because all plot drives are just mounted as subdirs under `/plots`.
