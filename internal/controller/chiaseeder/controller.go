@@ -122,6 +122,39 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
+	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.AllService, true) {
+		srv := assembleAllService(seeder)
+		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder all-ports Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error reconciling seeder all-ports Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-all",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to GET ChiaSeeder all-ports Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				log.Error(err, fmt.Sprintf("ChiaSeederReconciler ChiaSeeder=%s unable to DELETE ChiaSeeder all-ports Service resource", req.NamespacedName))
+			}
+		}
+	}
+
 	if kube.ShouldMakeService(seeder.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(seeder)
 		if err := controllerutil.SetControllerReference(&seeder, &srv, r.Scheme); err != nil {

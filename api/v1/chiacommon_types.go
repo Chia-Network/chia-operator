@@ -129,6 +129,11 @@ type CommonSpecChia struct {
 	// +optional
 	RPCService Service `json:"rpcService,omitempty"`
 
+	// AllService defines settings for a Service that contains all the ports from the peer, daemon, and RPC Services installed with any Chia component resource.
+	// This Service will default to being enabled with a ClusterIP Service type.
+	// +optional
+	AllService Service `json:"allService,omitempty"`
+
 	// Periodic probe of container liveness.
 	// +optional
 	LivenessProbe *corev1.Probe `json:"livenessProbe,omitempty"`

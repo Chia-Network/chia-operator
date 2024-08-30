@@ -107,6 +107,39 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
+	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.AllService, true) {
+		srv := assembleAllService(farmer)
+		if err := controllerutil.SetControllerReference(&farmer, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer all-ports Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer all-ports Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-all",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to GET ChiaFarmer all-ports Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to DELETE ChiaFarmer all-ports Service resource", req.NamespacedName))
+			}
+		}
+	}
+
 	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(farmer)
 		if err := controllerutil.SetControllerReference(&farmer, &srv, r.Scheme); err != nil {

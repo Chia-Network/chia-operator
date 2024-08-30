@@ -106,6 +106,39 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		}
 	}
 
+	if kube.ShouldMakeService(introducer.Spec.ChiaConfig.AllService, true) {
+		srv := assembleAllService(introducer)
+		if err := controllerutil.SetControllerReference(&introducer, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer all-ports Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error reconciling introducer all-ports Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name) + "-all",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to GET ChiaIntroducer all-ports Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to DELETE ChiaIntroducer all-ports Service resource", req.NamespacedName))
+			}
+		}
+	}
+
 	if kube.ShouldMakeService(introducer.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(introducer)
 		if err := controllerutil.SetControllerReference(&introducer, &srv, r.Scheme); err != nil {

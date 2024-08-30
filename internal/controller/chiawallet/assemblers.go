@@ -57,6 +57,50 @@ func assemblePeerService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleAllService assembles the all-port Service resource for a ChiaWallet CR
+func assembleAllService(wallet k8schianetv1.ChiaWallet) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:      fmt.Sprintf(chiawalletNamePattern, wallet.Name) + "-all",
+		Namespace: wallet.Namespace,
+		Ports: []corev1.ServicePort{
+			{
+				Port:       consts.WalletPort,
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
+			},
+			{
+				Port:       consts.WalletRPCPort,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
+			},
+		},
+	}
+	inputs.Ports = append(inputs.Ports, kube.GetChiaDaemonServicePorts()...)
+
+	inputs.ServiceType = wallet.Spec.ChiaConfig.AllService.ServiceType
+	inputs.IPFamilyPolicy = wallet.Spec.ChiaConfig.AllService.IPFamilyPolicy
+	inputs.IPFamilies = wallet.Spec.ChiaConfig.AllService.IPFamilies
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if wallet.Spec.ChiaConfig.AllService.Labels != nil {
+		additionalServiceLabels = wallet.Spec.ChiaConfig.AllService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if wallet.Spec.ChiaConfig.AllService.Annotations != nil {
+		additionalServiceAnnotations = wallet.Spec.ChiaConfig.AllService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(wallet.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleDaemonService assembles the daemon Service resource for a ChiaWallet CR
 func assembleDaemonService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{

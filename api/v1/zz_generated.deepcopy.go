@@ -1235,6 +1235,7 @@ func (in *CommonSpecChia) DeepCopyInto(out *CommonSpecChia) {
 	in.PeerService.DeepCopyInto(&out.PeerService)
 	in.DaemonService.DeepCopyInto(&out.DaemonService)
 	in.RPCService.DeepCopyInto(&out.RPCService)
+	in.AllService.DeepCopyInto(&out.AllService)
 	if in.LivenessProbe != nil {
 		in, out := &in.LivenessProbe, &out.LivenessProbe
 		*out = new(corev1.Probe)

@@ -57,6 +57,50 @@ func assemblePeerService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleAllService assembles the all-port Service resource for a ChiaCrawler CR
+func assembleAllService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-all",
+		Namespace: crawler.Namespace,
+		Ports: []corev1.ServicePort{
+			{
+				Port:       kube.GetFullNodePort(crawler.Spec.ChiaConfig.CommonSpecChia),
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
+			},
+			{
+				Port:       consts.CrawlerRPCPort,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
+			},
+		},
+	}
+	inputs.Ports = append(inputs.Ports, kube.GetChiaDaemonServicePorts()...)
+
+	inputs.ServiceType = crawler.Spec.ChiaConfig.AllService.ServiceType
+	inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.AllService.IPFamilyPolicy
+	inputs.IPFamilies = crawler.Spec.ChiaConfig.AllService.IPFamilies
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if crawler.Spec.ChiaConfig.AllService.Labels != nil {
+		additionalServiceLabels = crawler.Spec.ChiaConfig.AllService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(crawler.Kind, crawler.ObjectMeta, crawler.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if crawler.Spec.ChiaConfig.AllService.Annotations != nil {
+		additionalServiceAnnotations = crawler.Spec.ChiaConfig.AllService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(crawler.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleDaemonService assembles the daemon Service resource for a ChiaCrawler CR
 func assembleDaemonService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{

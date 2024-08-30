@@ -86,7 +86,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			}
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord peer Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling timelord peer Service: %v", req.NamespacedName, err)
+			return *res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error reconciling timelord peer Service: %v", req.NamespacedName, err)
 		}
 	} else {
 		// Need to check if the resource exists and delete if it does
@@ -107,6 +107,39 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}
 
+	if kube.ShouldMakeService(tl.Spec.ChiaConfig.AllService, true) {
+		srv := assembleAllService(tl)
+		if err := controllerutil.SetControllerReference(&tl, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord all-ports Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error reconciling timelord all-ports Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-all",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Error(err, fmt.Sprintf("ChiaTimelordReconciler ChiaTimelord=%s unable to GET ChiaTimelord all-ports Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				log.Error(err, fmt.Sprintf("ChiaTimelordReconciler ChiaTimelord=%s unable to DELETE ChiaTimelord all-ports Service resource", req.NamespacedName))
+			}
+		}
+	}
+
 	if kube.ShouldMakeService(tl.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(tl)
 		if err := controllerutil.SetControllerReference(&tl, &srv, r.Scheme); err != nil {
@@ -119,7 +152,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			}
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord daemon Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling timelord daemon Service: %v", req.NamespacedName, err)
+			return *res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error reconciling timelord daemon Service: %v", req.NamespacedName, err)
 		}
 	} else {
 		// Need to check if the resource exists and delete if it does
@@ -154,7 +187,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			}
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord RPC Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling timelord RPC Service: %v", req.NamespacedName, err)
+			return *res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error reconciling timelord RPC Service: %v", req.NamespacedName, err)
 		}
 	} else {
 		// Need to check if the resource exists and delete if it does
@@ -189,7 +222,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			}
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&tl, corev1.EventTypeWarning, "Failed", "Failed to create timelord metrics Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling timelord chia-exporter Service: %v", req.NamespacedName, err)
+			return *res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error reconciling timelord chia-exporter Service: %v", req.NamespacedName, err)
 		}
 	} else {
 		// Need to check if the resource exists and delete if it does

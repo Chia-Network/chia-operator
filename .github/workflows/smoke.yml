@@ -105,6 +105,15 @@ jobs:
           fi
           echo "Expected 1 endpoint, found $service_endpoints_number"
 
+      - name: Check to make sure ChiaNode all-port Service has one endpoint
+        run: |
+          service_endpoints_number=$(kubectl get endpoints chianode-test-node-all -o json | jq '.subsets[].addresses | length')
+          if [ "$service_endpoints_number" -ne 1 ]; then
+            echo "ChiaNode all-port Service was found to have $service_endpoints_number endpoints, expected 1"
+            exit 1
+          fi
+          echo "Expected 1 endpoint, found $service_endpoints_number"
+
       - name: Check to make sure ChiaNode RPC Service has one endpoint
         run: |
           service_endpoints_number=$(kubectl get endpoints chianode-test-node-rpc -o json | jq '.subsets[].addresses | length')

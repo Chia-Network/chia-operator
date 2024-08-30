@@ -62,6 +62,50 @@ func assemblePeerService(node k8schianetv1.ChiaNode) corev1.Service {
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleAllService assembles the all-port Service resource for a ChiaNode CR
+func assembleAllService(node k8schianetv1.ChiaNode) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-all",
+		Namespace: node.Namespace,
+		Ports: []corev1.ServicePort{
+			{
+				Port:       kube.GetFullNodePort(node.Spec.ChiaConfig.CommonSpecChia),
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
+			},
+			{
+				Port:       consts.NodeRPCPort,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
+			},
+		},
+	}
+	inputs.Ports = append(inputs.Ports, kube.GetChiaDaemonServicePorts()...)
+
+	inputs.ServiceType = node.Spec.ChiaConfig.AllService.ServiceType
+	inputs.IPFamilyPolicy = node.Spec.ChiaConfig.AllService.IPFamilyPolicy
+	inputs.IPFamilies = node.Spec.ChiaConfig.AllService.IPFamilies
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if node.Spec.ChiaConfig.AllService.Labels != nil {
+		additionalServiceLabels = node.Spec.ChiaConfig.AllService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if node.Spec.ChiaConfig.AllService.Annotations != nil {
+		additionalServiceAnnotations = node.Spec.ChiaConfig.AllService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(node.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleDaemonService assembles the daemon Service resource for a ChiaNode CR
 func assembleDaemonService(node k8schianetv1.ChiaNode) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
