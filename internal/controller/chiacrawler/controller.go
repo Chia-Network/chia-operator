@@ -105,6 +105,39 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 	}
 
+	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.AllService, true) {
+		srv := assembleAllService(crawler)
+		if err := controllerutil.SetControllerReference(&crawler, &srv, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
+		if err != nil {
+			if res == nil {
+				res = &reconcile.Result{}
+			}
+			metrics.OperatorErrors.Add(1.0)
+			r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to create crawler all-ports Service -- Check operator logs.")
+			return *res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error reconciling crawler all-ports Service: %v", req.NamespacedName, err)
+		}
+	} else {
+		// Need to check if the resource exists and delete if it does
+		var srv corev1.Service
+		err := r.Get(ctx, types.NamespacedName{
+			Namespace: req.NamespacedName.Namespace,
+			Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-all",
+		}, &srv)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Error(err, fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s unable to GET ChiaCrawler all-ports Service resource", req.NamespacedName))
+			}
+		} else {
+			err = r.Delete(ctx, &srv)
+			if err != nil {
+				log.Error(err, fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s unable to DELETE ChiaCrawler all-ports Service resource", req.NamespacedName))
+			}
+		}
+	}
+
 	if kube.ShouldMakeService(crawler.Spec.ChiaConfig.DaemonService, true) {
 		srv := assembleDaemonService(crawler)
 		if err := controllerutil.SetControllerReference(&crawler, &srv, r.Scheme); err != nil {

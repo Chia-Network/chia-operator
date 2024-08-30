@@ -74,6 +74,62 @@ func assemblePeerService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleAllService assembles the all-port Service resource for a ChiaSeeder CR
+func assembleAllService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:      fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-all",
+		Namespace: seeder.Namespace,
+		Ports: []corev1.ServicePort{
+			{
+				Port:       53,
+				TargetPort: intstr.FromString("dns"),
+				Protocol:   "UDP",
+				Name:       "dns",
+			},
+			{
+				Port:       53,
+				TargetPort: intstr.FromString("dns-tcp"),
+				Protocol:   "TCP",
+				Name:       "dns-tcp",
+			},
+			{
+				Port:       kube.GetFullNodePort(seeder.Spec.ChiaConfig.CommonSpecChia),
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
+			},
+			{
+				Port:       consts.CrawlerRPCPort,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
+			},
+		},
+	}
+	inputs.Ports = append(inputs.Ports, kube.GetChiaDaemonServicePorts()...)
+
+	inputs.ServiceType = seeder.Spec.ChiaConfig.AllService.ServiceType
+	inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.AllService.IPFamilyPolicy
+	inputs.IPFamilies = seeder.Spec.ChiaConfig.AllService.IPFamilies
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if seeder.Spec.ChiaConfig.AllService.Labels != nil {
+		additionalServiceLabels = seeder.Spec.ChiaConfig.AllService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(seeder.Kind, seeder.ObjectMeta, seeder.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if seeder.Spec.ChiaConfig.AllService.Annotations != nil {
+		additionalServiceAnnotations = seeder.Spec.ChiaConfig.AllService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(seeder.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleDaemonService assembles the daemon Service resource for a ChiaSeeder CR
 func assembleDaemonService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{

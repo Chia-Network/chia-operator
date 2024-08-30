@@ -970,6 +970,51 @@ spec:
                 description: ChiaConfig defines the configuration options available
                   to Chia component containers
                 properties:
+                  allService:
+                    description: |-
+                      AllService defines settings for a Service that contains all the ports from the peer, daemon, and RPC Services installed with any Chia component resource.
+                      This Service will default to being enabled with a ClusterIP Service type.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations is a map of string keys and values
+                          to attach to created objects
+                        type: object
+                      enabled:
+                        description: Enabled is a boolean selector for a Service if
+                          it should be generated.
+                        type: boolean
+                      ipFamilies:
+                        description: IPFamilies represents a list of IP families (IPv4
+                          and/or IPv6) required by a Service
+                        items:
+                          description: |-
+                            IPFamily represents the IP Family (IPv4 or IPv6). This type is used
+                            to express the family of an IP expressed by a type (e.g. service.spec.ipFamilies).
+                          type: string
+                        type: array
+                      ipFamilyPolicy:
+                        description: IPFamilyPolicy represents the dual-stack-ness
+                          requested or required by a Service
+                        type: string
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels is a map of string keys and values to
+                          attach to created objects
+                        type: object
+                      rollIntoPeerService:
+                        description: |-
+                          RollIntoPeerService tells the controller to not actually generate this Service, but instead roll the Service ports of this Service into the peer Service.
+                          The peer Service is often considered the primary Service generated for a chia resource, as it is the most likely Service to expose publicly.
+                          This option is default, and only provides its functionality on chia-healthcheck Services. It may be included to other Services someday if a use case arises.
+                        type: boolean
+                      type:
+                        description: ServiceType is the Type of the Service. Defaults
+                          to ClusterIP
+                        type: string
+                    type: object
                   caSecretName:
                     description: CASecretName is the name of the secret that contains
                       the CA crt and key. Not required for introducers.

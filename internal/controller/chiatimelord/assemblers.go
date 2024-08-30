@@ -57,6 +57,50 @@ func assemblePeerService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleAllService assembles the all-port Service resource for a ChiaTimelord CR
+func assembleAllService(timelord k8schianetv1.ChiaTimelord) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:      fmt.Sprintf(chiatimelordNamePattern, timelord.Name) + "-all",
+		Namespace: timelord.Namespace,
+		Ports: []corev1.ServicePort{
+			{
+				Port:       consts.TimelordPort,
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
+			},
+			{
+				Port:       consts.TimelordRPCPort,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
+			},
+		},
+	}
+	inputs.Ports = append(inputs.Ports, kube.GetChiaDaemonServicePorts()...)
+
+	inputs.ServiceType = timelord.Spec.ChiaConfig.AllService.ServiceType
+	inputs.IPFamilyPolicy = timelord.Spec.ChiaConfig.AllService.IPFamilyPolicy
+	inputs.IPFamilies = timelord.Spec.ChiaConfig.AllService.IPFamilies
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if timelord.Spec.ChiaConfig.AllService.Labels != nil {
+		additionalServiceLabels = timelord.Spec.ChiaConfig.AllService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(timelord.Kind, timelord.ObjectMeta, timelord.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(timelord.Kind, timelord.ObjectMeta, timelord.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if timelord.Spec.ChiaConfig.AllService.Annotations != nil {
+		additionalServiceAnnotations = timelord.Spec.ChiaConfig.AllService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(timelord.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleDaemonService assembles the daemon Service resource for a ChiaTimelord CR
 func assembleDaemonService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{

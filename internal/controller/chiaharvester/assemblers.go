@@ -57,6 +57,50 @@ func assemblePeerService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleAllService assembles the all-port Service resource for a ChiaHarvester CR
+func assembleAllService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:      fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-all",
+		Namespace: harvester.Namespace,
+		Ports: []corev1.ServicePort{
+			{
+				Port:       consts.HarvesterPort,
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
+			},
+			{
+				Port:       consts.HarvesterRPCPort,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
+			},
+		},
+	}
+	inputs.Ports = append(inputs.Ports, kube.GetChiaDaemonServicePorts()...)
+
+	inputs.ServiceType = harvester.Spec.ChiaConfig.AllService.ServiceType
+	inputs.IPFamilyPolicy = harvester.Spec.ChiaConfig.AllService.IPFamilyPolicy
+	inputs.IPFamilies = harvester.Spec.ChiaConfig.AllService.IPFamilies
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if harvester.Spec.ChiaConfig.AllService.Labels != nil {
+		additionalServiceLabels = harvester.Spec.ChiaConfig.AllService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if harvester.Spec.ChiaConfig.AllService.Annotations != nil {
+		additionalServiceAnnotations = harvester.Spec.ChiaConfig.AllService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(harvester.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleDaemonService assembles the daemon Service resource for a ChiaHarvester CR
 func assembleDaemonService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{

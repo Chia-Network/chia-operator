@@ -97,7 +97,7 @@ const (
 	// WalletPort defines the port for wallet instances
 	WalletPort = 8449
 
-	// walletRPCPort defines the port for the wallet RPC
+	// WalletRPCPort defines the port for the wallet RPC
 	WalletRPCPort = 9256
 
 	// ChiaExporterPort defines the port for Chia Exporter instances

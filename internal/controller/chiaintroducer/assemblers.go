@@ -27,7 +27,7 @@ func assemblePeerService(introducer k8schianetv1.ChiaIntroducer) corev1.Service 
 		Namespace: introducer.Namespace,
 		Ports: []corev1.ServicePort{
 			{
-				Port:       getFullNodePort(introducer),
+				Port:       kube.GetFullNodePort(introducer.Spec.ChiaConfig.CommonSpecChia),
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",
@@ -51,6 +51,44 @@ func assemblePeerService(introducer k8schianetv1.ChiaIntroducer) corev1.Service 
 	var additionalServiceAnnotations = make(map[string]string)
 	if introducer.Spec.ChiaConfig.PeerService.Annotations != nil {
 		additionalServiceAnnotations = introducer.Spec.ChiaConfig.PeerService.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(introducer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	return kube.AssembleCommonService(inputs)
+}
+
+// assembleAllService assembles the all-port Service resource for a ChiaIntroducer CR
+func assembleAllService(introducer k8schianetv1.ChiaIntroducer) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name) + "-all",
+		Namespace: introducer.Namespace,
+		Ports: []corev1.ServicePort{
+			{
+				Port:       kube.GetFullNodePort(introducer.Spec.ChiaConfig.CommonSpecChia),
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
+			},
+		},
+	}
+	inputs.Ports = append(inputs.Ports, kube.GetChiaDaemonServicePorts()...)
+
+	inputs.ServiceType = introducer.Spec.ChiaConfig.AllService.ServiceType
+	inputs.IPFamilyPolicy = introducer.Spec.ChiaConfig.AllService.IPFamilyPolicy
+	inputs.IPFamilies = introducer.Spec.ChiaConfig.AllService.IPFamilies
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if introducer.Spec.ChiaConfig.AllService.Labels != nil {
+		additionalServiceLabels = introducer.Spec.ChiaConfig.AllService.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(introducer.Kind, introducer.ObjectMeta, introducer.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if introducer.Spec.ChiaConfig.AllService.Annotations != nil {
+		additionalServiceAnnotations = introducer.Spec.ChiaConfig.AllService.Annotations
 	}
 	inputs.Annotations = kube.CombineMaps(introducer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
