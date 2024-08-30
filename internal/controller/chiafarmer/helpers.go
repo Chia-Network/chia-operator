@@ -188,6 +188,11 @@ func getChiaEnv(farmer k8schianetv1.ChiaFarmer) []corev1.EnvVar {
 			Name:  "self_hostname",
 			Value: *farmer.Spec.ChiaConfig.SelfHostname,
 		})
+	} else {
+		env = append(env, corev1.EnvVar{
+			Name:  "self_hostname",
+			Value: "0.0.0.0",
+		})
 	}
 
 	// keys env var
