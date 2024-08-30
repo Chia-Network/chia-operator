@@ -39,25 +39,25 @@ const (
 	DefaultChiaCAImageName = "ghcr.io/chia-network/chia-operator/ca-gen"
 
 	// DefaultChiaCAImageTag contains the default tag name for the ca-gen image
-	DefaultChiaCAImageTag = "latest"
+	DefaultChiaCAImageTag = "0.7.4"
 
 	// DefaultChiaImageName contains the default image name for the chia-docker image
 	DefaultChiaImageName = "ghcr.io/chia-network/chia"
 
 	// DefaultChiaImageTag contains the default tag name for the chia-docker image
-	DefaultChiaImageTag = "latest"
+	DefaultChiaImageTag = "2.4.3"
 
 	// DefaultChiaExporterImageName contains the default image name for the chia-exporter image
 	DefaultChiaExporterImageName = "ghcr.io/chia-network/chia-exporter"
 
 	// DefaultChiaExporterImageTag contains the default tag name for the chia-exporter image
-	DefaultChiaExporterImageTag = "latest"
+	DefaultChiaExporterImageTag = "0.14.3"
 
 	// DefaultChiaHealthcheckImageName contains the default image name for the chia-healthcheck image
 	DefaultChiaHealthcheckImageName = "ghcr.io/chia-network/chia-healthcheck"
 
 	// DefaultChiaHealthcheckImageTag contains the default tag name for the chia-healthcheck image
-	DefaultChiaHealthcheckImageTag = "latest"
+	DefaultChiaHealthcheckImageTag = "0.2.1"
 )
 
 const (
