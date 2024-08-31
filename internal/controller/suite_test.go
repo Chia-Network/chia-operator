@@ -7,6 +7,7 @@ package controller
 import (
 	"context"
 	"github.com/chia-network/chia-operator/internal/controller/chiaca"
+	"github.com/chia-network/chia-operator/internal/controller/chiacrawler"
 	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
 	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
 	"github.com/chia-network/chia-operator/internal/controller/chiaintroducer"
@@ -88,6 +89,13 @@ var _ = BeforeSuite(func() {
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
 		Recorder: k8sManager.GetEventRecorderFor("chiaca-controller"),
+	}).SetupWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&chiacrawler.ChiaCrawlerReconciler{
+		Client:   k8sManager.GetClient(),
+		Scheme:   k8sManager.GetScheme(),
+		Recorder: k8sManager.GetEventRecorderFor("chiacrawler-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
