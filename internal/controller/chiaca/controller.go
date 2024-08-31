@@ -85,7 +85,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to reconcile ChiaCA ServiceAccount -- Check operator logs.")
-		return res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Role
@@ -100,7 +100,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to reconcile ChiaCA Role -- Check operator logs.")
-		return res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble RoleBinding
@@ -115,7 +115,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to reconcile ChiaCA RoleBinding -- Check operator logs.")
-		return res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s %v", req.NamespacedName, err)
 	}
 
 	// Query CA Secret
@@ -139,7 +139,7 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to reconcile ChiaCA Job -- Check operator logs.")
-			return res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
+			return res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s %v", req.NamespacedName, err)
 		}
 
 		// Loop to determine if Secret was made, set to Ready once done
