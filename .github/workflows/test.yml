@@ -9,10 +9,9 @@ permissions:
 
 jobs:
   test:
-    name: Run tests
+    name: Run lint and test
     runs-on: "ubuntu-latest"
     timeout-minutes: 10
-    container: golang:1
     steps:
       - name: Add safe git directory
         uses: Chia-Network/actions/git-mark-workspace-safe@main
