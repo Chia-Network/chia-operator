@@ -266,7 +266,7 @@ func assembleChiaContainer(introducer k8schianetv1.ChiaIntroducer) corev1.Contai
 			},
 			{
 				Name:          "peers",
-				ContainerPort: getFullNodePort(introducer),
+				ContainerPort: kube.GetFullNodePort(introducer.Spec.ChiaConfig.CommonSpecChia),
 				Protocol:      "TCP",
 			},
 		},
