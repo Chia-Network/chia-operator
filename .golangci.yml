@@ -1,0 +1,43 @@
+run:
+  timeout: 5m
+  allow-parallel-runners: true
+
+issues:
+  # don't skip warning about doc comments
+  # don't exclude the default set of lint
+  exclude-use-default: false
+  # restore some of the defaults
+  # (fill in the rest as needed)
+  exclude-rules:
+    - path: "api/*"
+      linters:
+        - dupl
+        - lll
+    - path: "internal/*"
+      linters:
+        - dupl
+        - lll
+linters:
+  disable-all: false
+  disable:
+    - goimports # disabled temporarily because the changes required here are too extensive for the PR this was introduced in
+  enable:
+    - dupl
+    - errcheck
+    - exportloopref
+    - ginkgolinter
+    - goconst
+    - gocyclo
+    - gofmt
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    - prealloc
+    - staticcheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused

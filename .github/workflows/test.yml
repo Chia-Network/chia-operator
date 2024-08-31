@@ -21,7 +21,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Lint/test
+      - name: Lint
+        run: |
+          make lint
+
+      - name: Test
         run: |
           make test
 
