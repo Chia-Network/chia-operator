@@ -20,6 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"strings"
 	"time"
 )
 
@@ -88,6 +89,9 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			ca.Status.Ready = true
 			err = r.Status().Update(ctx, &ca)
 			if err != nil {
+				if strings.Contains(err.Error(), kube.ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+				}
 				metrics.OperatorErrors.Add(1.0)
 				log.Error(err, "encountered error updating ChiaCA status")
 				return ctrl.Result{}, err

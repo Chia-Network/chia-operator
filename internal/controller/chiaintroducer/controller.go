@@ -20,6 +20,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"strings"
+	"time"
 )
 
 // ChiaIntroducerReconciler reconciles a ChiaIntroducer object
@@ -166,6 +168,9 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	introducer.Status.Ready = true
 	err = r.Status().Update(ctx, &introducer)
 	if err != nil {
+		if strings.Contains(err.Error(), kube.ObjectModifiedTryAgainError) {
+			return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+		}
 		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to update ChiaIntroducer status", req.NamespacedName))
 		return ctrl.Result{}, err

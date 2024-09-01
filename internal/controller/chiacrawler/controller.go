@@ -20,6 +20,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"strings"
+	"time"
 )
 
 // ChiaCrawlerReconciler reconciles a ChiaCrawler object
@@ -180,6 +182,9 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	crawler.Status.Ready = true
 	err = r.Status().Update(ctx, &crawler)
 	if err != nil {
+		if strings.Contains(err.Error(), kube.ObjectModifiedTryAgainError) {
+			return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+		}
 		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaCrawlerReconciler ChiaCrawler=%s unable to update ChiaCrawler status", req.NamespacedName))
 		return ctrl.Result{}, err
