@@ -9,6 +9,7 @@ import (
 	"fmt"
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -54,26 +55,26 @@ func ReconcileService(ctx context.Context, c client.Client, service k8schianetv1
 	} else if err != nil {
 		// Getting Service failed, but it wasn't because it doesn't exist, can't do anything
 		return ctrl.Result{}, fmt.Errorf("error getting existing Service \"%s\": %v", desired.Name, err)
-	}
-
-	// Service exists, so we need to update it if there are any changes, or delete if it was disabled
-	if ensureServiceExists {
-		desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
-		if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
-			current.Labels = desired.Labels
-			current.Annotations = desiredAnnotations
-			current.Spec = desired.Spec
-			if err := c.Update(ctx, &current); err != nil {
-				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
-					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
-				}
-				return ctrl.Result{}, fmt.Errorf("error updating Service \"%s\": %v", desired.Name, err)
-			}
-		}
 	} else {
-		klog.Info("Deleting Service because it was disabled")
-		if err := c.Delete(ctx, &current); err != nil {
-			return ctrl.Result{}, fmt.Errorf("error deleting Service \"%s\": %v", desired.Name, err)
+		// Service exists, so we need to update it if there are any changes, or delete if it was disabled
+		if ensureServiceExists {
+			desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
+			if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
+				current.Labels = desired.Labels
+				current.Annotations = desiredAnnotations
+				current.Spec = desired.Spec
+				if err := c.Update(ctx, &current); err != nil {
+					if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+						return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+					}
+					return ctrl.Result{}, fmt.Errorf("error updating Service \"%s\": %v", desired.Name, err)
+				}
+			}
+		} else {
+			klog.Info("Deleting Service because it was disabled")
+			if err := c.Delete(ctx, &current); err != nil {
+				return ctrl.Result{}, fmt.Errorf("error deleting Service \"%s\": %v", desired.Name, err)
+			}
 		}
 	}
 
@@ -97,19 +98,19 @@ func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.De
 		}
 	} else if err != nil {
 		return ctrl.Result{}, fmt.Errorf("error getting existing Deployment \"%s\": %v", desired.Name, err)
-	}
-
-	// Deployment exists, so we need to update it if there are any changes
-	desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
-	if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
-		current.Labels = desired.Labels
-		current.Annotations = desiredAnnotations
-		current.Spec = desired.Spec
-		if err := c.Update(ctx, &current); err != nil {
-			if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
-				return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+	} else {
+		// Deployment exists, so we need to update it if there are any changes
+		desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
+		if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
+			current.Labels = desired.Labels
+			current.Annotations = desiredAnnotations
+			current.Spec = desired.Spec
+			if err := c.Update(ctx, &current); err != nil {
+				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+				}
+				return ctrl.Result{}, fmt.Errorf("error updating Deployment \"%s\": %v", desired.Name, err)
 			}
-			return ctrl.Result{}, fmt.Errorf("error updating Deployment \"%s\": %v", desired.Name, err)
 		}
 	}
 
@@ -133,19 +134,19 @@ func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.S
 		}
 	} else if err != nil {
 		return ctrl.Result{}, fmt.Errorf("error getting existing StatefulSet \"%s\": %v", desired.Name, err)
-	}
-
-	// StatefulSet exists, so we need to update it if there are any changes
-	desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
-	if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
-		current.Labels = desired.Labels
-		current.Annotations = desired.Annotations
-		current.Spec = desired.Spec
-		if err := c.Update(ctx, &current); err != nil {
-			if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
-				return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+	} else {
+		// StatefulSet exists, so we need to update it if there are any changes
+		desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
+		if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
+			current.Labels = desired.Labels
+			current.Annotations = desired.Annotations
+			current.Spec = desired.Spec
+			if err := c.Update(ctx, &current); err != nil {
+				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+				}
+				return ctrl.Result{}, fmt.Errorf("error updating StatefulSet \"%s\": %v", desired.Name, err)
 			}
-			return ctrl.Result{}, fmt.Errorf("error updating StatefulSet \"%s\": %v", desired.Name, err)
 		}
 	}
 
@@ -170,6 +171,8 @@ func ReconcileServiceAccount(ctx context.Context, c client.Client, desired corev
 		return ctrl.Result{}, fmt.Errorf("error getting existing ServiceAccount \"%s\": %v", desired.Name, err)
 	}
 
+	// No need to update ServiceAccounts if they already exist because we don't manage any of the fields on a ServiceAccount
+
 	return ctrl.Result{}, nil
 }
 
@@ -189,6 +192,17 @@ func ReconcileRole(ctx context.Context, c client.Client, desired rbacv1.Role) (r
 		}
 	} else if err != nil {
 		return ctrl.Result{}, fmt.Errorf("error getting existing Role \"%s\": %v", desired.Name, err)
+	} else {
+		// Role exists, so we need to update it if it's changed
+		if !reflect.DeepEqual(current.Rules, desired.Rules) {
+			current.Rules = desired.Rules
+			if err := c.Update(ctx, &current); err != nil {
+				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+				}
+				return ctrl.Result{}, fmt.Errorf("error updating Role \"%s\": %v", desired.Name, err)
+			}
+		}
 	}
 
 	return ctrl.Result{}, nil
@@ -210,6 +224,18 @@ func ReconcileRoleBinding(ctx context.Context, c client.Client, desired rbacv1.R
 		}
 	} else if err != nil {
 		return ctrl.Result{}, fmt.Errorf("error getting existing RoleBinding \"%s\": %v", desired.Name, err)
+	} else {
+		// RoleBinding exists, so we need to update it if it's changed
+		if !reflect.DeepEqual(current.Subjects, desired.Subjects) || !reflect.DeepEqual(current.RoleRef, desired.RoleRef) {
+			current.RoleRef = desired.RoleRef
+			current.Subjects = desired.Subjects
+			if err := c.Update(ctx, &current); err != nil {
+				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+				}
+				return ctrl.Result{}, fmt.Errorf("error updating RoleBinding \"%s\": %v", desired.Name, err)
+			}
+		}
 	}
 
 	return ctrl.Result{}, nil
@@ -231,6 +257,30 @@ func ReconcileJob(ctx context.Context, c client.Client, desired batchv1.Job) (re
 		}
 	} else if err != nil {
 		return ctrl.Result{}, fmt.Errorf("error getting existing Job \"%s\": %v", desired.Name, err)
+	} else {
+		// Job exists, so we need to update it if there are any Pod env changes, which might specify a new CA Secret to make -- since the pod template in a Job is immutable, we're just going to delete and create a new Job
+		currentContainerEnv := current.Spec.Template.Spec.Containers[0].Env
+		desiredContainerEnv := desired.Spec.Template.Spec.Containers[0].Env
+		if !reflect.DeepEqual(currentContainerEnv, desiredContainerEnv) {
+			// Delete policy cleans up the old Job's Pods
+			deletePolicy := v1.DeletePropagationBackground
+			deleteOptions := &client.DeleteOptions{
+				PropagationPolicy: &deletePolicy,
+			}
+			if err := c.Delete(ctx, &current, deleteOptions); err != nil {
+				return ctrl.Result{}, fmt.Errorf("error deleting old Job \"%s\": %v", desired.Name, err)
+			}
+
+			// TODO could probably have a fancier mechanism of waiting for the old Job to be deleted
+			time.Sleep(5 * time.Second)
+
+			if err := c.Create(ctx, &desired); err != nil {
+				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+				}
+				return ctrl.Result{}, fmt.Errorf("error creating Job \"%s\": %v", desired.Name, err)
+			}
+		}
 	}
 
 	return ctrl.Result{}, nil
@@ -260,21 +310,21 @@ func ReconcilePersistentVolumeClaim(ctx context.Context, c client.Client, storag
 	} else if err != nil {
 		// Getting PVC failed, but it wasn't because it doesn't exist, can't continue
 		return ctrl.Result{}, fmt.Errorf("error getting existing PersistentVolumeClaim \"%s\": %v", desired.Name, err)
-	}
-
-	// PVC exists, so we need to update it if GeneratePersistentVolumes is enabled
-	// For safety reasons we never delete PVCs, however, chia-operator users should clean up their own storage if desired
-	if ensurePVCExists {
-		desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
-		if !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) || !reflect.DeepEqual(current.Spec.Resources.Requests, desired.Spec.Resources.Requests) {
-			current.Labels = desired.Labels
-			current.Annotations = desiredAnnotations
-			current.Spec.Resources.Requests = desired.Spec.Resources.Requests
-			if err := c.Update(ctx, &current); err != nil {
-				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
-					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+	} else {
+		// PVC exists, so we need to update it if GeneratePersistentVolumes is enabled
+		// For safety reasons we never delete PVCs, however, chia-operator users should clean up their own storage if desired
+		if ensurePVCExists {
+			desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
+			if !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) || !reflect.DeepEqual(current.Spec.Resources.Requests, desired.Spec.Resources.Requests) {
+				current.Labels = desired.Labels
+				current.Annotations = desiredAnnotations
+				current.Spec.Resources.Requests = desired.Spec.Resources.Requests
+				if err := c.Update(ctx, &current); err != nil {
+					if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+						return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+					}
+					return ctrl.Result{}, fmt.Errorf("error updating PersistentVolumeClaim \"%s\": %v", desired.Name, err)
 				}
-				return ctrl.Result{}, fmt.Errorf("error updating PersistentVolumeClaim \"%s\": %v", desired.Name, err)
 			}
 		}
 	}
