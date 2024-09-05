@@ -48,7 +48,7 @@ func getChiaVolumes(farmer k8schianetv1.ChiaFarmer) []corev1.Volume {
 			},
 		})
 	} else {
-		v = append(v, kube.GetChiaRootVolume(farmer.Spec.Storage))
+		v = append(v, kube.GetExistingChiaRootVolume(farmer.Spec.Storage))
 	}
 
 	// Add sidecar volumes if any exist

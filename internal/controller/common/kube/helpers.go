@@ -105,10 +105,12 @@ func GetFullNodePort(chia k8schianetv1.CommonSpecChia) int32 {
 	return consts.MainnetNodePort
 }
 
-// GetChiaRootVolume returns a corev1 API Volume specification for CHIA_ROOT.
+// GetExistingChiaRootVolume returns a corev1 API Volume specification for CHIA_ROOT.
 // If both a PV and hostPath volume are specified for CHIA_ROOT, the PV will take precedence.
 // If both configs are empty, this will fall back to emptyDir so sidecars can mount CHIA_ROOT.
-func GetChiaRootVolume(storage *k8schianetv1.StorageConfig) corev1.Volume {
+// NOTE: This function does not handle the mode where the controller generates a CHIA_ROOT PVC, itself.
+// Therefore, if ShouldMakeVolumeClaim is true, specifying the PVC's name should be handled in the controller.
+func GetExistingChiaRootVolume(storage *k8schianetv1.StorageConfig) corev1.Volume {
 	volumeName := "chiaroot"
 	if storage != nil && storage.ChiaRoot != nil {
 		if storage.ChiaRoot.PersistentVolumeClaim != nil && storage.ChiaRoot.PersistentVolumeClaim.ClaimName != "" {

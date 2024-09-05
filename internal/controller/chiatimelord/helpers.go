@@ -38,7 +38,7 @@ func getChiaVolumes(tl k8schianetv1.ChiaTimelord) []corev1.Volume {
 			},
 		})
 	} else {
-		v = append(v, kube.GetChiaRootVolume(tl.Spec.Storage))
+		v = append(v, kube.GetExistingChiaRootVolume(tl.Spec.Storage))
 	}
 
 	// Add sidecar volumes if any exist

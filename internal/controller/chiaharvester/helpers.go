@@ -39,7 +39,7 @@ func getChiaVolumes(harvester k8schianetv1.ChiaHarvester) []corev1.Volume {
 			},
 		})
 	} else {
-		v = append(v, kube.GetChiaRootVolume(harvester.Spec.Storage))
+		v = append(v, kube.GetExistingChiaRootVolume(harvester.Spec.Storage))
 	}
 
 	// hostPath and PVC plot volumes

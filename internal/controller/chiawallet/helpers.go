@@ -73,7 +73,7 @@ func getChiaVolumes(wallet k8schianetv1.ChiaWallet) []corev1.Volume {
 			},
 		})
 	} else {
-		v = append(v, kube.GetChiaRootVolume(wallet.Spec.Storage))
+		v = append(v, kube.GetExistingChiaRootVolume(wallet.Spec.Storage))
 	}
 
 	// Add sidecar volumes if any exist

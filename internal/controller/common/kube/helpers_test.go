@@ -182,17 +182,17 @@ func TestGetChiaRootVolume(t *testing.T) {
 	}
 
 	// emptyDir case - nil storage config
-	actual := GetChiaRootVolume(nil)
+	actual := GetExistingChiaRootVolume(nil)
 	require.Equal(t, expected, actual, "expected emptyDir volume - nil storage config")
 
 	// emptyDir case - nil ChiaRoot config
-	actual = GetChiaRootVolume(&k8schianetv1.StorageConfig{
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
 		ChiaRoot: nil,
 	})
 	require.Equal(t, expected, actual, "expected emptyDir volume - nil ChiaRoot config")
 
 	// emptyDir case - nil pvc and hpv configs
-	actual = GetChiaRootVolume(&k8schianetv1.StorageConfig{
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
 		ChiaRoot: &k8schianetv1.ChiaRootConfig{
 			PersistentVolumeClaim: nil,
 			HostPathVolume:        nil,
@@ -201,7 +201,7 @@ func TestGetChiaRootVolume(t *testing.T) {
 	require.Equal(t, expected, actual, "expected emptyDir volume - nil PVC and HostPathVolume configs")
 
 	// emptyDir case - empty claim name
-	actual = GetChiaRootVolume(&k8schianetv1.StorageConfig{
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
 		ChiaRoot: &k8schianetv1.ChiaRootConfig{
 			PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
 				ClaimName: "",
@@ -211,7 +211,7 @@ func TestGetChiaRootVolume(t *testing.T) {
 	require.Equal(t, expected, actual, "expected emptyDir volume - empty claim name")
 
 	// emptyDir case - empty host path
-	actual = GetChiaRootVolume(&k8schianetv1.StorageConfig{
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
 		ChiaRoot: &k8schianetv1.ChiaRootConfig{
 			HostPathVolume: &k8schianetv1.HostPathVolumeConfig{
 				Path: "",
@@ -229,7 +229,7 @@ func TestGetChiaRootVolume(t *testing.T) {
 			},
 		},
 	}
-	actual = GetChiaRootVolume(&k8schianetv1.StorageConfig{
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
 		ChiaRoot: &k8schianetv1.ChiaRootConfig{
 			PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
 				ClaimName: "testname",
@@ -247,7 +247,7 @@ func TestGetChiaRootVolume(t *testing.T) {
 			},
 		},
 	}
-	actual = GetChiaRootVolume(&k8schianetv1.StorageConfig{
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
 		ChiaRoot: &k8schianetv1.ChiaRootConfig{
 			HostPathVolume: &k8schianetv1.HostPathVolumeConfig{
 				Path: "testpath",
