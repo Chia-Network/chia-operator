@@ -30,46 +30,18 @@ func getChiaVolumes(seeder k8schianetv1.ChiaSeeder) []corev1.Volume {
 		})
 	}
 
-	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
-	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
-	var chiaRootAdded = false
-	if seeder.Spec.Storage != nil && seeder.Spec.Storage.ChiaRoot != nil {
-		if seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
-			var pvcName string
-			if seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
-				pvcName = fmt.Sprintf(chiaseederNamePattern, seeder.Name)
-			} else {
-				pvcName = seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName
-			}
-
-			v = append(v, corev1.Volume{
-				Name: "chiaroot",
-				VolumeSource: corev1.VolumeSource{
-					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: pvcName,
-					},
-				},
-			})
-			chiaRootAdded = true
-		} else if seeder.Spec.Storage.ChiaRoot.HostPathVolume != nil {
-			v = append(v, corev1.Volume{
-				Name: "chiaroot",
-				VolumeSource: corev1.VolumeSource{
-					HostPath: &corev1.HostPathVolumeSource{
-						Path: seeder.Spec.Storage.ChiaRoot.HostPathVolume.Path,
-					},
-				},
-			})
-			chiaRootAdded = true
-		}
-	}
-	if !chiaRootAdded {
+	// CHIA_ROOT volume
+	if kube.ShouldMakeVolumeClaim(seeder.Spec.Storage) {
 		v = append(v, corev1.Volume{
 			Name: "chiaroot",
 			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: fmt.Sprintf(chiaseederNamePattern, seeder.Name),
+				},
 			},
 		})
+	} else {
+		v = append(v, kube.GetChiaRootVolume(seeder.Spec.Storage))
 	}
 
 	// Add sidecar volumes if any exist
