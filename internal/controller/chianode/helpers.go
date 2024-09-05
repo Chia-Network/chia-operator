@@ -56,11 +56,9 @@ func getChiaRootVolume(storage *k8schianetv1.StorageConfig) (*corev1.Volume, *co
 	if storage != nil && storage.ChiaRoot != nil {
 		if storage.ChiaRoot.PersistentVolumeClaim != nil {
 			// Get AccessModes, default to RWO
-			var accessModes []corev1.PersistentVolumeAccessMode
+			accessModes := []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
 			if len(storage.ChiaRoot.PersistentVolumeClaim.AccessModes) != 0 {
 				accessModes = storage.ChiaRoot.PersistentVolumeClaim.AccessModes
-			} else {
-				accessModes = []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
 			}
 
 			// Parses the resource requests, and if there's an error this will fall through to hostPath config or emptyDir
