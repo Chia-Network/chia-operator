@@ -7,22 +7,21 @@ package chiafarmer
 import (
 	"context"
 	"fmt"
+	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
+	"github.com/chia-network/chia-operator/internal/controller/common/kube"
+	"github.com/chia-network/chia-operator/internal/metrics"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/common/kube"
-	"github.com/chia-network/chia-operator/internal/metrics"
-	"github.com/cisco-open/operator-tools/pkg/reconciler"
+	"strings"
+	"time"
 )
 
 // ChiaFarmerReconciler reconciles a ChiaFarmer object
@@ -45,8 +44,7 @@ var chiafarmers = make(map[string]bool)
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
-	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s running reconciler...", req.NamespacedName.String()))
+	log.Info("Running reconciler...")
 
 	// Get the custom resource
 	var farmer k8schianetv1.ChiaFarmer
@@ -73,212 +71,110 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		metrics.ChiaFarmers.Add(1.0)
 	}
 
-	// Reconcile ChiaFarmer owned objects
-	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.PeerService, true) {
-		srv := assemblePeerService(farmer)
-		if err := controllerutil.SetControllerReference(&farmer, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer peer Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer peer Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to GET ChiaFarmer peer Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to DELETE ChiaFarmer peer Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Peer Service
+	peerSrv := assemblePeerService(farmer)
+	if err := controllerutil.SetControllerReference(&farmer, &peerSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer peer Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Peer Service
+	res, err := kube.ReconcileService(ctx, r.Client, farmer.Spec.ChiaConfig.PeerService, peerSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.AllService, true) {
-		srv := assembleAllService(farmer)
-		if err := controllerutil.SetControllerReference(&farmer, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer all-ports Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer all-ports Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-all",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to GET ChiaFarmer all-ports Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to DELETE ChiaFarmer all-ports Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble All Service
+	allSrv := assembleAllService(farmer)
+	if err := controllerutil.SetControllerReference(&farmer, &allSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer all-port Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile All Service
+	res, err = kube.ReconcileService(ctx, r.Client, farmer.Spec.ChiaConfig.AllService, allSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.DaemonService, true) {
-		srv := assembleDaemonService(farmer)
-		if err := controllerutil.SetControllerReference(&farmer, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer daemon Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer daemon Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-daemon",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to GET ChiaFarmer daemon Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to DELETE ChiaFarmer daemon Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Daemon Service
+	daemonSrv := assembleDaemonService(farmer)
+	if err := controllerutil.SetControllerReference(&farmer, &daemonSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer daemon Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Daemon Service
+	res, err = kube.ReconcileService(ctx, r.Client, farmer.Spec.ChiaConfig.DaemonService, daemonSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(farmer.Spec.ChiaConfig.RPCService, true) {
-		srv := assembleRPCService(farmer)
-		if err := controllerutil.SetControllerReference(&farmer, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer RPC Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer RPC Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-rpc",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to GET ChiaFarmer RPC Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to DELETE ChiaFarmer RPC Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble RPC Service
+	rpcSrv := assembleRPCService(farmer)
+	if err := controllerutil.SetControllerReference(&farmer, &rpcSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer RPC Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error assembling RPC Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile RPC Service
+	res, err = kube.ReconcileService(ctx, r.Client, farmer.Spec.ChiaConfig.RPCService, rpcSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(farmer.Spec.ChiaExporterConfig.Service, true) {
-		srv := assembleChiaExporterService(farmer)
-		if err := controllerutil.SetControllerReference(&farmer, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer metrics Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer chia-exporter Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-metrics",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to GET ChiaFarmer metrics Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to DELETE ChiaFarmer metrics Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Chia-Exporter Service
+	exporterSrv := assembleChiaExporterService(farmer)
+	if err := controllerutil.SetControllerReference(&farmer, &exporterSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer chia-exporter Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Chia-Exporter Service
+	res, err = kube.ReconcileService(ctx, r.Client, farmer.Spec.ChiaExporterConfig.Service, exporterSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
-	if farmer.Spec.Storage != nil && farmer.Spec.Storage.ChiaRoot != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+	if kube.ShouldMakeVolumeClaim(farmer.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(farmer)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer PVC -- Check operator logs.")
-			return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error scaffolding a generated PersistentVolumeClaim: %v", req.NamespacedName, err)
+			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer PVC -- Check operator logs.")
+			return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 		}
 
-		res, err := kube.ReconcilePersistentVolumeClaim(ctx, resourceReconciler, pvc)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
+		if pvc != nil {
+			res, err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, farmer.Spec.Storage, *pvc)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer PVC -- Check operator logs.")
+				return res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer PVC -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling PersistentVolumeClaim: %v", req.NamespacedName, err)
+		} else {
+			return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s PVC could not be created", req.NamespacedName)
 		}
 	}
 
+	// Assemble Deployment
 	deploy := assembleDeployment(farmer)
-
 	if err := controllerutil.SetControllerReference(&farmer, &deploy, r.Scheme); err != nil {
-		return ctrl.Result{}, err
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer Deployment -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 	}
-
-	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
+	// Reconcile Deployment
+	res, err = kube.ReconcileDeployment(ctx, r.Client, deploy)
 	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
-		}
 		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to create farmer Deployment -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error reconciling farmer Deployment: %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
@@ -286,6 +182,9 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	farmer.Status.Ready = true
 	err = r.Status().Update(ctx, &farmer)
 	if err != nil {
+		if strings.Contains(err.Error(), kube.ObjectModifiedTryAgainError) {
+			return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+		}
 		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaFarmerReconciler ChiaFarmer=%s unable to update ChiaFarmer status", req.NamespacedName))
 		return ctrl.Result{}, err

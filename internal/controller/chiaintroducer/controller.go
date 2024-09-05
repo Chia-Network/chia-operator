@@ -7,22 +7,21 @@ package chiaintroducer
 import (
 	"context"
 	"fmt"
+	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
+	"github.com/chia-network/chia-operator/internal/controller/common/kube"
+	"github.com/chia-network/chia-operator/internal/metrics"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/common/kube"
-	"github.com/chia-network/chia-operator/internal/metrics"
-	"github.com/cisco-open/operator-tools/pkg/reconciler"
+	"strings"
+	"time"
 )
 
 // ChiaIntroducerReconciler reconciles a ChiaIntroducer object
@@ -45,8 +44,7 @@ var chiaintroducers = make(map[string]bool)
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
-	resourceReconciler := reconciler.NewReconcilerWith(r.Client, reconciler.WithLog(log))
-	log.Info(fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s running reconciler...", req.NamespacedName.String()))
+	log.Info("Running reconciler...")
 
 	// Get the custom resource
 	var introducer k8schianetv1.ChiaIntroducer
@@ -73,176 +71,96 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		metrics.ChiaIntroducers.Add(1.0)
 	}
 
-	if kube.ShouldMakeService(introducer.Spec.ChiaConfig.PeerService, true) {
-		srv := assemblePeerService(introducer)
-		if err := controllerutil.SetControllerReference(&introducer, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer peer Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error reconciling introducer peer Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name),
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to GET ChiaIntroducer peer Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to DELETE ChiaIntroducer peer Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Peer Service
+	peerSrv := assemblePeerService(introducer)
+	if err := controllerutil.SetControllerReference(&introducer, &peerSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer peer Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Peer Service
+	res, err := kube.ReconcileService(ctx, r.Client, introducer.Spec.ChiaConfig.PeerService, peerSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(introducer.Spec.ChiaConfig.AllService, true) {
-		srv := assembleAllService(introducer)
-		if err := controllerutil.SetControllerReference(&introducer, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer all-ports Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error reconciling introducer all-ports Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name) + "-all",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to GET ChiaIntroducer all-ports Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to DELETE ChiaIntroducer all-ports Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble All Service
+	allSrv := assembleAllService(introducer)
+	if err := controllerutil.SetControllerReference(&introducer, &allSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer all-port Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile All Service
+	res, err = kube.ReconcileService(ctx, r.Client, introducer.Spec.ChiaConfig.AllService, allSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(introducer.Spec.ChiaConfig.DaemonService, true) {
-		srv := assembleDaemonService(introducer)
-		if err := controllerutil.SetControllerReference(&introducer, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer daemon Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error reconciling introducer daemon Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name) + "-daemon",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to GET ChiaIntroducer daemon Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to DELETE ChiaIntroducer daemon Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Daemon Service
+	daemonSrv := assembleDaemonService(introducer)
+	if err := controllerutil.SetControllerReference(&introducer, &daemonSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer daemon Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Daemon Service
+	res, err = kube.ReconcileService(ctx, r.Client, introducer.Spec.ChiaConfig.DaemonService, daemonSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 	}
 
-	if kube.ShouldMakeService(introducer.Spec.ChiaExporterConfig.Service, true) {
-		srv := assembleChiaExporterService(introducer)
-		if err := controllerutil.SetControllerReference(&introducer, &srv, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-		res, err := kube.ReconcileService(ctx, resourceReconciler, srv)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
-			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer metrics Service -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error reconciling introducer metrics Service: %v", req.NamespacedName, err)
-		}
-	} else {
-		// Need to check if the resource exists and delete if it does
-		var srv corev1.Service
-		err := r.Get(ctx, types.NamespacedName{
-			Namespace: req.NamespacedName.Namespace,
-			Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name) + "-metrics",
-		}, &srv)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to GET ChiaIntroducer metrics Service resource", req.NamespacedName))
-			}
-		} else {
-			err = r.Delete(ctx, &srv)
-			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to DELETE ChiaIntroducer metrics Service resource", req.NamespacedName))
-			}
-		}
+	// Assemble Chia-Exporter Service
+	exporterSrv := assembleChiaExporterService(introducer)
+	if err := controllerutil.SetControllerReference(&introducer, &exporterSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer chia-exporter Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Chia-Exporter Service
+	res, err = kube.ReconcileService(ctx, r.Client, introducer.Spec.ChiaExporterConfig.Service, exporterSrv, true)
+	if err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		return res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
-	if introducer.Spec.Storage != nil && introducer.Spec.Storage.ChiaRoot != nil && introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil && introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
+	if kube.ShouldMakeVolumeClaim(introducer.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(introducer)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer PVC -- Check operator logs.")
-			return reconcile.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error scaffolding a generated PersistentVolumeClaim: %v", req.NamespacedName, err)
+			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer PVC -- Check operator logs.")
+			return reconcile.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 		}
 
-		res, err := kube.ReconcilePersistentVolumeClaim(ctx, resourceReconciler, pvc)
-		if err != nil {
-			if res == nil {
-				res = &reconcile.Result{}
+		if pvc != nil {
+			res, err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, introducer.Spec.Storage, *pvc)
+			if err != nil {
+				metrics.OperatorErrors.Add(1.0)
+				r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer PVC -- Check operator logs.")
+				return res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 			}
-			metrics.OperatorErrors.Add(1.0)
-			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer PVC -- Check operator logs.")
-			return *res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error reconciling PersistentVolumeClaim: %v", req.NamespacedName, err)
+		} else {
+			return reconcile.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s PVC could not be created", req.NamespacedName)
 		}
 	}
 
+	// Assemble Deployment
 	deploy := assembleDeployment(introducer)
-
 	if err := controllerutil.SetControllerReference(&introducer, &deploy, r.Scheme); err != nil {
-		return ctrl.Result{}, err
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer Deployment -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 	}
-
-	res, err := kube.ReconcileDeployment(ctx, resourceReconciler, deploy)
+	// Reconcile Deployment
+	res, err = kube.ReconcileDeployment(ctx, r.Client, deploy)
 	if err != nil {
-		if res == nil {
-			res = &reconcile.Result{}
-		}
 		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer Deployment -- Check operator logs.")
-		return *res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error reconciling Deployment: %v", req.NamespacedName, err)
+		return res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
@@ -250,6 +168,9 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	introducer.Status.Ready = true
 	err = r.Status().Update(ctx, &introducer)
 	if err != nil {
+		if strings.Contains(err.Error(), kube.ObjectModifiedTryAgainError) {
+			return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+		}
 		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaIntroducerReconciler ChiaIntroducer=%s unable to update ChiaIntroducer status", req.NamespacedName))
 		return ctrl.Result{}, err

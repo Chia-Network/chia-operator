@@ -199,10 +199,14 @@ func assembleChiaExporterService(wallet k8schianetv1.ChiaWallet) corev1.Service 
 }
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaWallet CR
-func assembleVolumeClaim(wallet k8schianetv1.ChiaWallet) (corev1.PersistentVolumeClaim, error) {
+func assembleVolumeClaim(wallet k8schianetv1.ChiaWallet) (*corev1.PersistentVolumeClaim, error) {
+	if wallet.Spec.Storage != nil && wallet.Spec.Storage.ChiaRoot != nil && wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+		return nil, nil
+	}
+
 	resourceReq, err := resource.ParseQuantity(wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
 	if err != nil {
-		return corev1.PersistentVolumeClaim{}, err
+		return nil, err
 	}
 
 	accessModes := []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
@@ -210,7 +214,7 @@ func assembleVolumeClaim(wallet k8schianetv1.ChiaWallet) (corev1.PersistentVolum
 		accessModes = wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
 	}
 
-	return corev1.PersistentVolumeClaim{
+	pvc := corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiawalletNamePattern, wallet.Name),
 			Namespace: wallet.Namespace,
@@ -224,7 +228,9 @@ func assembleVolumeClaim(wallet k8schianetv1.ChiaWallet) (corev1.PersistentVolum
 				},
 			},
 		},
-	}, nil
+	}
+
+	return &pvc, nil
 }
 
 // assembleDeployment assembles the wallet Deployment resource for a ChiaWallet CR

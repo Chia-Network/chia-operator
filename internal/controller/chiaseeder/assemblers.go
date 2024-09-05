@@ -258,10 +258,14 @@ func assembleChiaHealthcheckService(seeder k8schianetv1.ChiaSeeder) corev1.Servi
 }
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaSeeder CR
-func assembleVolumeClaim(seeder k8schianetv1.ChiaSeeder) (corev1.PersistentVolumeClaim, error) {
+func assembleVolumeClaim(seeder k8schianetv1.ChiaSeeder) (*corev1.PersistentVolumeClaim, error) {
+	if seeder.Spec.Storage != nil && seeder.Spec.Storage.ChiaRoot != nil && seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+		return nil, nil
+	}
+
 	resourceReq, err := resource.ParseQuantity(seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
 	if err != nil {
-		return corev1.PersistentVolumeClaim{}, err
+		return nil, err
 	}
 
 	accessModes := []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
@@ -269,7 +273,7 @@ func assembleVolumeClaim(seeder k8schianetv1.ChiaSeeder) (corev1.PersistentVolum
 		accessModes = seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
 	}
 
-	return corev1.PersistentVolumeClaim{
+	pvc := corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiaseederNamePattern, seeder.Name),
 			Namespace: seeder.Namespace,
@@ -283,7 +287,9 @@ func assembleVolumeClaim(seeder k8schianetv1.ChiaSeeder) (corev1.PersistentVolum
 				},
 			},
 		},
-	}, nil
+	}
+
+	return &pvc, nil
 }
 
 // assembleDeployment assembles the seeder Deployment resource for a ChiaSeeder CR

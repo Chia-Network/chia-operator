@@ -1,7 +1,7 @@
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.29.0
+ENVTEST_K8S_VERSION = 1.30.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -69,7 +69,7 @@ test-e2e:
 	go test ./test/e2e/ -v -ginkgo.v
 
 .PHONY: lint
-lint: golangci-lint ## Run golangci-lint linter & yamllint
+lint: golangci-lint ## Run golangci-lint linter
 	$(GOLANGCI_LINT) run
 
 .PHONY: lint-fix
@@ -123,12 +123,8 @@ docker-buildx: ## Build and push docker image for the manager for cross-platform
 .PHONY: build-installer
 build-installer: manifests generate kustomize ## Generate a consolidated YAML with CRDs and deployment.
 	mkdir -p dist
-	@if [ -d "config/crd" ]; then \
-		$(KUSTOMIZE) build config/crd > dist/install.yaml; \
-	fi
-	echo "---" >> dist/install.yaml  # Add a document separator before appending
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default >> dist/install.yaml
+	$(KUSTOMIZE) build config/default > dist/install.yaml
 
 ##@ Deployment
 
@@ -168,10 +164,10 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION)
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint-$(GOLANGCI_LINT_VERSION)
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v5.3.0
+KUSTOMIZE_VERSION ?= v5.4.1
 CONTROLLER_TOOLS_VERSION ?= v0.14.0
 ENVTEST_VERSION ?= latest
-GOLANGCI_LINT_VERSION ?= v1.54.2
+GOLANGCI_LINT_VERSION ?= v1.57.2
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
