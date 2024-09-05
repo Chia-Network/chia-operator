@@ -42,3 +42,23 @@ Kubebuilder scaffolds a lot of files for us, but its defaults are a bit undesira
 - Run `make` to re-generate many of the manifests in the `config/` directory. You will need to do this every time you change the API struct types.
 
 - Run `make test` often to check the test suite for issues.
+
+## Local testing
+
+To test your changes, especially if you wrote accompanying tests for your changes:
+
+```bash
+make test
+```
+
+When you make a pull request, the repository will also be linted. To see the results of the linter test locally:
+
+```bash
+make lint
+```
+
+Some linter test failures can be automatically resolved:
+
+```bash
+make lint-fix
+```

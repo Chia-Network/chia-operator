@@ -23,6 +23,9 @@ package chiaseeder
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"github.com/chia-network/chia-operator/internal/metrics"
@@ -36,8 +39,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"strings"
-	"time"
 )
 
 // ChiaSeederReconciler reconciles a ChiaSeeder object

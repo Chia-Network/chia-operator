@@ -19,9 +19,9 @@ issues:
         - lll
 linters:
   disable-all: false
-  disable:
-    - goimports # disabled temporarily because the changes required here are too extensive for the PR this was introduced in
+  disable: []
   enable:
+    - goimports
     - dupl
     - errcheck
     - exportloopref

@@ -6,6 +6,10 @@ package controller
 
 import (
 	"context"
+	"log"
+	"path/filepath"
+	"testing"
+
 	"github.com/chia-network/chia-operator/internal/controller/chiaca"
 	"github.com/chia-network/chia-operator/internal/controller/chiacrawler"
 	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
@@ -14,9 +18,6 @@ import (
 	"github.com/chia-network/chia-operator/internal/controller/chianode"
 	"github.com/chia-network/chia-operator/internal/controller/chiatimelord"
 	"github.com/chia-network/chia-operator/internal/controller/chiawallet"
-	"log"
-	"path/filepath"
-	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
