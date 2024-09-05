@@ -6,9 +6,10 @@ package chiacrawler
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
-	"strconv"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 )

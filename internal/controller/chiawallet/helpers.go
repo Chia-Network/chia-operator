@@ -8,9 +8,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	"strconv"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"

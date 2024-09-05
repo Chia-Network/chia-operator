@@ -6,8 +6,9 @@ package chiaharvester
 
 import (
 	"fmt"
-	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"strconv"
+
+	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"

@@ -6,8 +6,9 @@ package chiafarmer
 
 import (
 	"fmt"
-	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"strconv"
+
+	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
