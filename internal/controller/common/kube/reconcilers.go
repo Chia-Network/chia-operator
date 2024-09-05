@@ -135,13 +135,34 @@ func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.S
 	} else if err != nil {
 		return ctrl.Result{}, fmt.Errorf("error getting existing StatefulSet \"%s\": %v", desired.Name, err)
 	} else {
-		// StatefulSet exists, so we need to update it if there are any changes
+		// StatefulSet exists, so we need to update it if there are any changes.
+		// We'll make a copy of the current StatefulSet to make sure we only change mutable StatefulSet fields.
+		// Then we will compare the current and updated StatefulSets, and send an Update request if there was any diff.
+		updated := current
+
 		desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
-		if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
-			current.Labels = desired.Labels
-			current.Annotations = desired.Annotations
-			current.Spec = desired.Spec
-			if err := c.Update(ctx, &current); err != nil {
+		if !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
+			updated.Annotations = desiredAnnotations
+		}
+
+		if !reflect.DeepEqual(current.Labels, desired.Labels) {
+			updated.Labels = desired.Labels
+		}
+
+		if !reflect.DeepEqual(current.Spec.UpdateStrategy, desired.Spec.UpdateStrategy) {
+			updated.Spec.UpdateStrategy = desired.Spec.UpdateStrategy
+		}
+
+		if !reflect.DeepEqual(current.Spec.Replicas, desired.Spec.Replicas) {
+			updated.Spec.Replicas = desired.Spec.Replicas
+		}
+
+		if !reflect.DeepEqual(current.Spec.Template, desired.Spec.Template) {
+			updated.Spec.Template = desired.Spec.Template
+		}
+
+		if !reflect.DeepEqual(current, updated) {
+			if err := c.Update(ctx, &updated); err != nil {
 				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
 					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 				}
