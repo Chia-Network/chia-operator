@@ -7,28 +7,15 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
   - persistentvolumeclaims
-  verbs:
-  - create
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - secrets
-  verbs:
-  - create
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - serviceaccounts
   verbs:
   - create
@@ -53,16 +40,6 @@ rules:
   - apps
   resources:
   - deployments
-  verbs:
-  - create
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - apps
-  resources:
   - statefulsets
   verbs:
   - create
@@ -84,223 +61,16 @@ rules:
   - update
   - watch
 - apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - create
-  - patch
-- apiGroups:
   - k8s.chia.net
   resources:
   - chiacas
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiacas/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiacas/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
   - chiacrawlers
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiacrawlers/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiacrawlers/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
   - chiafarmers
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiafarmers/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiafarmers/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
   - chiaharvesters
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiaharvesters/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiaharvesters/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
   - chiaintroducers
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiaintroducers/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiaintroducers/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
   - chianodes
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chianodes/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chianodes/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
   - chiaseeders
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiaseeders/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiaseeders/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
   - chiatimelords
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiatimelords/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
-  - chiatimelords/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - k8s.chia.net
-  resources:
   - chiawallets
   verbs:
   - create
@@ -313,12 +83,28 @@ rules:
 - apiGroups:
   - k8s.chia.net
   resources:
+  - chiacas/finalizers
+  - chiacrawlers/finalizers
+  - chiafarmers/finalizers
+  - chiaharvesters/finalizers
+  - chiaintroducers/finalizers
+  - chianodes/finalizers
+  - chiaseeders/finalizers
+  - chiatimelords/finalizers
   - chiawallets/finalizers
   verbs:
   - update
 - apiGroups:
   - k8s.chia.net
   resources:
+  - chiacas/status
+  - chiacrawlers/status
+  - chiafarmers/status
+  - chiaharvesters/status
+  - chiaintroducers/status
+  - chianodes/status
+  - chiaseeders/status
+  - chiatimelords/status
   - chiawallets/status
   verbs:
   - get
@@ -328,16 +114,6 @@ rules:
   - rbac.authorization.k8s.io
   resources:
   - rolebindings
-  verbs:
-  - create
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
   - roles
   verbs:
   - create
