@@ -27,19 +27,21 @@ var testCA = k8schianetv1.ChiaCA{
 	},
 }
 
+var testObjMeta = metav1.ObjectMeta{
+	Name:      "testname-chiaca-generator",
+	Namespace: "testnamespace",
+	Labels: map[string]string{
+		"app.kubernetes.io/instance":   "testname",
+		"app.kubernetes.io/name":       "testname",
+		"app.kubernetes.io/managed-by": "chia-operator",
+		"k8s.chia.net/provenance":      "ChiaCA.testnamespace.testname",
+	},
+}
+
 func TestAssembleJob(t *testing.T) {
 	var backoffLimit int32 = 3
 	expected := batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "testname-chiaca-generator",
-			Namespace: "testnamespace",
-			Labels: map[string]string{
-				"app.kubernetes.io/instance":   "testname",
-				"app.kubernetes.io/name":       "testname",
-				"app.kubernetes.io/managed-by": "chia-operator",
-				"k8s.chia.net/provenance":      "ChiaCA.testnamespace.testname",
-			},
-		},
+		ObjectMeta: testObjMeta,
 		Spec: batchv1.JobSpec{
 			BackoffLimit: &backoffLimit,
 			Template: corev1.PodTemplateSpec{
@@ -72,16 +74,7 @@ func TestAssembleJob(t *testing.T) {
 
 func TestAssembleServiceAccount(t *testing.T) {
 	expected := corev1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "testname-chiaca-generator",
-			Namespace: "testnamespace",
-			Labels: map[string]string{
-				"app.kubernetes.io/instance":   "testname",
-				"app.kubernetes.io/name":       "testname",
-				"app.kubernetes.io/managed-by": "chia-operator",
-				"k8s.chia.net/provenance":      "ChiaCA.testnamespace.testname",
-			},
-		},
+		ObjectMeta: testObjMeta,
 	}
 	actual := assembleServiceAccount(testCA)
 	require.Equal(t, expected, actual)
@@ -89,16 +82,7 @@ func TestAssembleServiceAccount(t *testing.T) {
 
 func TestAssembleRole(t *testing.T) {
 	expected := rbacv1.Role{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "testname-chiaca-generator",
-			Namespace: "testnamespace",
-			Labels: map[string]string{
-				"app.kubernetes.io/instance":   "testname",
-				"app.kubernetes.io/name":       "testname",
-				"app.kubernetes.io/managed-by": "chia-operator",
-				"k8s.chia.net/provenance":      "ChiaCA.testnamespace.testname",
-			},
-		},
+		ObjectMeta: testObjMeta,
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{
@@ -119,16 +103,7 @@ func TestAssembleRole(t *testing.T) {
 
 func TestAssembleRoleBinding(t *testing.T) {
 	expected := rbacv1.RoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "testname-chiaca-generator",
-			Namespace: "testnamespace",
-			Labels: map[string]string{
-				"app.kubernetes.io/instance":   "testname",
-				"app.kubernetes.io/name":       "testname",
-				"app.kubernetes.io/managed-by": "chia-operator",
-				"k8s.chia.net/provenance":      "ChiaCA.testnamespace.testname",
-			},
-		},
+		ObjectMeta: testObjMeta,
 		Subjects: []rbacv1.Subject{
 			{
 				Kind: "ServiceAccount",
