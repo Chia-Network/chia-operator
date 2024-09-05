@@ -33,51 +33,12 @@ func getChiaVolumesAndTemplates(node k8schianetv1.ChiaNode) ([]corev1.Volume, []
 		},
 	})
 
-	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
-	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
-	var chiaRootAdded = false
-	if node.Spec.Storage != nil && node.Spec.Storage.ChiaRoot != nil {
-		if node.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
-			vct := corev1.PersistentVolumeClaim{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "chiaroot",
-				},
-				Spec: corev1.PersistentVolumeClaimSpec{
-					AccessModes:      []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"},
-					StorageClassName: &node.Spec.Storage.ChiaRoot.PersistentVolumeClaim.StorageClass,
-					Resources: corev1.VolumeResourceRequirements{
-						Requests: corev1.ResourceList{
-							corev1.ResourceStorage: resource.MustParse(node.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest),
-						},
-					},
-				},
-			}
-
-			if len(node.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes) != 0 {
-				vct.Spec.AccessModes = node.Spec.Storage.ChiaRoot.PersistentVolumeClaim.AccessModes
-			}
-
-			vcts = append(vcts, vct)
-			chiaRootAdded = true
-		} else if node.Spec.Storage.ChiaRoot.HostPathVolume != nil {
-			v = append(v, corev1.Volume{
-				Name: "chiaroot",
-				VolumeSource: corev1.VolumeSource{
-					HostPath: &corev1.HostPathVolumeSource{
-						Path: node.Spec.Storage.ChiaRoot.HostPathVolume.Path,
-					},
-				},
-			})
-			chiaRootAdded = true
-		}
-	}
-	if !chiaRootAdded {
-		v = append(v, corev1.Volume{
-			Name: "chiaroot",
-			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
-			},
-		})
+	// CHIA_ROOT volume
+	rootVol, rootVolumeClaimTempl := getChiaRootVolume(node.Spec.Storage)
+	if rootVolumeClaimTempl != nil {
+		vcts = append(vcts, *rootVolumeClaimTempl)
+	} else if rootVol != nil {
+		v = append(v, *rootVol)
 	}
 
 	// Add sidecar volumes if any exist
@@ -86,6 +47,56 @@ func getChiaVolumesAndTemplates(node k8schianetv1.ChiaNode) ([]corev1.Volume, []
 	}
 
 	return v, vcts
+}
+
+// getChiaRootVolume gets the CHIA_ROOT volume for a Chia full_node.
+// This function is unique to ChiaNodes because it's the only Kind that deploys a StatefulSet that can use PersistentVolumeClaimTemplates.
+func getChiaRootVolume(storage *k8schianetv1.StorageConfig) (*corev1.Volume, *corev1.PersistentVolumeClaim) {
+	volumeName := "chiaroot"
+	if storage != nil && storage.ChiaRoot != nil {
+		if storage.ChiaRoot.PersistentVolumeClaim != nil {
+			// Get AccessModes, default to RWO
+			accessModes := []corev1.PersistentVolumeAccessMode{"ReadWriteOnce"}
+			if len(storage.ChiaRoot.PersistentVolumeClaim.AccessModes) != 0 {
+				accessModes = storage.ChiaRoot.PersistentVolumeClaim.AccessModes
+			}
+
+			// Parses the resource requests, and if there's an error this will fall through to hostPath config or emptyDir
+			resourceReq, err := resource.ParseQuantity(storage.ChiaRoot.PersistentVolumeClaim.ResourceRequest)
+			if err == nil {
+				return nil, &corev1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: volumeName,
+					},
+					Spec: corev1.PersistentVolumeClaimSpec{
+						AccessModes:      accessModes,
+						StorageClassName: &storage.ChiaRoot.PersistentVolumeClaim.StorageClass,
+						Resources: corev1.VolumeResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceStorage: resourceReq,
+							},
+						},
+					},
+				}
+			}
+		} else if storage.ChiaRoot.HostPathVolume != nil && storage.ChiaRoot.HostPathVolume.Path != "" {
+			return &corev1.Volume{
+				Name: volumeName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: storage.ChiaRoot.HostPathVolume.Path,
+					},
+				},
+			}, nil
+		}
+	}
+
+	return &corev1.Volume{
+		Name: volumeName,
+		VolumeSource: corev1.VolumeSource{
+			EmptyDir: &corev1.EmptyDirVolumeSource{},
+		},
+	}, nil
 }
 
 // getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct

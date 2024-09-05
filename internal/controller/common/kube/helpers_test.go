@@ -4,6 +4,7 @@ import (
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
 )
@@ -169,4 +170,89 @@ func TestGetFullNodePort(t *testing.T) {
 		NetworkPort: &port,
 	})
 	require.Equal(t, int32(port), actual, "expected custom full_node port")
+}
+
+func TestGetChiaRootVolume(t *testing.T) {
+	// emptyDir cases
+	expected := corev1.Volume{
+		Name: "chiaroot",
+		VolumeSource: corev1.VolumeSource{
+			EmptyDir: &corev1.EmptyDirVolumeSource{},
+		},
+	}
+
+	// emptyDir case - nil storage config
+	actual := GetExistingChiaRootVolume(nil)
+	require.Equal(t, expected, actual, "expected emptyDir volume - nil storage config")
+
+	// emptyDir case - nil ChiaRoot config
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
+		ChiaRoot: nil,
+	})
+	require.Equal(t, expected, actual, "expected emptyDir volume - nil ChiaRoot config")
+
+	// emptyDir case - nil pvc and hpv configs
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
+		ChiaRoot: &k8schianetv1.ChiaRootConfig{
+			PersistentVolumeClaim: nil,
+			HostPathVolume:        nil,
+		},
+	})
+	require.Equal(t, expected, actual, "expected emptyDir volume - nil PVC and HostPathVolume configs")
+
+	// emptyDir case - empty claim name
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
+		ChiaRoot: &k8schianetv1.ChiaRootConfig{
+			PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
+				ClaimName: "",
+			},
+		},
+	})
+	require.Equal(t, expected, actual, "expected emptyDir volume - empty claim name")
+
+	// emptyDir case - empty host path
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
+		ChiaRoot: &k8schianetv1.ChiaRootConfig{
+			HostPathVolume: &k8schianetv1.HostPathVolumeConfig{
+				Path: "",
+			},
+		},
+	})
+	require.Equal(t, expected, actual, "expected emptyDir volume - empty host path")
+
+	// PVC case
+	expected = corev1.Volume{
+		Name: "chiaroot",
+		VolumeSource: corev1.VolumeSource{
+			PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+				ClaimName: "testname",
+			},
+		},
+	}
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
+		ChiaRoot: &k8schianetv1.ChiaRootConfig{
+			PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
+				ClaimName: "testname",
+			},
+		},
+	})
+	require.Equal(t, expected, actual, "expected PVC volume")
+
+	// HostPath case
+	expected = corev1.Volume{
+		Name: "chiaroot",
+		VolumeSource: corev1.VolumeSource{
+			HostPath: &corev1.HostPathVolumeSource{
+				Path: "testpath",
+			},
+		},
+	}
+	actual = GetExistingChiaRootVolume(&k8schianetv1.StorageConfig{
+		ChiaRoot: &k8schianetv1.ChiaRootConfig{
+			HostPathVolume: &k8schianetv1.HostPathVolumeConfig{
+				Path: "testpath",
+			},
+		},
+	})
+	require.Equal(t, expected, actual, "expected hostPath volume")
 }

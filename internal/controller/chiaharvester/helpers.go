@@ -6,6 +6,7 @@ package chiaharvester
 
 import (
 	"fmt"
+	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"strconv"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
@@ -27,46 +28,18 @@ func getChiaVolumes(harvester k8schianetv1.ChiaHarvester) []corev1.Volume {
 		},
 	})
 
-	// CHIA_ROOT volume -- PVC is respected first if both it and hostpath are specified, falls back to hostPath if specified
-	// If both are empty, fall back to emptyDir so chia-exporter can mount CHIA_ROOT
-	var chiaRootAdded = false
-	if harvester.Spec.Storage != nil && harvester.Spec.Storage.ChiaRoot != nil {
-		if harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
-			var pvcName string
-			if harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
-				pvcName = fmt.Sprintf(chiaharvesterNamePattern, harvester.Name)
-			} else {
-				pvcName = harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim.ClaimName
-			}
-
-			v = append(v, corev1.Volume{
-				Name: "chiaroot",
-				VolumeSource: corev1.VolumeSource{
-					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: pvcName,
-					},
-				},
-			})
-			chiaRootAdded = true
-		} else if harvester.Spec.Storage.ChiaRoot.HostPathVolume != nil {
-			v = append(v, corev1.Volume{
-				Name: "chiaroot",
-				VolumeSource: corev1.VolumeSource{
-					HostPath: &corev1.HostPathVolumeSource{
-						Path: harvester.Spec.Storage.ChiaRoot.HostPathVolume.Path,
-					},
-				},
-			})
-			chiaRootAdded = true
-		}
-	}
-	if !chiaRootAdded {
+	// CHIA_ROOT volume
+	if kube.ShouldMakeVolumeClaim(harvester.Spec.Storage) {
 		v = append(v, corev1.Volume{
 			Name: "chiaroot",
 			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
+				},
 			},
 		})
+	} else {
+		v = append(v, kube.GetExistingChiaRootVolume(harvester.Spec.Storage))
 	}
 
 	// hostPath and PVC plot volumes
