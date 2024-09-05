@@ -201,7 +201,7 @@ func assembleChiaExporterService(harvester k8schianetv1.ChiaHarvester) corev1.Se
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaHarvester CR
 func assembleVolumeClaim(harvester k8schianetv1.ChiaHarvester) (*corev1.PersistentVolumeClaim, error) {
-	if harvester.Spec.Storage != nil && harvester.Spec.Storage.ChiaRoot != nil && harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+	if harvester.Spec.Storage == nil || harvester.Spec.Storage.ChiaRoot == nil || harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim == nil {
 		return nil, nil
 	}
 

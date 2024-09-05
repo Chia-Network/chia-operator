@@ -201,7 +201,7 @@ func assembleChiaExporterService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaTimelord CR
 func assembleVolumeClaim(tl k8schianetv1.ChiaTimelord) (*corev1.PersistentVolumeClaim, error) {
-	if tl.Spec.Storage != nil && tl.Spec.Storage.ChiaRoot != nil && tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+	if tl.Spec.Storage == nil || tl.Spec.Storage.ChiaRoot == nil || tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim == nil {
 		return nil, nil
 	}
 

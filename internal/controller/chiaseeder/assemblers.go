@@ -260,7 +260,7 @@ func assembleChiaHealthcheckService(seeder k8schianetv1.ChiaSeeder) corev1.Servi
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaSeeder CR
 func assembleVolumeClaim(seeder k8schianetv1.ChiaSeeder) (*corev1.PersistentVolumeClaim, error) {
-	if seeder.Spec.Storage != nil && seeder.Spec.Storage.ChiaRoot != nil && seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+	if seeder.Spec.Storage == nil || seeder.Spec.Storage.ChiaRoot == nil || seeder.Spec.Storage.ChiaRoot.PersistentVolumeClaim == nil {
 		return nil, nil
 	}
 

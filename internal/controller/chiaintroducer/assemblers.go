@@ -158,7 +158,7 @@ func assembleChiaExporterService(introducer k8schianetv1.ChiaIntroducer) corev1.
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaIntroducer CR
 func assembleVolumeClaim(introducer k8schianetv1.ChiaIntroducer) (*corev1.PersistentVolumeClaim, error) {
-	if introducer.Spec.Storage != nil && introducer.Spec.Storage.ChiaRoot != nil && introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+	if introducer.Spec.Storage == nil || introducer.Spec.Storage.ChiaRoot == nil || introducer.Spec.Storage.ChiaRoot.PersistentVolumeClaim == nil {
 		return nil, nil
 	}
 
