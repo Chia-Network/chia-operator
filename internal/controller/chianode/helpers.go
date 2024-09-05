@@ -54,7 +54,7 @@ func getChiaVolumesAndTemplates(node k8schianetv1.ChiaNode) ([]corev1.Volume, []
 func getChiaRootVolume(storage *k8schianetv1.StorageConfig) (*corev1.Volume, *corev1.PersistentVolumeClaim) {
 	volumeName := "chiaroot"
 	if storage != nil && storage.ChiaRoot != nil {
-		if storage.ChiaRoot.PersistentVolumeClaim != nil && storage.ChiaRoot.PersistentVolumeClaim.ClaimName != "" {
+		if storage.ChiaRoot.PersistentVolumeClaim != nil {
 			// Get AccessModes, default to RWO
 			var accessModes []corev1.PersistentVolumeAccessMode
 			if len(storage.ChiaRoot.PersistentVolumeClaim.AccessModes) != 0 {
