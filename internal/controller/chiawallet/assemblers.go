@@ -201,7 +201,7 @@ func assembleChiaExporterService(wallet k8schianetv1.ChiaWallet) corev1.Service 
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaWallet CR
 func assembleVolumeClaim(wallet k8schianetv1.ChiaWallet) (*corev1.PersistentVolumeClaim, error) {
-	if wallet.Spec.Storage != nil && wallet.Spec.Storage.ChiaRoot != nil && wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+	if wallet.Spec.Storage == nil || wallet.Spec.Storage.ChiaRoot == nil || wallet.Spec.Storage.ChiaRoot.PersistentVolumeClaim == nil {
 		return nil, nil
 	}
 

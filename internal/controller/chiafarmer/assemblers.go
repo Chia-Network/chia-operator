@@ -201,7 +201,7 @@ func assembleChiaExporterService(farmer k8schianetv1.ChiaFarmer) corev1.Service 
 
 // assembleVolumeClaim assembles the PVC resource for a ChiaFarmer CR
 func assembleVolumeClaim(farmer k8schianetv1.ChiaFarmer) (*corev1.PersistentVolumeClaim, error) {
-	if farmer.Spec.Storage != nil && farmer.Spec.Storage.ChiaRoot != nil && farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim != nil {
+	if farmer.Spec.Storage == nil || farmer.Spec.Storage.ChiaRoot == nil || farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim == nil {
 		return nil, nil
 	}
 
