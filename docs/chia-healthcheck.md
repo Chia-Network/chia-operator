@@ -6,6 +6,7 @@ Supported components:
 
 - ChiaNodes
 - ChiaSeeders
+- ChiaTimelords
 
 ## Enable
 
@@ -45,6 +46,7 @@ The path specified in your probe config will change depending on the component y
 
 -`/full_node` for ChiaNodes
 -`/seeder` for ChiaSeeders
+-`/timelord` for ChiaSeeders
 
 ## DNS Hostnames
 
