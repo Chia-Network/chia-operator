@@ -261,6 +261,8 @@ func AssembleChiaHealthcheckProbe(input AssembleChiaHealthcheckProbeInputs) *cor
 		probe.ProbeHandler.HTTPGet.Path = "/full_node"
 	case consts.ChiaSeederKind:
 		probe.ProbeHandler.HTTPGet.Path = "/seeder"
+	case consts.ChiaTimelordKind:
+		probe.ProbeHandler.HTTPGet.Path = "/timelord"
 	default:
 		return nil
 	}
