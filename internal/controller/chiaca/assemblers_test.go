@@ -24,20 +24,6 @@ var testCA = k8schianetv1.ChiaCA{
 	},
 }
 
-var testCACustomSecret = k8schianetv1.ChiaCA{
-	TypeMeta: metav1.TypeMeta{
-		Kind:       "ChiaCA",
-		APIVersion: "k8s.chia.net/v1",
-	},
-	ObjectMeta: metav1.ObjectMeta{
-		Name:      "testname",
-		Namespace: "testnamespace",
-	},
-	Spec: k8schianetv1.ChiaCASpec{
-		Secret: "test-ca-secret",
-	},
-}
-
 var testObjMeta = metav1.ObjectMeta{
 	Name:      "testname-chiaca-generator",
 	Namespace: "testnamespace",
