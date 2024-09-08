@@ -20,8 +20,15 @@ import (
 
 const chiacaNamePattern = "%s-chiaca-generator"
 
+const defaultChiaCASecretName = "chiaca"
+
 // assembleJob assembles the Job resource for a ChiaCA CR
 func assembleJob(ca k8schianetv1.ChiaCA) batchv1.Job {
+	secretName := defaultChiaCASecretName
+	if ca.Spec.Secret != "" {
+		secretName = ca.Spec.Secret
+	}
+
 	var job = batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(chiacaNamePattern, ca.Name),
@@ -43,7 +50,7 @@ func assembleJob(ca k8schianetv1.ChiaCA) batchv1.Job {
 								},
 								{
 									Name:  "SECRET_NAME",
-									Value: ca.Spec.Secret,
+									Value: secretName,
 								},
 							},
 						},
