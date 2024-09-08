@@ -22,6 +22,17 @@ var testCA = k8schianetv1.ChiaCA{
 		Name:      "testname",
 		Namespace: "testnamespace",
 	},
+}
+
+var testCACustomSecret = k8schianetv1.ChiaCA{
+	TypeMeta: metav1.TypeMeta{
+		Kind:       "ChiaCA",
+		APIVersion: "k8s.chia.net/v1",
+	},
+	ObjectMeta: metav1.ObjectMeta{
+		Name:      "testname",
+		Namespace: "testnamespace",
+	},
 	Spec: k8schianetv1.ChiaCASpec{
 		Secret: "test-ca-secret",
 	},
@@ -38,7 +49,46 @@ var testObjMeta = metav1.ObjectMeta{
 	},
 }
 
-func TestAssembleJob(t *testing.T) {
+func TestAssembleJob_DefaultSecret(t *testing.T) {
+	var backoffLimit int32 = 3
+	expected := batchv1.Job{
+		ObjectMeta: testObjMeta,
+		Spec: batchv1.JobSpec{
+			BackoffLimit: &backoffLimit,
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					RestartPolicy:      "Never",
+					ServiceAccountName: "testname-chiaca-generator",
+					Containers: []corev1.Container{
+						{
+							Name:  "chiaca-generator",
+							Image: fmt.Sprintf("%s:%s", consts.DefaultChiaCAImageName, consts.DefaultChiaCAImageTag),
+							Env: []corev1.EnvVar{
+								{
+									Name:  "NAMESPACE",
+									Value: "testnamespace",
+								},
+								{
+									Name:  "SECRET_NAME",
+									Value: "chiaca",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	actual := assembleJob(testCA)
+	require.Equal(t, expected, actual)
+}
+
+func TestAssembleJob_CustomSecret(t *testing.T) {
+	testCACustomSecret := testCA
+	testCACustomSecret.Spec = k8schianetv1.ChiaCASpec{
+		Secret: "test-ca-secret",
+	}
+
 	var backoffLimit int32 = 3
 	expected := batchv1.Job{
 		ObjectMeta: testObjMeta,
@@ -68,7 +118,7 @@ func TestAssembleJob(t *testing.T) {
 			},
 		},
 	}
-	actual := assembleJob(testCA)
+	actual := assembleJob(testCACustomSecret)
 	require.Equal(t, expected, actual)
 }
 

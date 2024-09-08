@@ -19,7 +19,6 @@ type ChiaCASpec struct {
 	ImagePullSecret string `json:"imagePullSecret,omitempty"`
 
 	// Secret defines the name of the secret to contain CA files
-	// +kubebuilder:default="chia-ca"
 	// +optional
 	Secret string `json:"secret,omitempty"`
 }
