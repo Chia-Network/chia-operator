@@ -29,6 +29,9 @@ const (
 	// ChiaSeederKind is the API Kind for Chia seeders / dns-introducers
 	ChiaSeederKind ChiaKind = "ChiaSeeder"
 
+	// ChiaTimelordKind is the API Kind for Chia timelords
+	ChiaTimelordKind ChiaKind = "ChiaTimelord"
+
 	// ChiaWalletKind is the API Kind for Chia wallets
 	ChiaWalletKind ChiaKind = "ChiaWallet"
 )

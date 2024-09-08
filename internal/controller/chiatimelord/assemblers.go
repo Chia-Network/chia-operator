@@ -55,6 +55,11 @@ func assemblePeerService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	}
 	inputs.Annotations = kube.CombineMaps(tl.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
 
+	// Handle the Service rollup feature
+	if kube.ShouldMakeService(tl.Spec.ChiaHealthcheckConfig.Service, false) && kube.ShouldRollIntoMainPeerService(tl.Spec.ChiaHealthcheckConfig.Service) {
+		inputs.Ports = append(inputs.Ports, kube.GetChiaHealthcheckServicePorts()...)
+	}
+
 	return kube.AssembleCommonService(inputs)
 }
 
@@ -199,6 +204,36 @@ func assembleChiaExporterService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleChiaHealthcheckService assembles the chia-healthcheck Service resource
+func assembleChiaHealthcheckService(tl k8schianetv1.ChiaTimelord) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:      fmt.Sprintf(chiatimelordNamePattern, tl.Name) + "-healthcheck",
+		Namespace: tl.Namespace,
+		Ports:     kube.GetChiaHealthcheckServicePorts(),
+	}
+
+	inputs.ServiceType = tl.Spec.ChiaHealthcheckConfig.Service.ServiceType
+	inputs.IPFamilyPolicy = tl.Spec.ChiaHealthcheckConfig.Service.IPFamilyPolicy
+	inputs.IPFamilies = tl.Spec.ChiaHealthcheckConfig.Service.IPFamilies
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if tl.Spec.ChiaHealthcheckConfig.Service.Labels != nil {
+		additionalServiceLabels = tl.Spec.ChiaHealthcheckConfig.Service.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if tl.Spec.ChiaHealthcheckConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = tl.Spec.ChiaHealthcheckConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(tl.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleVolumeClaim assembles the PVC resource for a ChiaTimelord CR
 func assembleVolumeClaim(tl k8schianetv1.ChiaTimelord) (*corev1.PersistentVolumeClaim, error) {
 	if tl.Spec.Storage == nil || tl.Spec.Storage.ChiaRoot == nil || tl.Spec.Storage.ChiaRoot.PersistentVolumeClaim == nil {
@@ -286,6 +321,10 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord) appsv1.Deployment {
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
 	}
 
+	if tl.Spec.ChiaHealthcheckConfig.Enabled {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaHealthcheckContainer(tl))
+	}
+
 	if tl.Spec.Strategy != nil {
 		deploy.Spec.Strategy = *tl.Spec.Strategy
 	}
@@ -334,14 +373,30 @@ func assembleChiaContainer(tl k8schianetv1.ChiaTimelord) corev1.Container {
 
 	if tl.Spec.ChiaConfig.LivenessProbe != nil {
 		input.LivenessProbe = tl.Spec.ChiaConfig.LivenessProbe
+	} else if tl.Spec.ChiaHealthcheckConfig.Enabled {
+		input.LivenessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Kind: consts.ChiaTimelordKind,
+		})
 	}
 
 	if tl.Spec.ChiaConfig.ReadinessProbe != nil {
 		input.ReadinessProbe = tl.Spec.ChiaConfig.ReadinessProbe
+	} else if tl.Spec.ChiaHealthcheckConfig.Enabled {
+		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Kind: consts.ChiaTimelordKind,
+		})
 	}
 
 	if tl.Spec.ChiaConfig.StartupProbe != nil {
 		input.StartupProbe = tl.Spec.ChiaConfig.StartupProbe
+	} else if tl.Spec.ChiaHealthcheckConfig.Enabled {
+		failThresh := int32(30)
+		periodSec := int32(10)
+		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Kind:             consts.ChiaTimelordKind,
+			FailureThreshold: &failThresh,
+			PeriodSeconds:    &periodSec,
+		})
 	}
 
 	if tl.Spec.ChiaConfig.Resources != nil {
@@ -367,4 +422,21 @@ func assembleChiaExporterContainer(tl k8schianetv1.ChiaTimelord) corev1.Containe
 	}
 
 	return kube.AssembleChiaExporterContainer(input)
+}
+
+func assembleChiaHealthcheckContainer(tl k8schianetv1.ChiaTimelord) corev1.Container {
+	input := kube.AssembleChiaHealthcheckContainerInputs{
+		Image:           tl.Spec.ChiaHealthcheckConfig.Image,
+		ImagePullPolicy: tl.Spec.ImagePullPolicy,
+	}
+
+	if tl.Spec.ChiaConfig.SecurityContext != nil {
+		input.SecurityContext = tl.Spec.ChiaConfig.SecurityContext
+	}
+
+	if tl.Spec.ChiaConfig.Resources != nil {
+		input.ResourceRequirements = *tl.Spec.ChiaConfig.Resources
+	}
+
+	return kube.AssembleChiaHealthcheckContainer(input)
 }

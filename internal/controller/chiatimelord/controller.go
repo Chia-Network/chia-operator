@@ -143,6 +143,22 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 	}
 
+	// Assemble Chia-Healthcheck Service
+	healthcheckSrv := assembleChiaHealthcheckService(timelord)
+	if err := controllerutil.SetControllerReference(&timelord, &healthcheckSrv, r.Scheme); err != nil {
+		metrics.OperatorErrors.Add(1.0)
+		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord chia-healthcheck Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error assembling chia-healthcheck Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Chia-Healthcheck Service
+	if !kube.ShouldRollIntoMainPeerService(timelord.Spec.ChiaHealthcheckConfig.Service) {
+		res, err = kube.ReconcileService(ctx, r.Client, timelord.Spec.ChiaHealthcheckConfig.Service, healthcheckSrv, false)
+		if err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			return res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
+		}
+	}
+
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if kube.ShouldMakeVolumeClaim(timelord.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(timelord)
