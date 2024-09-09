@@ -34,13 +34,14 @@ You can set resource requests and limits for the chia container deployed from a 
 
 ```yaml
 spec:
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "500m"
-    limits:
-      memory: "1028Mi"
-      cpu: "1000m"
+  chia:
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "500m"
+      limits:
+        memory: "1028Mi"
+        cpu: "1000m"
 ```
 
 Before setting these, ensure you have an idea of how much memory and cpu the chia service being deployed tends to use under normal circumstances. If too low of a limit is specified, the chia container may restart often. If given too great of requests, you may be wasting some of the scheduling capabilities of a kubernetes node.
