@@ -100,17 +100,64 @@ func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.De
 	} else if err != nil {
 		return ctrl.Result{}, fmt.Errorf("error getting existing Deployment \"%s\": %v", desired.Name, err)
 	} else {
-		// Deployment exists, so we need to update it if there are any changes
-		desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
-		if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
-			current.Labels = desired.Labels
-			current.Annotations = desiredAnnotations
-			current.Spec = desired.Spec
-			if err := c.Update(ctx, &current); err != nil {
+		// Need to handle a case where Deployment's spec.Selector.MatchLabels changed, since the field is immutable
+		if !reflect.DeepEqual(current.Spec.Selector.MatchLabels, desired.Spec.Selector.MatchLabels) {
+			klog.Info("Recreating Deployment for new Selector labels -- selector labels are immutable")
+
+			if err := c.Delete(ctx, &current); err != nil {
 				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
 					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 				}
-				return ctrl.Result{}, fmt.Errorf("error updating Deployment \"%s\": %v", desired.Name, err)
+				return ctrl.Result{}, fmt.Errorf("error deleting Deployment \"%s\": %v", current.Name, err)
+			}
+
+			// Wait for the deployment to be deleted
+			for {
+				var tmp appsv1.Deployment
+				err = c.Get(ctx, types.NamespacedName{
+					Namespace: current.Namespace,
+					Name:      current.Name,
+				}, &tmp)
+				if err != nil {
+					if client.IgnoreNotFound(err) == nil {
+						break
+					}
+					return ctrl.Result{}, fmt.Errorf("error waiting for Deployment to be deleted \"%s\": %v", desired.Name, err)
+				}
+				time.Sleep(2 * time.Second)
+			}
+
+			if err := c.Create(ctx, &desired); err != nil {
+				return ctrl.Result{}, fmt.Errorf("error creating Deployment \"%s\": %v", desired.Name, err)
+			}
+
+			return ctrl.Result{}, nil // Exit reconciler here because we created the desired Deployment
+		}
+
+		// Deployment exists, so we need to update it if there are any changes.
+		// We'll make a copy of the current Deployment to make sure we only change mutable Deployment fields.
+		// Then we will compare the current and updated Deployments, and send an Update request if there was any diff.
+		updated := current
+
+		desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
+		if !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
+			updated.Annotations = desiredAnnotations
+		}
+
+		if !reflect.DeepEqual(current.Labels, desired.Labels) {
+			updated.Labels = desired.Labels
+		}
+
+		if !reflect.DeepEqual(current.Spec, desired.Spec) {
+			updated.Spec = desired.Spec
+		}
+
+		if !reflect.DeepEqual(current, updated) {
+			if err := c.Update(ctx, &updated); err != nil {
+				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+				}
+				return ctrl.Result{}, fmt.Errorf("error updating Deployment \"%s\": %v", updated.Name, err)
 			}
 		}
 	}
@@ -136,6 +183,40 @@ func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.S
 	} else if err != nil {
 		return ctrl.Result{}, fmt.Errorf("error getting existing StatefulSet \"%s\": %v", desired.Name, err)
 	} else {
+		// Need to handle a case where StatefulSet's spec.Selector.MatchLabels changed, since the field is immutable
+		if !reflect.DeepEqual(current.Spec.Selector.MatchLabels, desired.Spec.Selector.MatchLabels) {
+			klog.Info("Recreating StatefulSet for new Selector labels -- selector labels are immutable")
+
+			if err := c.Delete(ctx, &current); err != nil {
+				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+				}
+				return ctrl.Result{}, fmt.Errorf("error deleting StatefulSet \"%s\": %v", current.Name, err)
+			}
+
+			// Wait for the statefulset to be deleted
+			for {
+				var tmp appsv1.StatefulSet
+				err = c.Get(ctx, types.NamespacedName{
+					Namespace: current.Namespace,
+					Name:      current.Name,
+				}, &tmp)
+				if err != nil {
+					if client.IgnoreNotFound(err) == nil {
+						break
+					}
+					return ctrl.Result{}, fmt.Errorf("error waiting for StatefulSet to be deleted \"%s\": %v", desired.Name, err)
+				}
+				time.Sleep(2 * time.Second)
+			}
+
+			if err := c.Create(ctx, &desired); err != nil {
+				return ctrl.Result{}, fmt.Errorf("error creating StatefulSet \"%s\": %v", desired.Name, err)
+			}
+
+			return ctrl.Result{}, nil // Exit reconciler here because we created the desired StatefulSet
+		}
+
 		// StatefulSet exists, so we need to update it if there are any changes.
 		// We'll make a copy of the current StatefulSet to make sure we only change mutable StatefulSet fields.
 		// Then we will compare the current and updated StatefulSets, and send an Update request if there was any diff.
