@@ -281,6 +281,10 @@ func assembleDeployment(harvester k8schianetv1.ChiaHarvester) appsv1.Deployment 
 		}
 	}
 
+	if harvester.Spec.ImagePullSecrets != nil && len(*harvester.Spec.ImagePullSecrets) != 0 {
+		deploy.Spec.Template.Spec.ImagePullSecrets = *harvester.Spec.ImagePullSecrets
+	}
+
 	if harvester.Spec.ChiaExporterConfig.Enabled {
 		chiaExporterContainer := assembleChiaExporterContainer(harvester)
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)

@@ -281,6 +281,10 @@ func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet) app
 		}
 	}
 
+	if wallet.Spec.ImagePullSecrets != nil && len(*wallet.Spec.ImagePullSecrets) != 0 {
+		deploy.Spec.Template.Spec.ImagePullSecrets = *wallet.Spec.ImagePullSecrets
+	}
+
 	if wallet.Spec.ChiaExporterConfig.Enabled {
 		chiaExporterContainer := assembleChiaExporterContainer(wallet)
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
