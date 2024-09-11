@@ -15,7 +15,7 @@ func TestGetCommonLabels(t *testing.T) {
 		"app.kubernetes.io/instance":   "testname",
 		"app.kubernetes.io/name":       "testname",
 		"app.kubernetes.io/managed-by": "chia-operator",
-		"k8s.chia.net/provenance":      "TestKind.testnamespace.testname",
+		"k8s.chia.net/kind":            "TestKind",
 		"foo":                          "bar",
 		"hello":                        "world",
 	}
