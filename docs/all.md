@@ -28,6 +28,18 @@ spec:
     dnsIntroducerAddress: "dns-introducer.default.svc.cluster.local" # Sets the DNS introducer address used in the chia config file.
 ```
 
+### Install chia from a specific ref
+
+You can select a specific ref (commit sha or branch) from the chia-blockchain repository to install chia from. This is unnecessary the majority of the time as the image has a chia installation by default, but this may be useful for testing specific versions of chia:
+
+```yaml
+spec:
+  chia:
+    sourceRef: "a6a27bfe8e8d3e3db16701e7a33182ac11ce0723" # commit sha of github.com/Chia-Network/chia-blockchain to install from
+```
+
+Note that if you use this configuration, the tag of the chia image running in your Pods may still specify a version of chia-blockchain, but is no longer the version of chia installed in the image.
+
 ## Chia container resource requests and limits
 
 You can set resource requests and limits for the chia container deployed from a custom resource with the following (note that these are just example values, and not to be taken as recommendations for your deployments):

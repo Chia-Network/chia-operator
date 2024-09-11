@@ -218,6 +218,14 @@ func getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar
 		})
 	}
 
+	// source_ref env var
+	if node.Spec.ChiaConfig.SourceRef != nil && *node.Spec.ChiaConfig.SourceRef != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "source_ref",
+			Value: *node.Spec.ChiaConfig.SourceRef,
+		})
+	}
+
 	// self_hostname env var
 	if node.Spec.ChiaConfig.SelfHostname != nil {
 		env = append(env, corev1.EnvVar{

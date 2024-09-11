@@ -157,6 +157,14 @@ func getChiaEnv(crawler k8schianetv1.ChiaCrawler) []corev1.EnvVar {
 		})
 	}
 
+	// source_ref env var
+	if crawler.Spec.ChiaConfig.SourceRef != nil && *crawler.Spec.ChiaConfig.SourceRef != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "source_ref",
+			Value: *crawler.Spec.ChiaConfig.SourceRef,
+		})
+	}
+
 	// self_hostname env var
 	if crawler.Spec.ChiaConfig.SelfHostname != nil {
 		env = append(env, corev1.EnvVar{

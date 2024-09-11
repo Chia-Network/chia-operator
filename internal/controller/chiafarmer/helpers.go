@@ -156,6 +156,14 @@ func getChiaEnv(farmer k8schianetv1.ChiaFarmer) []corev1.EnvVar {
 		})
 	}
 
+	// source_ref env var
+	if farmer.Spec.ChiaConfig.SourceRef != nil && *farmer.Spec.ChiaConfig.SourceRef != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "source_ref",
+			Value: *farmer.Spec.ChiaConfig.SourceRef,
+		})
+	}
+
 	// self_hostname env var
 	if farmer.Spec.ChiaConfig.SelfHostname != nil {
 		env = append(env, corev1.EnvVar{

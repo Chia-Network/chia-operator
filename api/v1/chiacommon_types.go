@@ -102,6 +102,10 @@ type CommonSpecChia struct {
 	// +optional
 	Timezone *string `json:"timezone,omitempty"`
 
+	// SourceRef is set to the desired ref of the chia-blockchain repository to install from. Defaults to unset (uses the installation already in the chia image.)
+	// +optional
+	SourceRef *string `json:"sourceRef,omitempty"`
+
 	// LogLevel is set to the desired chia config log_level
 	// +optional
 	LogLevel *string `json:"logLevel,omitempty"`

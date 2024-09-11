@@ -1223,6 +1223,11 @@ func (in *CommonSpecChia) DeepCopyInto(out *CommonSpecChia) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SourceRef != nil {
+		in, out := &in.SourceRef, &out.SourceRef
+		*out = new(string)
+		**out = **in
+	}
 	if in.LogLevel != nil {
 		in, out := &in.LogLevel, &out.LogLevel
 		*out = new(string)

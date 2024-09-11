@@ -142,6 +142,14 @@ func getChiaEnv(tl k8schianetv1.ChiaTimelord) []corev1.EnvVar {
 		})
 	}
 
+	// source_ref env var
+	if tl.Spec.ChiaConfig.SourceRef != nil && *tl.Spec.ChiaConfig.SourceRef != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "source_ref",
+			Value: *tl.Spec.ChiaConfig.SourceRef,
+		})
+	}
+
 	// self_hostname env var
 	if tl.Spec.ChiaConfig.SelfHostname != nil {
 		env = append(env, corev1.EnvVar{
