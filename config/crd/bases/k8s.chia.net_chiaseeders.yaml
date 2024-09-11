@@ -1765,6 +1765,11 @@ spec:
                       SelfHostname defines the bind address of chia services in the container
                       Setting to `0.0.0.0` binds chia services to all interfaces
                     type: string
+                  sourceRef:
+                    description: SourceRef is set to the desired ref of the chia-blockchain
+                      repository to install from. Defaults to unset (uses the installation
+                      already in the chia image.)
+                    type: string
                   startupProbe:
                     description: StartupProbe indicates that the Pod has successfully
                       initialized.

@@ -158,6 +158,14 @@ func getChiaEnv(seeder k8schianetv1.ChiaSeeder) []corev1.EnvVar {
 		})
 	}
 
+	// source_ref env var
+	if seeder.Spec.ChiaConfig.SourceRef != nil && *seeder.Spec.ChiaConfig.SourceRef != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "source_ref",
+			Value: *seeder.Spec.ChiaConfig.SourceRef,
+		})
+	}
+
 	// self_hostname env var
 	if seeder.Spec.ChiaConfig.SelfHostname != nil {
 		env = append(env, corev1.EnvVar{

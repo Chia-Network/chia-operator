@@ -216,6 +216,14 @@ func getChiaEnv(harvester k8schianetv1.ChiaHarvester) []corev1.EnvVar {
 		})
 	}
 
+	// source_ref env var
+	if harvester.Spec.ChiaConfig.SourceRef != nil && *harvester.Spec.ChiaConfig.SourceRef != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "source_ref",
+			Value: *harvester.Spec.ChiaConfig.SourceRef,
+		})
+	}
+
 	// self_hostname env var
 	if harvester.Spec.ChiaConfig.SelfHostname != nil {
 		env = append(env, corev1.EnvVar{
