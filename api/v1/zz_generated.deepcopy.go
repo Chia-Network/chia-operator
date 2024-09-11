@@ -1156,6 +1156,15 @@ func (in *CommonSpec) DeepCopyInto(out *CommonSpec) {
 		*out = new(StorageConfig)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.ImagePullSecrets != nil {
+		in, out := &in.ImagePullSecrets, &out.ImagePullSecrets
+		*out = new([]corev1.LocalObjectReference)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make([]corev1.LocalObjectReference, len(*in))
+			copy(*out, *in)
+		}
+	}
 	if in.NodeSelector != nil {
 		in, out := &in.NodeSelector, &out.NodeSelector
 		*out = make(map[string]string, len(*in))

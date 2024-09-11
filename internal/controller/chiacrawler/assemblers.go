@@ -281,6 +281,10 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler) appsv1.Deployment {
 		}
 	}
 
+	if crawler.Spec.ImagePullSecrets != nil && len(*crawler.Spec.ImagePullSecrets) != 0 {
+		deploy.Spec.Template.Spec.ImagePullSecrets = *crawler.Spec.ImagePullSecrets
+	}
+
 	if crawler.Spec.ChiaExporterConfig.Enabled {
 		chiaExporterContainer := assembleChiaExporterContainer(crawler)
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)

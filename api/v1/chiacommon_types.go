@@ -31,6 +31,10 @@ type CommonSpec struct {
 	// +kubebuilder:default="Always"
 	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
 
+	// ImagePullSecrets is a local object reference list to some image pull secrets for pod templates
+	// +optional
+	ImagePullSecrets *[]corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
+
 	// NodeSelector selects a node by key value pairs
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`

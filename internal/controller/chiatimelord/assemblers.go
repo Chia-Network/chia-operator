@@ -316,6 +316,10 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord) appsv1.Deployment {
 		}
 	}
 
+	if tl.Spec.ImagePullSecrets != nil && len(*tl.Spec.ImagePullSecrets) != 0 {
+		deploy.Spec.Template.Spec.ImagePullSecrets = *tl.Spec.ImagePullSecrets
+	}
+
 	if tl.Spec.ChiaExporterConfig.Enabled {
 		chiaExporterContainer := assembleChiaExporterContainer(tl)
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)

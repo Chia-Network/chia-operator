@@ -238,6 +238,10 @@ func assembleDeployment(introducer k8schianetv1.ChiaIntroducer) appsv1.Deploymen
 		}
 	}
 
+	if introducer.Spec.ImagePullSecrets != nil && len(*introducer.Spec.ImagePullSecrets) != 0 {
+		deploy.Spec.Template.Spec.ImagePullSecrets = *introducer.Spec.ImagePullSecrets
+	}
+
 	if introducer.Spec.ChiaExporterConfig.Enabled {
 		chiaExporterContainer := assembleChiaExporterContainer(introducer)
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)

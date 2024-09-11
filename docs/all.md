@@ -153,3 +153,27 @@ spec:
           - '-c'
           - /usr/local/bin/docker-healthcheck.sh || exit 1
 ```
+
+## Specify Image Pull Secrets
+
+Most of the time you won't need to specify imagePullSecrets when using this operator, but if you specify custom images from your own registries for init containers, sidecar containers, or custom versions for any of the default containers this operator supports, you can specify imagePullSecrets to pull those images. 
+
+These are dockerconfigjson Secrets you would have created in the cluster yourself. Here's an example of how you would specify imagePullSecrets in your chia custom resource:
+
+```yaml
+spec:
+  imagePullSecrets:
+    - name: my-registry-secret
+```
+
+And here is an example dockerconfigjson Secret, make sure this is installed in the cluster in the same namespace as your chia custom resource:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-registry-secret
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: <base64-encoded-auth-secret>
+```

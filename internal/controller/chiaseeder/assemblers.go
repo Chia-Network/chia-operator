@@ -340,6 +340,10 @@ func assembleDeployment(seeder k8schianetv1.ChiaSeeder) appsv1.Deployment {
 		}
 	}
 
+	if seeder.Spec.ImagePullSecrets != nil && len(*seeder.Spec.ImagePullSecrets) != 0 {
+		deploy.Spec.Template.Spec.ImagePullSecrets = *seeder.Spec.ImagePullSecrets
+	}
+
 	if seeder.Spec.ChiaExporterConfig.Enabled {
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(seeder))
 	}

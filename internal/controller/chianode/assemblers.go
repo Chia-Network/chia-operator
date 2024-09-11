@@ -281,7 +281,7 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode) appsv1
 					Annotations: node.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					// TODO add: imagePullSecret, serviceAccountName config
+					// TODO add: serviceAccountName config
 					Containers:   []corev1.Container{assembleChiaContainer(ctx, node)},
 					Affinity:     node.Spec.Affinity,
 					NodeSelector: node.Spec.NodeSelector,
@@ -309,6 +309,10 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode) appsv1
 
 			stateful.Spec.Template.Spec.InitContainers = append(stateful.Spec.Template.Spec.InitContainers, cont.Container)
 		}
+	}
+
+	if node.Spec.ImagePullSecrets != nil && len(*node.Spec.ImagePullSecrets) != 0 {
+		stateful.Spec.Template.Spec.ImagePullSecrets = *node.Spec.ImagePullSecrets
 	}
 
 	if node.Spec.ChiaExporterConfig.Enabled {
