@@ -31,7 +31,7 @@ var testObjMeta = metav1.ObjectMeta{
 		"app.kubernetes.io/instance":   "testname",
 		"app.kubernetes.io/name":       "testname",
 		"app.kubernetes.io/managed-by": "chia-operator",
-		"k8s.chia.net/provenance":      "ChiaCA.testnamespace.testname",
+		"k8s.chia.net/kind":            "ChiaCA",
 	},
 }
 

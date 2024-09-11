@@ -5,8 +5,6 @@ Copyright 2023 Chia Network Inc.
 package kube
 
 import (
-	"fmt"
-
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	corev1 "k8s.io/api/core/v1"
@@ -21,7 +19,7 @@ func GetCommonLabels(kind string, meta metav1.ObjectMeta, additionalLabels ...ma
 	labels["app.kubernetes.io/instance"] = meta.Name
 	labels["app.kubernetes.io/name"] = meta.Name
 	labels["app.kubernetes.io/managed-by"] = "chia-operator"
-	labels["k8s.chia.net/provenance"] = fmt.Sprintf("%s.%s.%s", kind, meta.Namespace, meta.Name)
+	labels["k8s.chia.net/kind"] = kind
 	return labels
 }
 
