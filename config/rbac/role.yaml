@@ -15,14 +15,21 @@ rules:
   - ""
   resources:
   - persistentvolumeclaims
-  - secrets
-  - serviceaccounts
   verbs:
   - create
   - get
   - list
   - patch
   - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - get
+  - list
   - watch
 - apiGroups:
   - ""
@@ -41,18 +48,6 @@ rules:
   resources:
   - deployments
   - statefulsets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - batch
-  resources:
-  - jobs
   verbs:
   - create
   - delete
@@ -111,15 +106,3 @@ rules:
   - get
   - patch
   - update
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
-  - rolebindings
-  - roles
-  verbs:
-  - create
-  - get
-  - list
-  - patch
-  - update
-  - watch

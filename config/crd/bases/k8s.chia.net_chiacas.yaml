@@ -39,13 +39,6 @@ spec:
           spec:
             description: ChiaCASpec defines the desired state of ChiaCA
             properties:
-              image:
-                description: Image defines the CA generator image to run
-                type: string
-              imagePullSecret:
-                description: ImagePullSecret defines an ImagePullSecret for the CA
-                  generator image
-                type: string
               secret:
                 description: Secret defines the name of the secret to contain CA files
                 type: string

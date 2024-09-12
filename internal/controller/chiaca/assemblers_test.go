@@ -1,15 +1,11 @@
 package chiaca
 
 import (
-	"fmt"
 	"testing"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	"github.com/stretchr/testify/require"
-	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -24,133 +20,38 @@ var testCA = k8schianetv1.ChiaCA{
 	},
 }
 
-var testObjMeta = metav1.ObjectMeta{
-	Name:      "testname-chiaca-generator",
-	Namespace: "testnamespace",
-	Labels: map[string]string{
-		"app.kubernetes.io/instance":   "testname",
-		"app.kubernetes.io/name":       "testname",
-		"app.kubernetes.io/managed-by": "chia-operator",
-		"k8s.chia.net/kind":            "ChiaCA",
-	},
-}
-
-func TestAssembleJob_DefaultSecret(t *testing.T) {
-	var backoffLimit int32 = 3
-	expected := batchv1.Job{
-		ObjectMeta: testObjMeta,
-		Spec: batchv1.JobSpec{
-			BackoffLimit: &backoffLimit,
-			Template: corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					RestartPolicy:      "Never",
-					ServiceAccountName: "testname-chiaca-generator",
-					Containers: []corev1.Container{
-						{
-							Name:  "chiaca-generator",
-							Image: fmt.Sprintf("%s:%s", consts.DefaultChiaCAImageName, consts.DefaultChiaCAImageTag),
-							Env: []corev1.EnvVar{
-								{
-									Name:  "NAMESPACE",
-									Value: "testnamespace",
-								},
-								{
-									Name:  "SECRET_NAME",
-									Value: "chiaca",
-								},
-							},
-						},
-					},
-				},
-			},
+func TestAssembleCASecret_DefaultSecretName(t *testing.T) {
+	expected := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "chiaca",
+			Namespace: "testnamespace",
+		},
+		StringData: map[string]string{
+			"chia_ca.crt":    "publicCACert",
+			"chia_ca.key":    "publicCAKey",
+			"private_ca.crt": "privateCACert",
+			"private_ca.key": "privateCAKey",
 		},
 	}
-	actual := assembleJob(testCA)
+	actual := assembleCASecret(testCA, "publicCACert", "publicCAKey", "privateCACert", "privateCAKey")
 	require.Equal(t, expected, actual)
 }
 
-func TestAssembleJob_CustomSecret(t *testing.T) {
-	testCACustomSecret := testCA
-	testCACustomSecret.Spec = k8schianetv1.ChiaCASpec{
-		Secret: "test-ca-secret",
-	}
-
-	var backoffLimit int32 = 3
-	expected := batchv1.Job{
-		ObjectMeta: testObjMeta,
-		Spec: batchv1.JobSpec{
-			BackoffLimit: &backoffLimit,
-			Template: corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					RestartPolicy:      "Never",
-					ServiceAccountName: "testname-chiaca-generator",
-					Containers: []corev1.Container{
-						{
-							Name:  "chiaca-generator",
-							Image: fmt.Sprintf("%s:%s", consts.DefaultChiaCAImageName, consts.DefaultChiaCAImageTag),
-							Env: []corev1.EnvVar{
-								{
-									Name:  "NAMESPACE",
-									Value: "testnamespace",
-								},
-								{
-									Name:  "SECRET_NAME",
-									Value: "test-ca-secret",
-								},
-							},
-						},
-					},
-				},
-			},
+func TestAssembleCASecret_CustomSecretName(t *testing.T) {
+	customCA := testCA
+	customCA.Spec.Secret = "chiaca-custom"
+	expected := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "chiaca-custom",
+			Namespace: "testnamespace",
+		},
+		StringData: map[string]string{
+			"chia_ca.crt":    "publicCACert",
+			"chia_ca.key":    "publicCAKey",
+			"private_ca.crt": "privateCACert",
+			"private_ca.key": "privateCAKey",
 		},
 	}
-	actual := assembleJob(testCACustomSecret)
-	require.Equal(t, expected, actual)
-}
-
-func TestAssembleServiceAccount(t *testing.T) {
-	expected := corev1.ServiceAccount{
-		ObjectMeta: testObjMeta,
-	}
-	actual := assembleServiceAccount(testCA)
-	require.Equal(t, expected, actual)
-}
-
-func TestAssembleRole(t *testing.T) {
-	expected := rbacv1.Role{
-		ObjectMeta: testObjMeta,
-		Rules: []rbacv1.PolicyRule{
-			{
-				APIGroups: []string{
-					"",
-				},
-				Resources: []string{
-					"secrets",
-				},
-				Verbs: []string{
-					"create",
-				},
-			},
-		},
-	}
-	actual := assembleRole(testCA)
-	require.Equal(t, expected, actual)
-}
-
-func TestAssembleRoleBinding(t *testing.T) {
-	expected := rbacv1.RoleBinding{
-		ObjectMeta: testObjMeta,
-		Subjects: []rbacv1.Subject{
-			{
-				Kind: "ServiceAccount",
-				Name: "testname-chiaca-generator",
-			},
-		},
-		RoleRef: rbacv1.RoleRef{
-			Kind: "Role",
-			Name: "testname-chiaca-generator",
-		},
-	}
-	actual := assembleRoleBinding(testCA)
+	actual := assembleCASecret(customCA, "publicCACert", "publicCAKey", "privateCACert", "privateCAKey")
 	require.Equal(t, expected, actual)
 }

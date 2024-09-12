@@ -3,5 +3,4 @@ kind: ChiaCA
 metadata:
   name: chiaca-test
 spec:
-  image: cagentest:1
   secret: chiaca-secret

@@ -38,12 +38,6 @@ const (
 
 // API default image constants
 const (
-	// DefaultChiaCAImageName contains the default image name for the ca-gen image
-	DefaultChiaCAImageName = "ghcr.io/chia-network/chia-operator/ca-gen"
-
-	// DefaultChiaCAImageTag contains the default tag name for the ca-gen image
-	DefaultChiaCAImageTag = "latest"
-
 	// DefaultChiaImageName contains the default image name for the chia-docker image
 	DefaultChiaImageName = "ghcr.io/chia-network/chia"
 

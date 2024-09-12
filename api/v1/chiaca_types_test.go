@@ -24,12 +24,9 @@ metadata:
     app.kubernetes.io/created-by: chia-operator
   name: chiaca-sample
 spec:
-  image: "ca-gen-image:latest"
-  imagePullSecret: registrypullsecret
   secret: chiaca-secret
 `)
 
-	image := "ca-gen-image:latest"
 	expect := ChiaCA{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "k8s.chia.net/v1",
@@ -45,9 +42,7 @@ spec:
 			},
 		},
 		Spec: ChiaCASpec{
-			Image:           &image,
-			ImagePullSecret: "registrypullsecret",
-			Secret:          "chiaca-secret",
+			Secret: "chiaca-secret",
 		},
 	}
 

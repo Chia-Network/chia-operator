@@ -10,14 +10,6 @@ import (
 
 // ChiaCASpec defines the desired state of ChiaCA
 type ChiaCASpec struct {
-	// Image defines the CA generator image to run
-	// +optional
-	Image *string `json:"image,omitempty"`
-
-	// ImagePullSecret defines an ImagePullSecret for the CA generator image
-	// +optional
-	ImagePullSecret string `json:"imagePullSecret,omitempty"`
-
 	// Secret defines the name of the secret to contain CA files
 	// +optional
 	Secret string `json:"secret,omitempty"`

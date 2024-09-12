@@ -11,21 +11,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build ca-gen
-        uses: docker/build-push-action@v6
-        with:
-          push: false
-          tags: cagentest:1
-          context: chiaca-generator/
-          file: chiaca-generator/Dockerfile
-
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1
         with:
           cluster_name: kind # the action defaults to "chart-testing" which causes the load command below to fail
-
-      - name: Load CA gen image
-        run: kind load docker-image cagentest:1
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
