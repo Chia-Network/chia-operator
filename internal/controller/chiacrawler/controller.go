@@ -92,7 +92,6 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	// Reconcile All Service
 	res, err = kube.ReconcileService(ctx, r.Client, crawler.Spec.ChiaConfig.AllService, allSrv, true)
 	if err != nil {
-
 		return res, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
 	}
 
