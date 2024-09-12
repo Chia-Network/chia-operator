@@ -83,31 +83,21 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		// Get the public CA cert and key byte slices
 		publicCACrtBytes, publicCAKeyBytes := tls.GetChiaCACertAndKey()
 
-		// Parse the public CA crt and key to Go structs
-		chiaCACert, err := tls.ParsePemCertificate(publicCACrtBytes)
-		if err != nil {
-			metrics.OperatorErrors.Add(1.0)
-			return ctrl.Result{}, fmt.Errorf("encountered error parsing public CA cert: %v", err)
-		}
-		chiaCAKey, err := tls.ParsePemKey(publicCAKeyBytes)
-		if err != nil {
-			metrics.OperatorErrors.Add(1.0)
-			return ctrl.Result{}, fmt.Errorf("encountered error parsing public CA key: %v", err)
-		}
-
-		// Generate a private CA cert and key signed by Chia's public CA
-		privateCACrt, privateCAKey, err := tls.GenerateCASignedCert(chiaCACert, chiaCAKey)
+		// Generate a private CA cert and key
+		privateCACrt, privateCAKey, err := tls.GenerateNewCA()
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			return ctrl.Result{}, fmt.Errorf("encountered error generating new private CA cert and key: %v", err)
 		}
 
+		// Encode the private CA cert and key to PEM byte slices
 		privateCACrtBytes, privateCAKeyBytes, err := tls.EncodeCertAndKeyToPEM(privateCACrt, privateCAKey)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			return ctrl.Result{}, fmt.Errorf("encountered error encoding private CA cert and key to PEM: %v", err)
 		}
 
+		// Assemble CA Secret and create in cluster
 		secret := assembleCASecret(ca, string(publicCACrtBytes), string(publicCAKeyBytes), string(privateCACrtBytes), string(privateCAKeyBytes))
 		if err = r.Create(ctx, &secret); err != nil {
 			metrics.OperatorErrors.Add(1.0)
