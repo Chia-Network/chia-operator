@@ -61,6 +61,7 @@ spec:
         name: manager
         ports:
         - containerPort: 8081
+        - containerPort: 8080
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
