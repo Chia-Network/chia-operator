@@ -116,6 +116,8 @@ spec:
 
 You can set a custom update strategy using [kubernetes Deployment update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) definitions.
 
+NOTE: This applies to all resources that deploy Pods except for ChiaNodes.
+
 ```yaml
 spec:
   strategy:
@@ -123,6 +125,20 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+```
+
+### ChiaNode Update Strategies
+
+ChiaNodes deploy StatefulSet resources which use a different update strategy definition. See the documentation for [kubernetes StatefulSet update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) definitions.
+
+```yaml
+apiVersion: k8s.chia.net/v1
+kind: ChiaNode
+metadata:
+  name: my-node
+spec:
+  updateStrategy:
+    type: RollingUpdate
 ```
 
 ## Configure Readiness, Liveness, and Startup probes
@@ -174,4 +190,13 @@ metadata:
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: <base64-encoded-auth-secret>
+```
+
+## Specify Image Pull Policy
+
+If you need to specify your image pull policy for container images:
+
+```yaml
+spec:
+  imagePullPolicy: "IfNotPresent"
 ```

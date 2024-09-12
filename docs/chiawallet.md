@@ -30,11 +30,37 @@ kind: Secret
 metadata:
   name: chiakey-secret
 stringData:
-  key.txt: your mnemonic goes here
+  key.txt: "your mnemonic goes here"
 type: Opaque
 ```
 
 Replace the text value for `key.txt` with your mnemonic, and then reference it in your ChiaWallet resource in the way shown above.
+
+## Full Node Peer
+
+You may optionally specify a local full_node for a peer to sync your wallet from.
+
+```yaml
+spec:
+  chia:
+    fullNodePeer: "node.default.svc.cluster.local:8444"
+```
+
+## Trusted Peers
+
+You can optionally specify a list of [CIDRs](https://aws.amazon.com/what-is/cidr/) that the wallet should trust full_node peers from. View the [Chia documentation on trusted peers](https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them) to understand whether you should use this feature or not.
+
+Here's an example ChiaWallet that specifies trusted CIDRs:
+
+```yaml
+spec:
+  chia:
+    trustedCIDRs:
+      - "192.168.1.0/24"
+      - "10.0.0/8"
+```
+
+This specifies two trusted CIDRs, where if the IP address of a full_node peer is discovered to be within one of these two CIDR ranges, chia will consider that a trusted peer.
 
 ## More Info
 

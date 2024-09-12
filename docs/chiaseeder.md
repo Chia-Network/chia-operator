@@ -4,7 +4,7 @@ Specifying a ChiaSeeder will create a kubernetes Deployment and some Services fo
 
 The majority of people do not need to run a seeder. Seeders in Chia serve the purpose of introducing full_nodes in a network to other full_node peers on that network. See the [seeder documentation](https://docs.chia.net/guides/seeder-user-guide/) for more information.
 
-Seeders have some pre-requisites that you will normally configure outside of a kubernetes cluster. This operator doesn't do any of that configuration on your behalf, so in short you will need:
+Seeders have some pre-requisites that you will normally configure outside a kubernetes cluster. This operator doesn't do any of that configuration on your behalf, so in short you will need:
 
 * A DNS `A` record that points to your server's IP address. In this instance the A record will probably be your public IP address if you intend on the DNS server to be reachable publicly, or an internal address if you're reserving the seeder's DNS server for your use.
 * A DNS `AAAA` record is not strictly needed, but is often preferred if your network is IPv6 enabled.

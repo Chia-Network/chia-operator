@@ -1,6 +1,6 @@
 # Installation
 
-There are two parts to this Operator. The CRDs (ChiaCA, ChiaFarmer, ChiaNode, etc) and the actual operator manager Deployment and related objects. You can install these components in two methods, either by cloning the repository and generating the manifests yourself with kustomize, or with `kubectl apply` on the generated manifests on all releases, starting with release `0.2.1`.
+There are two parts to this Operator. The CRDs (ChiaCA, ChiaFarmer, ChiaNode, etc.) and the actual operator manager Deployment and related objects. You can install these components in two methods, either by cloning the repository and generating the manifests yourself with kustomize, or with `kubectl apply` on the generated manifests on all releases, starting with release `0.2.1`.
 
 ## Using the release manifests
 

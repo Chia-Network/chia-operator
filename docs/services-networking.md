@@ -18,6 +18,9 @@ metadata:
 spec:
   chia:
     caSecretName: chiaca-secret
+    allService:
+      enabled: true
+      type: ClusterIP    
     peerService:
       enabled: true
       type: LoadBalancer
