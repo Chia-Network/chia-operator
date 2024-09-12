@@ -75,18 +75,40 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	caExists, err := r.caSecretExists(ctx, ca)
 	if err != nil {
 		metrics.OperatorErrors.Add(1.0)
-		return ctrl.Result{}, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error querying for existing CA Secret: %v", req.NamespacedName, err)
+		return ctrl.Result{}, fmt.Errorf("encountered error querying for existing CA Secret: %v", err)
 	}
 
 	// If CA Secret doesn't exist, generate a CA and create one
 	if !caExists {
-		chiaCACrt, chiaCAKey := tls.GetChiaCACertAndKey()
-		privateCACrt, privateCAKey, err := tls.GenerateNewCA("")
+		// Get the public CA cert and key byte slices
+		publicCACrtBytes, publicCAKeyBytes := tls.GetChiaCACertAndKey()
+
+		// Parse the public CA crt and key to Go structs
+		chiaCACert, err := tls.ParsePemCertificate(publicCACrtBytes)
 		if err != nil {
 			metrics.OperatorErrors.Add(1.0)
-			return ctrl.Result{}, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error generating new CA cert and key: %v", req.NamespacedName, err)
+			return ctrl.Result{}, fmt.Errorf("encountered error parsing public CA cert: %v", err)
 		}
-		secret := assembleCASecret(ca, string(chiaCACrt), string(chiaCAKey), string(privateCACrt), string(privateCAKey))
+		chiaCAKey, err := tls.ParsePemKey(publicCAKeyBytes)
+		if err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			return ctrl.Result{}, fmt.Errorf("encountered error parsing public CA key: %v", err)
+		}
+
+		// Generate a private CA cert and key signed by Chia's public CA
+		privateCACrt, privateCAKey, err := tls.GenerateCASignedCert(chiaCACert, chiaCAKey)
+		if err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			return ctrl.Result{}, fmt.Errorf("encountered error generating new private CA cert and key: %v", err)
+		}
+
+		privateCACrtBytes, privateCAKeyBytes, err := tls.EncodeCertAndKeyToPEM(privateCACrt, privateCAKey)
+		if err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			return ctrl.Result{}, fmt.Errorf("encountered error encoding private CA cert and key to PEM: %v", err)
+		}
+
+		secret := assembleCASecret(ca, string(publicCACrtBytes), string(publicCAKeyBytes), string(privateCACrtBytes), string(privateCAKeyBytes))
 		if err = r.Create(ctx, &secret); err != nil {
 			metrics.OperatorErrors.Add(1.0)
 			return ctrl.Result{}, fmt.Errorf("error creating CA Secret \"%s\": %v", secret.Name, err)
