@@ -7,9 +7,10 @@ package chiaca
 import (
 	"context"
 	"fmt"
-	"github.com/chia-network/go-chia-libs/pkg/tls"
 	"strings"
 	"time"
+
+	"github.com/chia-network/go-chia-libs/pkg/tls"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
