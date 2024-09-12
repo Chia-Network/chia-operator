@@ -7,6 +7,7 @@ package chiaca
 import (
 	"context"
 	"fmt"
+	"github.com/chia-network/go-chia-libs/pkg/tls"
 	"strings"
 	"time"
 
@@ -21,7 +22,6 @@ import (
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -37,11 +37,7 @@ var chiacas = make(map[string]bool)
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacas,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacas/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacas/finalizers,verbs=update
-//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=get;list;watch;create;update;patch
-//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch
-//+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update;patch
-//+kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch
+//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
@@ -81,89 +77,38 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return ctrl.Result{}, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error querying for existing CA Secret: %v", req.NamespacedName, err)
 	}
 
-	// If CA exists, just set ChiaCA status to ready and return
-	if caExists {
-		if !ca.Status.Ready {
-			r.Recorder.Event(&ca, corev1.EventTypeNormal, "Created",
-				fmt.Sprintf("Successfully created CA Secret in %s/%s", ca.Namespace, ca.Name))
-
-			ca.Status.Ready = true
-			err = r.Status().Update(ctx, &ca)
-			if err != nil {
-				if strings.Contains(err.Error(), kube.ObjectModifiedTryAgainError) {
-					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
-				}
-				metrics.OperatorErrors.Add(1.0)
-				log.Error(err, "encountered error updating ChiaCA status")
-				return ctrl.Result{}, err
-			}
+	// If CA Secret doesn't exist, generate a CA and create one
+	if !caExists {
+		chiaCACrt, chiaCAKey := tls.GetChiaCACertAndKey()
+		privateCACrt, privateCAKey, err := tls.GenerateNewCA("")
+		if err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			return ctrl.Result{}, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error generating new CA cert and key: %v", req.NamespacedName, err)
 		}
-
-		return ctrl.Result{}, nil
+		secret := assembleCASecret(ca, string(chiaCACrt), string(chiaCAKey), string(privateCACrt), string(privateCAKey))
+		if err = r.Create(ctx, &secret); err != nil {
+			metrics.OperatorErrors.Add(1.0)
+			return ctrl.Result{}, fmt.Errorf("error creating CA Secret \"%s\": %v", secret.Name, err)
+		}
 	}
 
-	// Assemble ServiceAccount
-	serviceaccount := assembleServiceAccount(ca)
-	if err := controllerutil.SetControllerReference(&ca, &serviceaccount, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to assemble ChiaCA ServiceAccount -- Check operator logs.")
-		return ctrl.Result{}, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error assembling ServiceAccount: %v", req.NamespacedName, err)
-	}
-	// Reconcile ServiceAccount
-	res, err := kube.ReconcileServiceAccount(ctx, r.Client, serviceaccount)
-	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to reconcile ChiaCA ServiceAccount -- Check operator logs.")
-		return res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s %v", req.NamespacedName, err)
+	if !ca.Status.Ready {
+		r.Recorder.Event(&ca, corev1.EventTypeNormal, "Created",
+			fmt.Sprintf("Successfully created CA Secret in %s/%s", ca.Namespace, ca.Name))
+
+		ca.Status.Ready = true
+		err = r.Status().Update(ctx, &ca)
+		if err != nil {
+			if strings.Contains(err.Error(), kube.ObjectModifiedTryAgainError) {
+				return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+			}
+			metrics.OperatorErrors.Add(1.0)
+			log.Error(err, "encountered error updating ChiaCA status")
+			return ctrl.Result{}, err
+		}
 	}
 
-	// Assemble Role
-	role := assembleRole(ca)
-	if err := controllerutil.SetControllerReference(&ca, &role, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to assemble ChiaCA Role -- Check operator logs.")
-		return ctrl.Result{}, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error assembling Role: %v", req.NamespacedName, err)
-	}
-	// Reconcile Role
-	res, err = kube.ReconcileRole(ctx, r.Client, role)
-	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to reconcile ChiaCA Role -- Check operator logs.")
-		return res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s %v", req.NamespacedName, err)
-	}
-
-	// Assemble RoleBinding
-	rolebind := assembleRoleBinding(ca)
-	if err := controllerutil.SetControllerReference(&ca, &rolebind, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to assemble ChiaCA RoleBinding -- Check operator logs.")
-		return ctrl.Result{}, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error assembling RoleBinding: %v", req.NamespacedName, err)
-	}
-	// Reconcile RoleBinding
-	res, err = kube.ReconcileRoleBinding(ctx, r.Client, rolebind)
-	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to reconcile ChiaCA RoleBinding -- Check operator logs.")
-		return res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s %v", req.NamespacedName, err)
-	}
-
-	// Assemble Job
-	job := assembleJob(ca)
-	if err := controllerutil.SetControllerReference(&ca, &job, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to assemble ChiaCA Job -- Check operator logs.")
-		return ctrl.Result{}, fmt.Errorf("ChiaCAReconciler ChiaCA=%s encountered error assembling Job: %v", req.NamespacedName, err)
-	}
-	// Reconcile Job
-	res, err = kube.ReconcileJob(ctx, r.Client, job)
-	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
-		r.Recorder.Event(&ca, corev1.EventTypeWarning, "Failed", "Failed to reconcile ChiaCA Job -- Check operator logs.")
-		return res, fmt.Errorf("ChiaCAReconciler ChiaCA=%s %v", req.NamespacedName, err)
-	}
-
-	// Requeue to check if CA Secret was created
-	return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
