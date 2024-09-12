@@ -60,7 +60,6 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to fetch ChiaNode resource", req.NamespacedName))
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -75,105 +74,90 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Assemble Peer Service
 	peerSrv := assemblePeerService(node)
 	if err := controllerutil.SetControllerReference(&node, &peerSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Peer Service
 	res, err := kube.ReconcileService(ctx, r.Client, node.Spec.ChiaConfig.PeerService, peerSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble All Service
 	allSrv := assembleAllService(node)
 	if err := controllerutil.SetControllerReference(&node, &allSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node all-port Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile All Service
 	res, err = kube.ReconcileService(ctx, r.Client, node.Spec.ChiaConfig.AllService, allSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Headless Peer Service
 	headlessPeerSrv := assembleHeadlessPeerService(node)
 	if err := controllerutil.SetControllerReference(&node, &headlessPeerSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node headless peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling headless peer Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Headless Peer Service
 	res, err = kube.ReconcileService(ctx, r.Client, node.Spec.ChiaConfig.PeerService, headlessPeerSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Local Peer Service
 	localPeerSrv := assembleLocalPeerService(node)
 	if err := controllerutil.SetControllerReference(&node, &localPeerSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node local peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling local peer Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Local Peer Service
 	res, err = kube.ReconcileService(ctx, r.Client, node.Spec.ChiaConfig.PeerService, localPeerSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Daemon Service
 	daemonSrv := assembleDaemonService(node)
 	if err := controllerutil.SetControllerReference(&node, &daemonSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node daemon Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Daemon Service
 	res, err = kube.ReconcileService(ctx, r.Client, node.Spec.ChiaConfig.DaemonService, daemonSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble RPC Service
 	rpcSrv := assembleRPCService(node)
 	if err := controllerutil.SetControllerReference(&node, &rpcSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node RPC Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling RPC Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile RPC Service
 	res, err = kube.ReconcileService(ctx, r.Client, node.Spec.ChiaConfig.RPCService, rpcSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Chia-Exporter Service
 	exporterSrv := assembleChiaExporterService(node)
 	if err := controllerutil.SetControllerReference(&node, &exporterSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node chia-exporter Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Chia-Exporter Service
 	res, err = kube.ReconcileService(ctx, r.Client, node.Spec.ChiaExporterConfig.Service, exporterSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Chia-Healthcheck Service
 	healthcheckSrv := assembleChiaHealthcheckService(node)
 	if err := controllerutil.SetControllerReference(&node, &healthcheckSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node chia-healthcheck Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling chia-healthcheck Service: %v", req.NamespacedName, err)
 	}
@@ -181,7 +165,6 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if !kube.ShouldRollIntoMainPeerService(node.Spec.ChiaHealthcheckConfig.Service) {
 		res, err = kube.ReconcileService(ctx, r.Client, node.Spec.ChiaHealthcheckConfig.Service, healthcheckSrv, false)
 		if err != nil {
-			metrics.OperatorErrors.Add(1.0)
 			return res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 		}
 	}
@@ -189,14 +172,12 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Assemble Deployment
 	stateful := assembleStatefulset(ctx, node)
 	if err := controllerutil.SetControllerReference(&node, &stateful, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder Statefulset -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 	}
 	// Reconcile Deployment
 	res, err = kube.ReconcileStatefulset(ctx, r.Client, stateful)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create seeder Statefulset -- Check operator logs.")
 		return res, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 	}
@@ -209,7 +190,6 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if strings.Contains(err.Error(), kube.ObjectModifiedTryAgainError) {
 			return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 		}
-		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaNodeReconciler ChiaNode=%s unable to update ChiaNode status", req.NamespacedName))
 		return ctrl.Result{}, err
 	}

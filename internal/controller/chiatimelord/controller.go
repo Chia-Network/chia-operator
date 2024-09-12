@@ -61,7 +61,6 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaTimelordController ChiaTimelord=%s unable to fetch ChiaTimelord resource", req.NamespacedName))
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -76,77 +75,66 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// Assemble Peer Service
 	peerSrv := assemblePeerService(timelord)
 	if err := controllerutil.SetControllerReference(&timelord, &peerSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Peer Service
 	res, err := kube.ReconcileService(ctx, r.Client, timelord.Spec.ChiaConfig.PeerService, peerSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble All Service
 	allSrv := assembleAllService(timelord)
 	if err := controllerutil.SetControllerReference(&timelord, &allSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord all-port Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile All Service
 	res, err = kube.ReconcileService(ctx, r.Client, timelord.Spec.ChiaConfig.AllService, allSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Daemon Service
 	daemonSrv := assembleDaemonService(timelord)
 	if err := controllerutil.SetControllerReference(&timelord, &daemonSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord daemon Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Daemon Service
 	res, err = kube.ReconcileService(ctx, r.Client, timelord.Spec.ChiaConfig.DaemonService, daemonSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble RPC Service
 	rpcSrv := assembleRPCService(timelord)
 	if err := controllerutil.SetControllerReference(&timelord, &rpcSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord RPC Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error assembling RPC Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile RPC Service
 	res, err = kube.ReconcileService(ctx, r.Client, timelord.Spec.ChiaConfig.RPCService, rpcSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Chia-Exporter Service
 	exporterSrv := assembleChiaExporterService(timelord)
 	if err := controllerutil.SetControllerReference(&timelord, &exporterSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord chia-exporter Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Chia-Exporter Service
 	res, err = kube.ReconcileService(ctx, r.Client, timelord.Spec.ChiaExporterConfig.Service, exporterSrv, true)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 	}
 
 	// Assemble Chia-Healthcheck Service
 	healthcheckSrv := assembleChiaHealthcheckService(timelord)
 	if err := controllerutil.SetControllerReference(&timelord, &healthcheckSrv, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord chia-healthcheck Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s encountered error assembling chia-healthcheck Service: %v", req.NamespacedName, err)
 	}
@@ -154,7 +142,6 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	if !kube.ShouldRollIntoMainPeerService(timelord.Spec.ChiaHealthcheckConfig.Service) {
 		res, err = kube.ReconcileService(ctx, r.Client, timelord.Spec.ChiaHealthcheckConfig.Service, healthcheckSrv, false)
 		if err != nil {
-			metrics.OperatorErrors.Add(1.0)
 			return res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 		}
 	}
@@ -163,7 +150,6 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	if kube.ShouldMakeVolumeClaim(timelord.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(timelord)
 		if err != nil {
-			metrics.OperatorErrors.Add(1.0)
 			r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord PVC -- Check operator logs.")
 			return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 		}
@@ -171,7 +157,6 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if pvc != nil {
 			res, err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, timelord.Spec.Storage, *pvc)
 			if err != nil {
-				metrics.OperatorErrors.Add(1.0)
 				r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to create timelord PVC -- Check operator logs.")
 				return res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 			}
@@ -183,14 +168,12 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// Assemble Deployment
 	deploy := assembleDeployment(timelord)
 	if err := controllerutil.SetControllerReference(&timelord, &deploy, r.Scheme); err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 	}
 	// Reconcile Deployment
 	res, err = kube.ReconcileDeployment(ctx, r.Client, deploy)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to create timelord Deployment -- Check operator logs.")
 		return res, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
 	}
@@ -203,7 +186,6 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if strings.Contains(err.Error(), kube.ObjectModifiedTryAgainError) {
 			return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 		}
-		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, fmt.Sprintf("ChiaTimelordController ChiaTimelord=%s unable to update ChiaNode status", req.NamespacedName))
 		return ctrl.Result{}, err
 	}
