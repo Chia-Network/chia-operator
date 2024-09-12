@@ -128,9 +128,5 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 func (r *ChiaCAReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8schianetv1.ChiaCA{}).
-		Owns(&batchv1.Job{}).
-		Owns(&corev1.ServiceAccount{}).
-		Owns(&rbacv1.Role{}).
-		Owns(&rbacv1.RoleBinding{}).
 		Complete(r)
 }
