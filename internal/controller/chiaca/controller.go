@@ -57,7 +57,6 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return ctrl.Result{}, nil
 	}
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		log.Error(err, "unable to fetch ChiaCA resource")
 		return ctrl.Result{}, err
 	}
@@ -72,7 +71,6 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Check if CA Secret exists
 	caExists, err := r.caSecretExists(ctx, ca)
 	if err != nil {
-		metrics.OperatorErrors.Add(1.0)
 		return ctrl.Result{}, fmt.Errorf("encountered error querying for existing CA Secret: %v", err)
 	}
 
@@ -84,21 +82,18 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		// Generate a private CA cert and key
 		privateCACrt, privateCAKey, err := tls.GenerateNewCA()
 		if err != nil {
-			metrics.OperatorErrors.Add(1.0)
 			return ctrl.Result{}, fmt.Errorf("encountered error generating new private CA cert and key: %v", err)
 		}
 
 		// Encode the private CA cert and key to PEM byte slices
 		privateCACrtBytes, privateCAKeyBytes, err := tls.EncodeCertAndKeyToPEM(privateCACrt, privateCAKey)
 		if err != nil {
-			metrics.OperatorErrors.Add(1.0)
 			return ctrl.Result{}, fmt.Errorf("encountered error encoding private CA cert and key to PEM: %v", err)
 		}
 
 		// Assemble CA Secret and create in cluster
 		secret := assembleCASecret(ca, string(publicCACrtBytes), string(publicCAKeyBytes), string(privateCACrtBytes), string(privateCAKeyBytes))
 		if err = r.Create(ctx, &secret); err != nil {
-			metrics.OperatorErrors.Add(1.0)
 			return ctrl.Result{}, fmt.Errorf("error creating CA Secret \"%s\": %v", secret.Name, err)
 		}
 	}
@@ -113,7 +108,6 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			if strings.Contains(err.Error(), kube.ObjectModifiedTryAgainError) {
 				return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 			}
-			metrics.OperatorErrors.Add(1.0)
 			log.Error(err, "encountered error updating ChiaCA status")
 			return ctrl.Result{}, err
 		}
