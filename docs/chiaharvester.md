@@ -19,7 +19,7 @@ spec:
 
 ## Plot storage
 
-You can mount hostPath volumes or persistent volumes in a harvester pod using the following syntax. All claims/hostPaths get mounted as subdirectories of `/plots` in the container. Harvesters ran with this operator set the `recursive_plot_scan` option to true.
+You can mount hostPath volumes or persistent volumes in a harvester pod using the following syntax. All claims/hostPaths get mounted as subdirectories of `/plots` in the container, and are mounted as read-only volumes. Harvesters ran with this operator set the `recursive_plot_scan` option to true.
 
 ```yaml
 spec:
