@@ -5,9 +5,10 @@ Copyright 2024 Chia Network Inc.
 package chianetwork
 
 import (
-	"github.com/chia-network/go-chia-libs/pkg/config"
 	"strconv"
 	"testing"
+
+	"github.com/chia-network/go-chia-libs/pkg/config"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/stretchr/testify/require"

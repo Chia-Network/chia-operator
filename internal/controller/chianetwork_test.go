@@ -6,8 +6,9 @@ package controller
 
 import (
 	"context"
-	"github.com/chia-network/go-chia-libs/pkg/config"
 	"time"
+
+	"github.com/chia-network/go-chia-libs/pkg/config"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

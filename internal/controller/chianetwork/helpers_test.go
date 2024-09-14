@@ -5,8 +5,9 @@ Copyright 2024 Chia Network Inc.
 package chianetwork
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestMarshalNetworkOverride(t *testing.T) {
