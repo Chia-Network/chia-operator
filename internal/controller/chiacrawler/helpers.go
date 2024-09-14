@@ -6,8 +6,6 @@ package chiacrawler
 
 import (
 	"fmt"
-	"strconv"
-
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
 
@@ -83,100 +81,14 @@ func getChiaEnv(crawler k8schianetv1.ChiaCrawler) []corev1.EnvVar {
 		Value: "crawler",
 	})
 
-	// CHIA_ROOT env var
-	env = append(env, corev1.EnvVar{
-		Name:  "CHIA_ROOT",
-		Value: "/chia-data",
-	})
-
 	// keys env var -- no keys required for a crawler
 	env = append(env, corev1.EnvVar{
 		Name:  "keys",
 		Value: "none",
 	})
 
-	// ca env var
-	env = append(env, corev1.EnvVar{
-		Name:  "ca",
-		Value: "/chia-ca",
-	})
-
-	// testnet env var
-	if crawler.Spec.ChiaConfig.Testnet != nil && *crawler.Spec.ChiaConfig.Testnet {
-		env = append(env, corev1.EnvVar{
-			Name:  "testnet",
-			Value: "true",
-		})
-	}
-
-	// network env var
-	if crawler.Spec.ChiaConfig.Network != nil && *crawler.Spec.ChiaConfig.Network != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "network",
-			Value: *crawler.Spec.ChiaConfig.Network,
-		})
-	}
-
-	// network_port env var
-	if crawler.Spec.ChiaConfig.NetworkPort != nil && *crawler.Spec.ChiaConfig.NetworkPort != 0 {
-		env = append(env, corev1.EnvVar{
-			Name:  "network_port",
-			Value: strconv.Itoa(int(*crawler.Spec.ChiaConfig.NetworkPort)),
-		})
-	}
-
-	// introducer_address env var
-	if crawler.Spec.ChiaConfig.IntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "introducer_address",
-			Value: *crawler.Spec.ChiaConfig.IntroducerAddress,
-		})
-	}
-
-	// dns_introducer_address env var
-	if crawler.Spec.ChiaConfig.DNSIntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "dns_introducer_address",
-			Value: *crawler.Spec.ChiaConfig.DNSIntroducerAddress,
-		})
-	}
-
-	// TZ env var
-	if crawler.Spec.ChiaConfig.Timezone != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "TZ",
-			Value: *crawler.Spec.ChiaConfig.Timezone,
-		})
-	}
-
-	// log_level env var
-	if crawler.Spec.ChiaConfig.LogLevel != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "log_level",
-			Value: *crawler.Spec.ChiaConfig.LogLevel,
-		})
-	}
-
-	// source_ref env var
-	if crawler.Spec.ChiaConfig.SourceRef != nil && *crawler.Spec.ChiaConfig.SourceRef != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "source_ref",
-			Value: *crawler.Spec.ChiaConfig.SourceRef,
-		})
-	}
-
-	// self_hostname env var
-	if crawler.Spec.ChiaConfig.SelfHostname != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: *crawler.Spec.ChiaConfig.SelfHostname,
-		})
-	} else {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: "0.0.0.0",
-		})
-	}
+	// Add common env
+	env = append(env, kube.GetCommonChiaEnv(crawler.Spec.ChiaConfig.CommonSpecChia)...)
 
 	return env
 }

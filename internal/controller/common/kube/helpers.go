@@ -8,9 +8,9 @@ import (
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"strconv"
 )
 
 // GetCommonLabels gives some common labels for chia-operator related objects
@@ -139,4 +139,98 @@ func GetExistingChiaRootVolume(storage *k8schianetv1.StorageConfig) corev1.Volum
 			EmptyDir: &corev1.EmptyDirVolumeSource{},
 		},
 	}
+}
+
+// GetCommonChiaEnv retrieves the environment variables from the CommonSpecChia config struct
+func GetCommonChiaEnv(commonSpecChia k8schianetv1.CommonSpecChia) []corev1.EnvVar {
+	var env []corev1.EnvVar
+
+	// CHIA_ROOT env var
+	env = append(env, corev1.EnvVar{
+		Name:  "CHIA_ROOT",
+		Value: "/chia-data",
+	})
+
+	// ca env var
+	env = append(env, corev1.EnvVar{
+		Name:  "ca",
+		Value: "/chia-ca",
+	})
+
+	// testnet env var
+	if commonSpecChia.Testnet != nil && *commonSpecChia.Testnet {
+		env = append(env, corev1.EnvVar{
+			Name:  "testnet",
+			Value: "true",
+		})
+	}
+
+	// network env var
+	if commonSpecChia.Network != nil && *commonSpecChia.Network != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "network",
+			Value: *commonSpecChia.Network,
+		})
+	}
+
+	// network_port env var
+	env = append(env, corev1.EnvVar{
+		Name:  "network_port",
+		Value: strconv.Itoa(int(GetFullNodePort(commonSpecChia))),
+	})
+
+	// introducer_address env var
+	if commonSpecChia.IntroducerAddress != nil && *commonSpecChia.IntroducerAddress != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "introducer_address",
+			Value: *commonSpecChia.IntroducerAddress,
+		})
+	}
+
+	// dns_introducer_address env var
+	if commonSpecChia.DNSIntroducerAddress != nil && *commonSpecChia.DNSIntroducerAddress != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "dns_introducer_address",
+			Value: *commonSpecChia.DNSIntroducerAddress,
+		})
+	}
+
+	// TZ env var
+	if commonSpecChia.Timezone != nil && *commonSpecChia.Timezone != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "TZ",
+			Value: *commonSpecChia.Timezone,
+		})
+	}
+
+	// log_level env var
+	if commonSpecChia.LogLevel != nil && *commonSpecChia.LogLevel != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "log_level",
+			Value: *commonSpecChia.LogLevel,
+		})
+	}
+
+	// source_ref env var
+	if commonSpecChia.SourceRef != nil && *commonSpecChia.SourceRef != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "source_ref",
+			Value: *commonSpecChia.SourceRef,
+		})
+	}
+
+	// self_hostname env var
+	if commonSpecChia.SelfHostname != nil && *commonSpecChia.SelfHostname != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "self_hostname",
+			Value: *commonSpecChia.SelfHostname,
+		})
+	} else {
+		env = append(env, corev1.EnvVar{
+			Name:  "self_hostname",
+			Value: "0.0.0.0",
+		})
+	}
+
+	return env
 }
