@@ -6,6 +6,7 @@ package chiafarmer
 
 import (
 	"fmt"
+
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"

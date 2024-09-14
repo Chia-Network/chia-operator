@@ -5,12 +5,13 @@ Copyright 2023 Chia Network Inc.
 package kube
 
 import (
+	"strconv"
+
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"strconv"
 )
 
 // GetCommonLabels gives some common labels for chia-operator related objects

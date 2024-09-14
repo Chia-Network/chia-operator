@@ -37,7 +37,7 @@ var chianetworks = make(map[string]bool)
 // +kubebuilder:rbac:groups=k8s.chia.net,resources=chianetworks,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=k8s.chia.net,resources=chianetworks/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=k8s.chia.net,resources=chianetworks/finalizers,verbs=update
-//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update
+// +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaNetworkReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
