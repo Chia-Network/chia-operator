@@ -13,6 +13,8 @@ resources:
 # default, aiding admins in cluster management. Those roles are
 # not used by the Project itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
+- chianetwork_editor_role.yaml
+- chianetwork_viewer_role.yaml
 - chiacrawler_editor_role.yaml
 - chiacrawler_viewer_role.yaml
 - chiaintroducer_editor_role.yaml
