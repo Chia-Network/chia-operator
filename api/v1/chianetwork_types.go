@@ -51,6 +51,7 @@ type NetworkConstants struct {
 	// +optional
 	AggSigMeAdditionalData string `json:"AGG_SIG_ME_ADDITIONAL_DATA,omitempty"`
 
+	// TODO this should actually be a uint128 but it's much more difficult to implement a custom uint128 type with controller-tools generating CRDs yamls
 	// +optional
 	DifficultyConstantFactor uint64 `json:"DIFFICULTY_CONSTANT_FACTOR,omitempty"`
 
