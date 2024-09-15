@@ -7,6 +7,7 @@ package kube
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strconv"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -257,7 +258,7 @@ func GetCommonChiaEnv(ctx context.Context, c client.Client, namespace string, co
 			found := false
 			for i := range env {
 				if env[i].Name == k {
-					env[i].Name = v
+					env[i].Value = v
 					found = true
 					break
 				}
@@ -270,6 +271,15 @@ func GetCommonChiaEnv(ctx context.Context, c client.Client, namespace string, co
 			}
 		}
 	}
+
+	// Need to alphabetize the env slice because if the order of environment variables
+	// changes but none of the values changed, it still triggers a StatefulSet rollout.
+	// When the StatefulSet rolls out, it triggers another reconcile run, which can cause another StatefulSet rollout.
+	// Only need to do this for common env variables because we use a map for some variables from a ConfigMap's data,
+	// where looping over a map causes randomness.
+	sort.Slice(env, func(i, j int) bool {
+		return env[i].Name < env[j].Name
+	})
 
 	return env, nil
 }
