@@ -5,7 +5,10 @@ Copyright 2023 Chia Network Inc.
 package chiafarmer
 
 import (
+	"context"
 	"fmt"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -235,7 +238,7 @@ func assembleVolumeClaim(farmer k8schianetv1.ChiaFarmer) (*corev1.PersistentVolu
 }
 
 // assembleDeployment assembles the farmer Deployment resource for a ChiaFarmer CR
-func assembleDeployment(farmer k8schianetv1.ChiaFarmer) appsv1.Deployment {
+func assembleDeployment(ctx context.Context, c client.Client, farmer k8schianetv1.ChiaFarmer) (appsv1.Deployment, error) {
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
@@ -253,7 +256,6 @@ func assembleDeployment(farmer k8schianetv1.ChiaFarmer) appsv1.Deployment {
 					Annotations: farmer.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Containers:   []corev1.Container{assembleChiaContainer(farmer)},
 					Affinity:     farmer.Spec.Affinity,
 					NodeSelector: farmer.Spec.NodeSelector,
 					Volumes:      getChiaVolumes(farmer),
@@ -261,6 +263,12 @@ func assembleDeployment(farmer k8schianetv1.ChiaFarmer) appsv1.Deployment {
 			},
 		},
 	}
+
+	chiaContainer, err := assembleChiaContainer(ctx, c, farmer)
+	if err != nil {
+		return appsv1.Deployment{}, err
+	}
+	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaContainer)
 
 	if len(farmer.Spec.InitContainers) != 0 {
 		// Overwrite any volumeMounts specified in init containers. Not currently supported.
@@ -274,7 +282,7 @@ func assembleDeployment(farmer k8schianetv1.ChiaFarmer) appsv1.Deployment {
 
 			// Share chia env if enabled
 			if cont.ShareEnv {
-				cont.Container.Env = append(cont.Container.Env, getChiaEnv(farmer)...)
+				cont.Container.Env = append(cont.Container.Env, chiaContainer.Env...)
 			}
 
 			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
@@ -304,14 +312,13 @@ func assembleDeployment(farmer k8schianetv1.ChiaFarmer) appsv1.Deployment {
 
 	// TODO add pod affinity, tolerations
 
-	return deploy
+	return deploy, nil
 }
 
-func assembleChiaContainer(farmer k8schianetv1.ChiaFarmer) corev1.Container {
+func assembleChiaContainer(ctx context.Context, c client.Client, farmer k8schianetv1.ChiaFarmer) (corev1.Container, error) {
 	input := kube.AssembleChiaContainerInputs{
 		Image:           farmer.Spec.ChiaConfig.Image,
 		ImagePullPolicy: farmer.Spec.ImagePullPolicy,
-		Env:             getChiaEnv(farmer),
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "daemon",
@@ -331,6 +338,12 @@ func assembleChiaContainer(farmer k8schianetv1.ChiaFarmer) corev1.Container {
 		},
 		VolumeMounts: getChiaVolumeMounts(),
 	}
+
+	env, err := getChiaEnv(ctx, c, farmer)
+	if err != nil {
+		return corev1.Container{}, err
+	}
+	input.Env = env
 
 	if farmer.Spec.ChiaConfig.SecurityContext != nil {
 		input.SecurityContext = farmer.Spec.ChiaConfig.SecurityContext
@@ -352,7 +365,7 @@ func assembleChiaContainer(farmer k8schianetv1.ChiaFarmer) corev1.Container {
 		input.ResourceRequirements = farmer.Spec.ChiaConfig.Resources
 	}
 
-	return kube.AssembleChiaContainer(input)
+	return kube.AssembleChiaContainer(input), nil
 }
 
 func assembleChiaExporterContainer(farmer k8schianetv1.ChiaFarmer) corev1.Container {

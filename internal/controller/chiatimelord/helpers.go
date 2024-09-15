@@ -5,7 +5,10 @@ Copyright 2023 Chia Network Inc.
 package chiatimelord
 
 import (
+	"context"
 	"fmt"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 
@@ -64,7 +67,7 @@ func getChiaVolumeMounts() []corev1.VolumeMount {
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(timelord k8schianetv1.ChiaTimelord) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, c client.Client, timelord k8schianetv1.ChiaTimelord) ([]corev1.EnvVar, error) {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -80,7 +83,11 @@ func getChiaEnv(timelord k8schianetv1.ChiaTimelord) []corev1.EnvVar {
 	})
 
 	// Add common env
-	env = append(env, kube.GetCommonChiaEnv(timelord.Spec.ChiaConfig.CommonSpecChia)...)
+	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, timelord.ObjectMeta.Namespace, timelord.Spec.ChiaConfig.CommonSpecChia)
+	if err != nil {
+		return env, err
+	}
+	env = append(env, commonEnv...)
 
-	return env
+	return env, nil
 }

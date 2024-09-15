@@ -5,8 +5,11 @@ Copyright 2023 Chia Network Inc.
 package chiaharvester
 
 import (
+	"context"
 	"fmt"
 	"strconv"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 
@@ -139,7 +142,7 @@ func getChiaVolumeMounts(harvester k8schianetv1.ChiaHarvester) []corev1.VolumeMo
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(harvester k8schianetv1.ChiaHarvester) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, c client.Client, harvester k8schianetv1.ChiaHarvester) ([]corev1.EnvVar, error) {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -166,7 +169,11 @@ func getChiaEnv(harvester k8schianetv1.ChiaHarvester) []corev1.EnvVar {
 	})
 
 	// Add common env
-	env = append(env, kube.GetCommonChiaEnv(harvester.Spec.ChiaConfig.CommonSpecChia)...)
+	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, harvester.ObjectMeta.Namespace, harvester.Spec.ChiaConfig.CommonSpecChia)
+	if err != nil {
+		return env, err
+	}
+	env = append(env, commonEnv...)
 
-	return env
+	return env, nil
 }

@@ -5,7 +5,10 @@ Copyright 2023 Chia Network Inc.
 package chiaseeder
 
 import (
+	"context"
 	"fmt"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
@@ -74,7 +77,7 @@ func getChiaVolumeMounts(seeder k8schianetv1.ChiaSeeder) []corev1.VolumeMount {
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(seeder k8schianetv1.ChiaSeeder) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, c client.Client, seeder k8schianetv1.ChiaSeeder) ([]corev1.EnvVar, error) {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -132,9 +135,13 @@ func getChiaEnv(seeder k8schianetv1.ChiaSeeder) []corev1.EnvVar {
 	}
 
 	// Add common env
-	env = append(env, kube.GetCommonChiaEnv(seeder.Spec.ChiaConfig.CommonSpecChia)...)
+	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, seeder.ObjectMeta.Namespace, seeder.Spec.ChiaConfig.CommonSpecChia)
+	if err != nil {
+		return env, err
+	}
+	env = append(env, commonEnv...)
 
-	return env
+	return env, nil
 }
 
 // getChiaPorts returns the ports to a chia container

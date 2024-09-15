@@ -139,7 +139,11 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	// Assemble Deployment
-	deploy := assembleDeployment(introducer)
+	deploy, err := assembleDeployment(ctx, r.Client, introducer)
+	if err != nil {
+		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer Deployment -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
+	}
 	if err := controllerutil.SetControllerReference(&introducer, &deploy, r.Scheme); err != nil {
 		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)

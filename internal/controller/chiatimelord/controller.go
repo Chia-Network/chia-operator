@@ -166,7 +166,11 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Assemble Deployment
-	deploy := assembleDeployment(timelord)
+	deploy, err := assembleDeployment(ctx, r.Client, timelord)
+	if err != nil {
+		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord Deployment -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)
+	}
 	if err := controllerutil.SetControllerReference(&timelord, &deploy, r.Scheme); err != nil {
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)

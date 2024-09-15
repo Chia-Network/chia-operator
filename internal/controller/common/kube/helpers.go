@@ -5,13 +5,19 @@ Copyright 2023 Chia Network Inc.
 package kube
 
 import (
+	"context"
+	"fmt"
 	"strconv"
+
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // GetCommonLabels gives some common labels for chia-operator related objects
@@ -143,7 +149,7 @@ func GetExistingChiaRootVolume(storage *k8schianetv1.StorageConfig) corev1.Volum
 }
 
 // GetCommonChiaEnv retrieves the environment variables from the CommonSpecChia config struct
-func GetCommonChiaEnv(commonSpecChia k8schianetv1.CommonSpecChia) []corev1.EnvVar {
+func GetCommonChiaEnv(ctx context.Context, c client.Client, namespace string, commonSpecChia k8schianetv1.CommonSpecChia) ([]corev1.EnvVar, error) {
 	var env []corev1.EnvVar
 
 	// CHIA_ROOT env var
@@ -233,5 +239,37 @@ func GetCommonChiaEnv(commonSpecChia k8schianetv1.CommonSpecChia) []corev1.EnvVa
 		})
 	}
 
-	return env
+	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
+	if commonSpecChia.ChiaNetwork != nil && *commonSpecChia.ChiaNetwork != "" {
+		var chianetworkConfig corev1.ConfigMap
+		err := c.Get(ctx, types.NamespacedName{
+			Name:      *commonSpecChia.ChiaNetwork,
+			Namespace: namespace,
+		}, &chianetworkConfig)
+		if err != nil && errors.IsNotFound(err) {
+			return []corev1.EnvVar{}, fmt.Errorf("ChiaNetwork specified but its ConfigMap was not found: %v", err)
+		} else if err != nil {
+			return []corev1.EnvVar{}, fmt.Errorf("error getting existing ChiaNetwork's ConfigMap: %v", err)
+		}
+
+		// Loop over data keys, see if any match current environment variables. Overwrite the environment variable, or append a new one
+		for k, v := range chianetworkConfig.Data {
+			found := false
+			for i := range env {
+				if env[i].Name == k {
+					env[i].Name = v
+					found = true
+					break
+				}
+			}
+			if !found {
+				env = append(env, corev1.EnvVar{
+					Name:  k,
+					Value: v,
+				})
+			}
+		}
+	}
+
+	return env, nil
 }

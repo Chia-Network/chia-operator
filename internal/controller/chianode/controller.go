@@ -169,13 +169,17 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	// Assemble Deployment
-	stateful := assembleStatefulset(ctx, node)
+	// Assemble StatefulSet
+	stateful, err := assembleStatefulset(ctx, r.Client, node)
+	if err != nil {
+		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node Deployment -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
+	}
 	if err := controllerutil.SetControllerReference(&node, &stateful, r.Scheme); err != nil {
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder Statefulset -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
 	}
-	// Reconcile Deployment
+	// Reconcile StatefulSet
 	res, err = kube.ReconcileStatefulset(ctx, r.Client, stateful)
 	if err != nil {
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to create seeder Statefulset -- Check operator logs.")

@@ -181,7 +181,11 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Assemble Deployment
-	deploy := assembleDeployment(seeder)
+	deploy, err := assembleDeployment(ctx, r.Client, seeder)
+	if err != nil {
+		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder Deployment -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
+	}
 	if err := controllerutil.SetControllerReference(&seeder, &deploy, r.Scheme); err != nil {
 		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)

@@ -84,6 +84,10 @@ type CommonSpecChia struct {
 	// +optional
 	Testnet *bool `json:"testnet,omitempty"`
 
+	// ChiaNetwork is the name of a ChiaNetwork resource in the same namespace as this resource
+	// +optional
+	ChiaNetwork *string `json:"chiaNetwork,omitempty"`
+
 	// Network can be set to a network name in the chia configuration file to switch to
 	// +optional
 	Network *string `json:"network,omitempty"`

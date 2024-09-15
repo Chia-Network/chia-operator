@@ -5,7 +5,10 @@ Copyright 2024 Chia Network Inc.
 package chiacrawler
 
 import (
+	"context"
 	"fmt"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
@@ -73,7 +76,7 @@ func getChiaVolumeMounts(crawler k8schianetv1.ChiaCrawler) []corev1.VolumeMount 
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(crawler k8schianetv1.ChiaCrawler) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, c client.Client, crawler k8schianetv1.ChiaCrawler) ([]corev1.EnvVar, error) {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -89,7 +92,11 @@ func getChiaEnv(crawler k8schianetv1.ChiaCrawler) []corev1.EnvVar {
 	})
 
 	// Add common env
-	env = append(env, kube.GetCommonChiaEnv(crawler.Spec.ChiaConfig.CommonSpecChia)...)
+	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, crawler.ObjectMeta.Namespace, crawler.Spec.ChiaConfig.CommonSpecChia)
+	if err != nil {
+		return env, err
+	}
+	env = append(env, commonEnv...)
 
-	return env
+	return env, nil
 }

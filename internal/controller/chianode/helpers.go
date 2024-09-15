@@ -9,6 +9,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
@@ -120,7 +122,7 @@ func getChiaVolumeMounts() []corev1.VolumeMount {
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, c client.Client, node k8schianetv1.ChiaNode) ([]corev1.EnvVar, error) {
 	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 
@@ -151,7 +153,11 @@ func getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar
 	}
 
 	// Add common env
-	env = append(env, kube.GetCommonChiaEnv(node.Spec.ChiaConfig.CommonSpecChia)...)
+	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, node.ObjectMeta.Namespace, node.Spec.ChiaConfig.CommonSpecChia)
+	if err != nil {
+		return env, err
+	}
+	env = append(env, commonEnv...)
 
-	return env
+	return env, nil
 }

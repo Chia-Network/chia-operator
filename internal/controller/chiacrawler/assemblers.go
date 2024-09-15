@@ -5,7 +5,10 @@ Copyright 2024 Chia Network Inc.
 package chiacrawler
 
 import (
+	"context"
 	"fmt"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -235,7 +238,7 @@ func assembleVolumeClaim(crawler k8schianetv1.ChiaCrawler) (*corev1.PersistentVo
 }
 
 // assembleDeployment assembles the crawler Deployment resource for a ChiaCrawler CR
-func assembleDeployment(crawler k8schianetv1.ChiaCrawler) appsv1.Deployment {
+func assembleDeployment(ctx context.Context, c client.Client, crawler k8schianetv1.ChiaCrawler) (appsv1.Deployment, error) {
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
@@ -253,7 +256,6 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler) appsv1.Deployment {
 					Annotations: crawler.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Containers:   []corev1.Container{assembleChiaContainer(crawler)},
 					Affinity:     crawler.Spec.Affinity,
 					NodeSelector: crawler.Spec.NodeSelector,
 					Volumes:      getChiaVolumes(crawler),
@@ -261,6 +263,12 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler) appsv1.Deployment {
 			},
 		},
 	}
+
+	chiaContainer, err := assembleChiaContainer(ctx, c, crawler)
+	if err != nil {
+		return appsv1.Deployment{}, err
+	}
+	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaContainer)
 
 	if len(crawler.Spec.InitContainers) != 0 {
 		// Overwrite any volumeMounts specified in init containers. Not currently supported.
@@ -274,7 +282,7 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler) appsv1.Deployment {
 
 			// Share chia env if enabled
 			if cont.ShareEnv {
-				cont.Container.Env = append(cont.Container.Env, getChiaEnv(crawler)...)
+				cont.Container.Env = append(cont.Container.Env, chiaContainer.Env...)
 			}
 
 			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
@@ -304,14 +312,13 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler) appsv1.Deployment {
 
 	// TODO add pod affinity, tolerations
 
-	return deploy
+	return deploy, nil
 }
 
-func assembleChiaContainer(crawler k8schianetv1.ChiaCrawler) corev1.Container {
+func assembleChiaContainer(ctx context.Context, c client.Client, crawler k8schianetv1.ChiaCrawler) (corev1.Container, error) {
 	input := kube.AssembleChiaContainerInputs{
 		Image:           crawler.Spec.ChiaConfig.Image,
 		ImagePullPolicy: crawler.Spec.ImagePullPolicy,
-		Env:             getChiaEnv(crawler),
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "daemon",
@@ -331,6 +338,12 @@ func assembleChiaContainer(crawler k8schianetv1.ChiaCrawler) corev1.Container {
 		},
 		VolumeMounts: getChiaVolumeMounts(crawler),
 	}
+
+	env, err := getChiaEnv(ctx, c, crawler)
+	if err != nil {
+		return corev1.Container{}, err
+	}
+	input.Env = env
 
 	if crawler.Spec.ChiaConfig.SecurityContext != nil {
 		input.SecurityContext = crawler.Spec.ChiaConfig.SecurityContext
@@ -352,7 +365,7 @@ func assembleChiaContainer(crawler k8schianetv1.ChiaCrawler) corev1.Container {
 		input.ResourceRequirements = crawler.Spec.ChiaConfig.Resources
 	}
 
-	return kube.AssembleChiaContainer(input)
+	return kube.AssembleChiaContainer(input), nil
 }
 
 func assembleChiaExporterContainer(crawler k8schianetv1.ChiaCrawler) corev1.Container {

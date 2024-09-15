@@ -1322,6 +1322,11 @@ func (in *CommonSpecChia) DeepCopyInto(out *CommonSpecChia) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.ChiaNetwork != nil {
+		in, out := &in.ChiaNetwork, &out.ChiaNetwork
+		*out = new(string)
+		**out = **in
+	}
 	if in.Network != nil {
 		in, out := &in.Network, &out.Network
 		*out = new(string)

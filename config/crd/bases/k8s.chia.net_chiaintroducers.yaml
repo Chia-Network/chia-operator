@@ -1019,6 +1019,10 @@ spec:
                     description: CASecretName is the name of the secret that contains
                       the CA crt and key. Not required for introducers.
                     type: string
+                  chiaNetwork:
+                    description: ChiaNetwork is the name of a ChiaNetwork resource
+                      in the same namespace as this resource
+                    type: string
                   daemonService:
                     description: |-
                       DaemonService defines settings for the daemon Service installed with any Chia component resource.

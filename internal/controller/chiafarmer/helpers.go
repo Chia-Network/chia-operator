@@ -5,7 +5,10 @@ Copyright 2023 Chia Network Inc.
 package chiafarmer
 
 import (
+	"context"
 	"fmt"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 
@@ -78,7 +81,7 @@ func getChiaVolumeMounts() []corev1.VolumeMount {
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(farmer k8schianetv1.ChiaFarmer) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, c client.Client, farmer k8schianetv1.ChiaFarmer) ([]corev1.EnvVar, error) {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -100,7 +103,11 @@ func getChiaEnv(farmer k8schianetv1.ChiaFarmer) []corev1.EnvVar {
 	})
 
 	// Add common env
-	env = append(env, kube.GetCommonChiaEnv(farmer.Spec.ChiaConfig.CommonSpecChia)...)
+	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, farmer.ObjectMeta.Namespace, farmer.Spec.ChiaConfig.CommonSpecChia)
+	if err != nil {
+		return env, err
+	}
+	env = append(env, commonEnv...)
 
-	return env
+	return env, nil
 }

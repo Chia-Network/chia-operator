@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -259,7 +261,7 @@ func assembleLocalPeerService(node k8schianetv1.ChiaNode) corev1.Service {
 }
 
 // assembleStatefulset assembles the node StatefulSet resource for a ChiaNode CR
-func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode) appsv1.StatefulSet {
+func assembleStatefulset(ctx context.Context, c client.Client, node k8schianetv1.ChiaNode) (appsv1.StatefulSet, error) {
 	vols, volClaimTemplates := getChiaVolumesAndTemplates(node)
 
 	stateful := appsv1.StatefulSet{
@@ -282,7 +284,6 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode) appsv1
 				},
 				Spec: corev1.PodSpec{
 					// TODO add: serviceAccountName config
-					Containers:   []corev1.Container{assembleChiaContainer(ctx, node)},
 					Affinity:     node.Spec.Affinity,
 					NodeSelector: node.Spec.NodeSelector,
 					Volumes:      vols,
@@ -291,6 +292,12 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode) appsv1
 			VolumeClaimTemplates: volClaimTemplates,
 		},
 	}
+
+	chiaContainer, err := assembleChiaContainer(ctx, c, node)
+	if err != nil {
+		return appsv1.StatefulSet{}, err
+	}
+	stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, chiaContainer)
 
 	if len(node.Spec.InitContainers) != 0 {
 		// Overwrite any volumeMounts specified in init containers. Not currently supported.
@@ -304,7 +311,7 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode) appsv1
 
 			// Share chia env if enabled
 			if cont.ShareEnv {
-				cont.Container.Env = append(cont.Container.Env, getChiaEnv(ctx, node)...)
+				cont.Container.Env = append(cont.Container.Env, chiaContainer.Env...)
 			}
 
 			stateful.Spec.Template.Spec.InitContainers = append(stateful.Spec.Template.Spec.InitContainers, cont.Container)
@@ -337,14 +344,13 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode) appsv1
 
 	// TODO add pod affinity, tolerations
 
-	return stateful
+	return stateful, nil
 }
 
-func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode) corev1.Container {
+func assembleChiaContainer(ctx context.Context, c client.Client, node k8schianetv1.ChiaNode) (corev1.Container, error) {
 	input := kube.AssembleChiaContainerInputs{
 		Image:           node.Spec.ChiaConfig.Image,
 		ImagePullPolicy: node.Spec.ImagePullPolicy,
-		Env:             getChiaEnv(ctx, node),
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "daemon",
@@ -364,6 +370,12 @@ func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode) core
 		},
 		VolumeMounts: getChiaVolumeMounts(),
 	}
+
+	env, err := getChiaEnv(ctx, c, node)
+	if err != nil {
+		return corev1.Container{}, err
+	}
+	input.Env = env
 
 	if node.Spec.ChiaConfig.SecurityContext != nil {
 		input.SecurityContext = node.Spec.ChiaConfig.SecurityContext
@@ -401,7 +413,7 @@ func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode) core
 		input.ResourceRequirements = node.Spec.ChiaConfig.Resources
 	}
 
-	return kube.AssembleChiaContainer(input)
+	return kube.AssembleChiaContainer(input), nil
 }
 
 func assembleChiaExporterContainer(node k8schianetv1.ChiaNode) corev1.Container {

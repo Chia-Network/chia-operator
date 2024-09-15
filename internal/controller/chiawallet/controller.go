@@ -151,7 +151,11 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Assemble Deployment
-	deploy := assembleDeployment(ctx, wallet)
+	deploy, err := assembleDeployment(ctx, r.Client, wallet)
+	if err != nil {
+		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet Deployment -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s %v", req.NamespacedName, err)
+	}
 	if err := controllerutil.SetControllerReference(&wallet, &deploy, r.Scheme); err != nil {
 		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s %v", req.NamespacedName, err)

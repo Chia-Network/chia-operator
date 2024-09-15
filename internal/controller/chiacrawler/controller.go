@@ -151,7 +151,11 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// Assemble Deployment
-	deploy := assembleDeployment(crawler)
+	deploy, err := assembleDeployment(ctx, r.Client, crawler)
+	if err != nil {
+		r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to assemble crawler Deployment -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)
+	}
 	if err := controllerutil.SetControllerReference(&crawler, &deploy, r.Scheme); err != nil {
 		r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to assemble crawler Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)

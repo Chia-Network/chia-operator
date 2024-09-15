@@ -151,7 +151,11 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Assemble Deployment
-	deploy := assembleDeployment(farmer)
+	deploy, err := assembleDeployment(ctx, r.Client, farmer)
+	if err != nil {
+		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer Deployment -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
+	}
 	if err := controllerutil.SetControllerReference(&farmer, &deploy, r.Scheme); err != nil {
 		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
