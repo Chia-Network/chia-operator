@@ -275,6 +275,7 @@ func GetCommonChiaEnv(ctx context.Context, c client.Client, namespace string, co
 	// Need to alphabetize the env slice because if the order of environment variables
 	// changes but none of the values changed, it still triggers a StatefulSet rollout.
 	// When the StatefulSet rolls out, it triggers another reconcile run, which can cause another StatefulSet rollout.
+	// This is probably also an issue for Deployments.
 	// Only need to do this for common env variables because we use a map for some variables from a ConfigMap's data,
 	// where looping over a map causes randomness.
 	sort.Slice(env, func(i, j int) bool {
