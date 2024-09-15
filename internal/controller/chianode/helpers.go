@@ -8,8 +8,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	corev1 "k8s.io/api/core/v1"
@@ -120,7 +122,7 @@ func getChiaVolumeMounts() []corev1.VolumeMount {
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, c client.Client, node k8schianetv1.ChiaNode) ([]corev1.EnvVar, error) {
 	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 
@@ -130,63 +132,11 @@ func getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar
 		Value: "node",
 	})
 
-	// CHIA_ROOT env var
-	env = append(env, corev1.EnvVar{
-		Name:  "CHIA_ROOT",
-		Value: "/chia-data",
-	})
-
 	// keys env var -- no keys required for a node
 	env = append(env, corev1.EnvVar{
 		Name:  "keys",
 		Value: "none",
 	})
-
-	// ca env var
-	env = append(env, corev1.EnvVar{
-		Name:  "ca",
-		Value: "/chia-ca",
-	})
-
-	// testnet env var
-	if node.Spec.ChiaConfig.Testnet != nil && *node.Spec.ChiaConfig.Testnet {
-		env = append(env, corev1.EnvVar{
-			Name:  "testnet",
-			Value: "true",
-		})
-	}
-
-	// network env var
-	if node.Spec.ChiaConfig.Network != nil && *node.Spec.ChiaConfig.Network != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "network",
-			Value: *node.Spec.ChiaConfig.Network,
-		})
-	}
-
-	// network_port env var
-	if node.Spec.ChiaConfig.NetworkPort != nil && *node.Spec.ChiaConfig.NetworkPort != 0 {
-		env = append(env, corev1.EnvVar{
-			Name:  "network_port",
-			Value: strconv.Itoa(int(*node.Spec.ChiaConfig.NetworkPort)),
-		})
-	}
-
-	// introducer_address env var
-	if node.Spec.ChiaConfig.IntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "introducer_address",
-			Value: *node.Spec.ChiaConfig.IntroducerAddress,
-		})
-	}
-
-	// dns_introducer_address env var
-	if node.Spec.ChiaConfig.DNSIntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "dns_introducer_address",
-			Value: *node.Spec.ChiaConfig.DNSIntroducerAddress,
-		})
-	}
 
 	// trusted_cidrs env var
 	if node.Spec.ChiaConfig.TrustedCIDRs != nil {
@@ -202,42 +152,12 @@ func getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode) []corev1.EnvVar
 		}
 	}
 
-	// TZ env var
-	if node.Spec.ChiaConfig.Timezone != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "TZ",
-			Value: *node.Spec.ChiaConfig.Timezone,
-		})
+	// Add common env
+	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, node.ObjectMeta.Namespace, node.Spec.ChiaConfig.CommonSpecChia)
+	if err != nil {
+		return env, err
 	}
+	env = append(env, commonEnv...)
 
-	// log_level env var
-	if node.Spec.ChiaConfig.LogLevel != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "log_level",
-			Value: *node.Spec.ChiaConfig.LogLevel,
-		})
-	}
-
-	// source_ref env var
-	if node.Spec.ChiaConfig.SourceRef != nil && *node.Spec.ChiaConfig.SourceRef != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "source_ref",
-			Value: *node.Spec.ChiaConfig.SourceRef,
-		})
-	}
-
-	// self_hostname env var
-	if node.Spec.ChiaConfig.SelfHostname != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: *node.Spec.ChiaConfig.SelfHostname,
-		})
-	} else {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: "0.0.0.0",
-		})
-	}
-
-	return env
+	return env, nil
 }

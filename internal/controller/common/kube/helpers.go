@@ -5,12 +5,20 @@ Copyright 2023 Chia Network Inc.
 package kube
 
 import (
+	"context"
+	"fmt"
+	"sort"
+	"strconv"
+
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
+
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // GetCommonLabels gives some common labels for chia-operator related objects
@@ -139,4 +147,140 @@ func GetExistingChiaRootVolume(storage *k8schianetv1.StorageConfig) corev1.Volum
 			EmptyDir: &corev1.EmptyDirVolumeSource{},
 		},
 	}
+}
+
+// GetCommonChiaEnv retrieves the environment variables from the CommonSpecChia config struct
+func GetCommonChiaEnv(ctx context.Context, c client.Client, namespace string, commonSpecChia k8schianetv1.CommonSpecChia) ([]corev1.EnvVar, error) {
+	var env []corev1.EnvVar
+
+	// CHIA_ROOT env var
+	env = append(env, corev1.EnvVar{
+		Name:  "CHIA_ROOT",
+		Value: "/chia-data",
+	})
+
+	// ca env var
+	env = append(env, corev1.EnvVar{
+		Name:  "ca",
+		Value: "/chia-ca",
+	})
+
+	// testnet env var
+	if commonSpecChia.Testnet != nil && *commonSpecChia.Testnet {
+		env = append(env, corev1.EnvVar{
+			Name:  "testnet",
+			Value: "true",
+		})
+	}
+
+	// network env var
+	if commonSpecChia.Network != nil && *commonSpecChia.Network != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "network",
+			Value: *commonSpecChia.Network,
+		})
+	}
+
+	// network_port env var
+	env = append(env, corev1.EnvVar{
+		Name:  "network_port",
+		Value: strconv.Itoa(int(GetFullNodePort(commonSpecChia))),
+	})
+
+	// introducer_address env var
+	if commonSpecChia.IntroducerAddress != nil && *commonSpecChia.IntroducerAddress != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "introducer_address",
+			Value: *commonSpecChia.IntroducerAddress,
+		})
+	}
+
+	// dns_introducer_address env var
+	if commonSpecChia.DNSIntroducerAddress != nil && *commonSpecChia.DNSIntroducerAddress != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "dns_introducer_address",
+			Value: *commonSpecChia.DNSIntroducerAddress,
+		})
+	}
+
+	// TZ env var
+	if commonSpecChia.Timezone != nil && *commonSpecChia.Timezone != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "TZ",
+			Value: *commonSpecChia.Timezone,
+		})
+	}
+
+	// log_level env var
+	if commonSpecChia.LogLevel != nil && *commonSpecChia.LogLevel != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "log_level",
+			Value: *commonSpecChia.LogLevel,
+		})
+	}
+
+	// source_ref env var
+	if commonSpecChia.SourceRef != nil && *commonSpecChia.SourceRef != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "source_ref",
+			Value: *commonSpecChia.SourceRef,
+		})
+	}
+
+	// self_hostname env var
+	if commonSpecChia.SelfHostname != nil && *commonSpecChia.SelfHostname != "" {
+		env = append(env, corev1.EnvVar{
+			Name:  "self_hostname",
+			Value: *commonSpecChia.SelfHostname,
+		})
+	} else {
+		env = append(env, corev1.EnvVar{
+			Name:  "self_hostname",
+			Value: "0.0.0.0",
+		})
+	}
+
+	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
+	if commonSpecChia.ChiaNetwork != nil && *commonSpecChia.ChiaNetwork != "" {
+		var chianetworkConfig corev1.ConfigMap
+		err := c.Get(ctx, types.NamespacedName{
+			Name:      *commonSpecChia.ChiaNetwork,
+			Namespace: namespace,
+		}, &chianetworkConfig)
+		if err != nil && errors.IsNotFound(err) {
+			return []corev1.EnvVar{}, fmt.Errorf("ChiaNetwork specified but its ConfigMap was not found: %v", err)
+		} else if err != nil {
+			return []corev1.EnvVar{}, fmt.Errorf("error getting existing ChiaNetwork's ConfigMap: %v", err)
+		}
+
+		// Loop over data keys, see if any match current environment variables. Overwrite the environment variable, or append a new one
+		for k, v := range chianetworkConfig.Data {
+			found := false
+			for i := range env {
+				if env[i].Name == k {
+					env[i].Value = v
+					found = true
+					break
+				}
+			}
+			if !found {
+				env = append(env, corev1.EnvVar{
+					Name:  k,
+					Value: v,
+				})
+			}
+		}
+	}
+
+	// Need to alphabetize the env slice because if the order of environment variables
+	// changes but none of the values changed, it still triggers a StatefulSet rollout.
+	// When the StatefulSet rolls out, it triggers another reconcile run, which can cause another StatefulSet rollout.
+	// This is probably also an issue for Deployments.
+	// Only need to do this for common env variables because we use a map for some variables from a ConfigMap's data,
+	// where looping over a map causes randomness.
+	sort.Slice(env, func(i, j int) bool {
+		return env[i].Name < env[j].Name
+	})
+
+	return env, nil
 }

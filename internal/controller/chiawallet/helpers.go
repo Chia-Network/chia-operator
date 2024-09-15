@@ -8,7 +8,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -103,7 +104,7 @@ func getChiaVolumeMounts() []corev1.VolumeMount {
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, c client.Client, wallet k8schianetv1.ChiaWallet) ([]corev1.EnvVar, error) {
 	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 
@@ -112,58 +113,6 @@ func getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.En
 		Name:  "service",
 		Value: "wallet",
 	})
-
-	// CHIA_ROOT env var
-	env = append(env, corev1.EnvVar{
-		Name:  "CHIA_ROOT",
-		Value: "/chia-data",
-	})
-
-	// ca env var
-	env = append(env, corev1.EnvVar{
-		Name:  "ca",
-		Value: "/chia-ca",
-	})
-
-	// testnet env var
-	if wallet.Spec.ChiaConfig.Testnet != nil && *wallet.Spec.ChiaConfig.Testnet {
-		env = append(env, corev1.EnvVar{
-			Name:  "testnet",
-			Value: "true",
-		})
-	}
-
-	// network env var
-	if wallet.Spec.ChiaConfig.Network != nil && *wallet.Spec.ChiaConfig.Network != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "network",
-			Value: *wallet.Spec.ChiaConfig.Network,
-		})
-	}
-
-	// network_port env var
-	if wallet.Spec.ChiaConfig.NetworkPort != nil && *wallet.Spec.ChiaConfig.NetworkPort != 0 {
-		env = append(env, corev1.EnvVar{
-			Name:  "network_port",
-			Value: strconv.Itoa(int(*wallet.Spec.ChiaConfig.NetworkPort)),
-		})
-	}
-
-	// introducer_address env var
-	if wallet.Spec.ChiaConfig.IntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "introducer_address",
-			Value: *wallet.Spec.ChiaConfig.IntroducerAddress,
-		})
-	}
-
-	// dns_introducer_address env var
-	if wallet.Spec.ChiaConfig.DNSIntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "dns_introducer_address",
-			Value: *wallet.Spec.ChiaConfig.DNSIntroducerAddress,
-		})
-	}
 
 	// trusted_cidrs env var
 	if wallet.Spec.ChiaConfig.TrustedCIDRs != nil {
@@ -177,43 +126,6 @@ func getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.En
 				Value: string(cidrs),
 			})
 		}
-	}
-
-	// TZ env var
-	if wallet.Spec.ChiaConfig.Timezone != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "TZ",
-			Value: *wallet.Spec.ChiaConfig.Timezone,
-		})
-	}
-
-	// log_level env var
-	if wallet.Spec.ChiaConfig.LogLevel != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "log_level",
-			Value: *wallet.Spec.ChiaConfig.LogLevel,
-		})
-	}
-
-	// source_ref env var
-	if wallet.Spec.ChiaConfig.SourceRef != nil && *wallet.Spec.ChiaConfig.SourceRef != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "source_ref",
-			Value: *wallet.Spec.ChiaConfig.SourceRef,
-		})
-	}
-
-	// self_hostname env var
-	if wallet.Spec.ChiaConfig.SelfHostname != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: *wallet.Spec.ChiaConfig.SelfHostname,
-		})
-	} else {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: "0.0.0.0",
-		})
 	}
 
 	// keys env var
@@ -230,5 +142,12 @@ func getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet) []corev1.En
 		})
 	}
 
-	return env
+	// Add common env
+	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, wallet.ObjectMeta.Namespace, wallet.Spec.ChiaConfig.CommonSpecChia)
+	if err != nil {
+		return env, err
+	}
+	env = append(env, commonEnv...)
+
+	return env, nil
 }

@@ -151,7 +151,11 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Assemble Deployment
-	deploy := assembleDeployment(harvester)
+	deploy, err := assembleDeployment(ctx, r.Client, harvester)
+	if err != nil {
+		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester Deployment -- Check operator logs.")
+		return reconcile.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)
+	}
 	if err := controllerutil.SetControllerReference(&harvester, &deploy, r.Scheme); err != nil {
 		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)

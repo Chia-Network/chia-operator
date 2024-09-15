@@ -5,8 +5,10 @@ Copyright 2024 Chia Network Inc.
 package chiaintroducer
 
 import (
+	"context"
 	"fmt"
-	"strconv"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
@@ -74,7 +76,7 @@ func getChiaVolumeMounts(introducer k8schianetv1.ChiaIntroducer) []corev1.Volume
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(introducer k8schianetv1.ChiaIntroducer) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, c client.Client, introducer k8schianetv1.ChiaIntroducer) ([]corev1.EnvVar, error) {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -83,100 +85,18 @@ func getChiaEnv(introducer k8schianetv1.ChiaIntroducer) []corev1.EnvVar {
 		Value: "introducer",
 	})
 
-	// CHIA_ROOT env var
-	env = append(env, corev1.EnvVar{
-		Name:  "CHIA_ROOT",
-		Value: "/chia-data",
-	})
-
 	// keys env var -- no keys required for a introducer
 	env = append(env, corev1.EnvVar{
 		Name:  "keys",
 		Value: "none",
 	})
 
-	// ca env var
-	env = append(env, corev1.EnvVar{
-		Name:  "ca",
-		Value: "/chia-ca",
-	})
-
-	// testnet env var
-	if introducer.Spec.ChiaConfig.Testnet != nil && *introducer.Spec.ChiaConfig.Testnet {
-		env = append(env, corev1.EnvVar{
-			Name:  "testnet",
-			Value: "true",
-		})
+	// Add common env
+	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, introducer.ObjectMeta.Namespace, introducer.Spec.ChiaConfig.CommonSpecChia)
+	if err != nil {
+		return env, err
 	}
+	env = append(env, commonEnv...)
 
-	// network env var
-	if introducer.Spec.ChiaConfig.Network != nil && *introducer.Spec.ChiaConfig.Network != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "network",
-			Value: *introducer.Spec.ChiaConfig.Network,
-		})
-	}
-
-	// network_port env var
-	// network_port env var is required for introducers because it sets the introducer's full_node port in the config
-	// The default full_node port in the initial config is 8445, which will often need overwriting
-	env = append(env, corev1.EnvVar{
-		Name:  "network_port",
-		Value: strconv.Itoa(int(kube.GetFullNodePort(introducer.Spec.ChiaConfig.CommonSpecChia))),
-	})
-
-	// introducer_address env var
-	if introducer.Spec.ChiaConfig.IntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "introducer_address",
-			Value: *introducer.Spec.ChiaConfig.IntroducerAddress,
-		})
-	}
-
-	// dns_introducer_address env var
-	if introducer.Spec.ChiaConfig.DNSIntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "dns_introducer_address",
-			Value: *introducer.Spec.ChiaConfig.DNSIntroducerAddress,
-		})
-	}
-
-	// TZ env var
-	if introducer.Spec.ChiaConfig.Timezone != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "TZ",
-			Value: *introducer.Spec.ChiaConfig.Timezone,
-		})
-	}
-
-	// log_level env var
-	if introducer.Spec.ChiaConfig.LogLevel != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "log_level",
-			Value: *introducer.Spec.ChiaConfig.LogLevel,
-		})
-	}
-
-	// source_ref env var
-	if introducer.Spec.ChiaConfig.SourceRef != nil && *introducer.Spec.ChiaConfig.SourceRef != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "source_ref",
-			Value: *introducer.Spec.ChiaConfig.SourceRef,
-		})
-	}
-
-	// self_hostname env var
-	if introducer.Spec.ChiaConfig.SelfHostname != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: *introducer.Spec.ChiaConfig.SelfHostname,
-		})
-	} else {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: "0.0.0.0",
-		})
-	}
-
-	return env
+	return env, nil
 }

@@ -3,7 +3,7 @@ module github.com/chia-network/chia-operator
 go 1.22.2
 
 require (
-	github.com/chia-network/go-chia-libs v0.13.0
+	github.com/chia-network/go-chia-libs v0.14.2
 	github.com/google/go-cmp v0.6.0
 	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2
@@ -51,6 +51,7 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.58.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
+	github.com/samber/mo v1.13.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect

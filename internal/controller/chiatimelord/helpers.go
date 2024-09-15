@@ -5,8 +5,10 @@ Copyright 2023 Chia Network Inc.
 package chiatimelord
 
 import (
+	"context"
 	"fmt"
-	"strconv"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 
@@ -65,7 +67,7 @@ func getChiaVolumeMounts() []corev1.VolumeMount {
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(tl k8schianetv1.ChiaTimelord) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, c client.Client, timelord k8schianetv1.ChiaTimelord) ([]corev1.EnvVar, error) {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -74,100 +76,18 @@ func getChiaEnv(tl k8schianetv1.ChiaTimelord) []corev1.EnvVar {
 		Value: "timelord-only timelord-launcher-only",
 	})
 
-	// CHIA_ROOT env var
-	env = append(env, corev1.EnvVar{
-		Name:  "CHIA_ROOT",
-		Value: "/chia-data",
-	})
-
-	// ca env var
-	env = append(env, corev1.EnvVar{
-		Name:  "ca",
-		Value: "/chia-ca",
-	})
-
-	// testnet env var
-	if tl.Spec.ChiaConfig.Testnet != nil && *tl.Spec.ChiaConfig.Testnet {
-		env = append(env, corev1.EnvVar{
-			Name:  "testnet",
-			Value: "true",
-		})
-	}
-
-	// network env var
-	if tl.Spec.ChiaConfig.Network != nil && *tl.Spec.ChiaConfig.Network != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "network",
-			Value: *tl.Spec.ChiaConfig.Network,
-		})
-	}
-
-	// network_port env var
-	if tl.Spec.ChiaConfig.NetworkPort != nil && *tl.Spec.ChiaConfig.NetworkPort != 0 {
-		env = append(env, corev1.EnvVar{
-			Name:  "network_port",
-			Value: strconv.Itoa(int(*tl.Spec.ChiaConfig.NetworkPort)),
-		})
-	}
-
-	// introducer_address env var
-	if tl.Spec.ChiaConfig.IntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "introducer_address",
-			Value: *tl.Spec.ChiaConfig.IntroducerAddress,
-		})
-	}
-
-	// dns_introducer_address env var
-	if tl.Spec.ChiaConfig.DNSIntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "dns_introducer_address",
-			Value: *tl.Spec.ChiaConfig.DNSIntroducerAddress,
-		})
-	}
-
-	// TZ env var
-	if tl.Spec.ChiaConfig.Timezone != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "TZ",
-			Value: *tl.Spec.ChiaConfig.Timezone,
-		})
-	}
-
-	// log_level env var
-	if tl.Spec.ChiaConfig.LogLevel != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "log_level",
-			Value: *tl.Spec.ChiaConfig.LogLevel,
-		})
-	}
-
-	// source_ref env var
-	if tl.Spec.ChiaConfig.SourceRef != nil && *tl.Spec.ChiaConfig.SourceRef != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "source_ref",
-			Value: *tl.Spec.ChiaConfig.SourceRef,
-		})
-	}
-
-	// self_hostname env var
-	if tl.Spec.ChiaConfig.SelfHostname != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: *tl.Spec.ChiaConfig.SelfHostname,
-		})
-	} else {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: "0.0.0.0",
-		})
-	}
-
 	// node peer env var
 	env = append(env, corev1.EnvVar{
 		Name:  "full_node_peer",
-		Value: tl.Spec.ChiaConfig.FullNodePeer,
+		Value: timelord.Spec.ChiaConfig.FullNodePeer,
 	})
 
-	return env
+	// Add common env
+	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, timelord.ObjectMeta.Namespace, timelord.Spec.ChiaConfig.CommonSpecChia)
+	if err != nil {
+		return env, err
+	}
+	env = append(env, commonEnv...)
+
+	return env, nil
 }

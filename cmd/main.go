@@ -8,8 +8,6 @@ import (
 	"flag"
 	"os"
 
-	"github.com/chia-network/chia-operator/internal/controller/chiaintroducer"
-
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,6 +23,8 @@ import (
 	"github.com/chia-network/chia-operator/internal/controller/chiacrawler"
 	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
 	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
+	"github.com/chia-network/chia-operator/internal/controller/chiaintroducer"
+	"github.com/chia-network/chia-operator/internal/controller/chianetwork"
 	"github.com/chia-network/chia-operator/internal/controller/chianode"
 	"github.com/chia-network/chia-operator/internal/controller/chiaseeder"
 	"github.com/chia-network/chia-operator/internal/controller/chiatimelord"
@@ -154,6 +154,14 @@ func main() {
 		Recorder: mgr.GetEventRecorderFor("chiacrawler-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaCrawler")
+		os.Exit(1)
+	}
+	if err = (&chianetwork.ChiaNetworkReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("chianetwork-controller"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ChiaNetwork")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

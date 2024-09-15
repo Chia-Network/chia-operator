@@ -298,3 +298,40 @@ func ReconcilePersistentVolumeClaim(ctx context.Context, c client.Client, storag
 
 	return ctrl.Result{}, nil
 }
+
+// ReconcileConfigMap uses the controller-runtime client to determine if the ConfigMap resource needs to be created or updated
+func ReconcileConfigMap(ctx context.Context, c client.Client, desired corev1.ConfigMap) (reconcile.Result, error) {
+	klog := log.FromContext(ctx).WithValues("ConfigMap.Namespace", desired.Namespace, "ConfigMap.Name", desired.Name)
+
+	// Get existing ConfigMap
+	var current corev1.ConfigMap
+	err := c.Get(ctx, types.NamespacedName{
+		Name:      desired.Name,
+		Namespace: desired.Namespace,
+	}, &current)
+	if err != nil && errors.IsNotFound(err) {
+		// ConfigMap not found - create it
+		klog.Info("Creating new ConfigMap")
+		if err := c.Create(ctx, &desired); err != nil {
+			return ctrl.Result{}, fmt.Errorf("error creating ConfigMap \"%s\": %v", desired.Name, err)
+		}
+	} else if err != nil {
+		// Getting ConfigMap failed, but it wasn't because it doesn't exist, can't continue
+		return ctrl.Result{}, fmt.Errorf("error getting existing ConfigMap \"%s\": %v", desired.Name, err)
+	} else {
+		updated := current
+
+		if !reflect.DeepEqual(current.Data, desired.Data) {
+			updated.Data = desired.Data
+
+			if err := c.Update(ctx, &updated); err != nil {
+				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+				}
+				return ctrl.Result{}, fmt.Errorf("error updating ConfigMap \"%s\": %v", desired.Name, err)
+			}
+		}
+	}
+
+	return ctrl.Result{}, nil
+}

@@ -2,4 +2,5 @@
 resources:
 - chiaintroducer.yaml
 - chiacrawler.yaml
+- chianetwork.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

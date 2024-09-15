@@ -5,8 +5,11 @@ Copyright 2023 Chia Network Inc.
 package chiaharvester
 
 import (
+	"context"
 	"fmt"
 	"strconv"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 
@@ -139,7 +142,7 @@ func getChiaVolumeMounts(harvester k8schianetv1.ChiaHarvester) []corev1.VolumeMo
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(harvester k8schianetv1.ChiaHarvester) []corev1.EnvVar {
+func getChiaEnv(ctx context.Context, c client.Client, harvester k8schianetv1.ChiaHarvester) ([]corev1.EnvVar, error) {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -147,95 +150,6 @@ func getChiaEnv(harvester k8schianetv1.ChiaHarvester) []corev1.EnvVar {
 		Name:  "service",
 		Value: "harvester",
 	})
-
-	// CHIA_ROOT env var
-	env = append(env, corev1.EnvVar{
-		Name:  "CHIA_ROOT",
-		Value: "/chia-data",
-	})
-
-	// ca env var
-	env = append(env, corev1.EnvVar{
-		Name:  "ca",
-		Value: "/chia-ca",
-	})
-
-	// testnet env var
-	if harvester.Spec.ChiaConfig.Testnet != nil && *harvester.Spec.ChiaConfig.Testnet {
-		env = append(env, corev1.EnvVar{
-			Name:  "testnet",
-			Value: "true",
-		})
-	}
-
-	// network env var
-	if harvester.Spec.ChiaConfig.Network != nil && *harvester.Spec.ChiaConfig.Network != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "network",
-			Value: *harvester.Spec.ChiaConfig.Network,
-		})
-	}
-
-	// network_port env var
-	if harvester.Spec.ChiaConfig.NetworkPort != nil && *harvester.Spec.ChiaConfig.NetworkPort != 0 {
-		env = append(env, corev1.EnvVar{
-			Name:  "network_port",
-			Value: strconv.Itoa(int(*harvester.Spec.ChiaConfig.NetworkPort)),
-		})
-	}
-
-	// introducer_address env var
-	if harvester.Spec.ChiaConfig.IntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "introducer_address",
-			Value: *harvester.Spec.ChiaConfig.IntroducerAddress,
-		})
-	}
-
-	// dns_introducer_address env var
-	if harvester.Spec.ChiaConfig.DNSIntroducerAddress != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "dns_introducer_address",
-			Value: *harvester.Spec.ChiaConfig.DNSIntroducerAddress,
-		})
-	}
-
-	// TZ env var
-	if harvester.Spec.ChiaConfig.Timezone != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "TZ",
-			Value: *harvester.Spec.ChiaConfig.Timezone,
-		})
-	}
-
-	// log_level env var
-	if harvester.Spec.ChiaConfig.LogLevel != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "log_level",
-			Value: *harvester.Spec.ChiaConfig.LogLevel,
-		})
-	}
-
-	// source_ref env var
-	if harvester.Spec.ChiaConfig.SourceRef != nil && *harvester.Spec.ChiaConfig.SourceRef != "" {
-		env = append(env, corev1.EnvVar{
-			Name:  "source_ref",
-			Value: *harvester.Spec.ChiaConfig.SourceRef,
-		})
-	}
-
-	// self_hostname env var
-	if harvester.Spec.ChiaConfig.SelfHostname != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: *harvester.Spec.ChiaConfig.SelfHostname,
-		})
-	} else {
-		env = append(env, corev1.EnvVar{
-			Name:  "self_hostname",
-			Value: "0.0.0.0",
-		})
-	}
 
 	// recursive_plot_scan env var -- needed because all plot drives are just mounted as subdirs under `/plots`.
 	// TODO make plot mount paths configurable -- make this var optional
@@ -254,5 +168,12 @@ func getChiaEnv(harvester k8schianetv1.ChiaHarvester) []corev1.EnvVar {
 		Value: strconv.Itoa(consts.FarmerPort),
 	})
 
-	return env
+	// Add common env
+	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, harvester.ObjectMeta.Namespace, harvester.Spec.ChiaConfig.CommonSpecChia)
+	if err != nil {
+		return env, err
+	}
+	env = append(env, commonEnv...)
+
+	return env, nil
 }
