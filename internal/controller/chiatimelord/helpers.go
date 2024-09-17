@@ -82,6 +82,12 @@ func getChiaEnv(ctx context.Context, c client.Client, timelord k8schianetv1.Chia
 		Value: timelord.Spec.ChiaConfig.FullNodePeer,
 	})
 
+	// keys env var -- no keys required for a timelord
+	env = append(env, corev1.EnvVar{
+		Name:  "keys",
+		Value: "none",
+	})
+
 	// Add common env
 	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, timelord.ObjectMeta.Namespace, timelord.Spec.ChiaConfig.CommonSpecChia)
 	if err != nil {

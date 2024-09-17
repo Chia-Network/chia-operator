@@ -151,6 +151,12 @@ func getChiaEnv(ctx context.Context, c client.Client, harvester k8schianetv1.Chi
 		Value: "harvester",
 	})
 
+	// keys env var -- no keys required for a harvester
+	env = append(env, corev1.EnvVar{
+		Name:  "keys",
+		Value: "none",
+	})
+
 	// recursive_plot_scan env var -- needed because all plot drives are just mounted as subdirs under `/plots`.
 	// TODO make plot mount paths configurable -- make this var optional
 	env = append(env, corev1.EnvVar{
