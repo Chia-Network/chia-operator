@@ -71,6 +71,12 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		metrics.ChiaWallets.Add(1.0)
 	}
 
+	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
+	networkData, err := kube.GetChiaNetworkData(ctx, r.Client, wallet.Spec.ChiaConfig.CommonSpecChia, wallet.Namespace)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	// Assemble Peer Service
 	peerSrv := assemblePeerService(wallet)
 	if err := controllerutil.SetControllerReference(&wallet, &peerSrv, r.Scheme); err != nil {
@@ -151,7 +157,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Assemble Deployment
-	deploy, err := assembleDeployment(ctx, r.Client, wallet)
+	deploy, err := assembleDeployment(ctx, wallet, networkData)
 	if err != nil {
 		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s %v", req.NamespacedName, err)

@@ -8,8 +8,6 @@ import (
 	"context"
 	"fmt"
 
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -237,7 +235,7 @@ func assembleVolumeClaim(wallet k8schianetv1.ChiaWallet) (*corev1.PersistentVolu
 }
 
 // assembleDeployment assembles the wallet Deployment resource for a ChiaWallet CR
-func assembleDeployment(ctx context.Context, c client.Client, wallet k8schianetv1.ChiaWallet) (appsv1.Deployment, error) {
+func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet, networkData *map[string]string) (appsv1.Deployment, error) {
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiawalletNamePattern, wallet.Name),
@@ -263,7 +261,7 @@ func assembleDeployment(ctx context.Context, c client.Client, wallet k8schianetv
 		},
 	}
 
-	chiaContainer, err := assembleChiaContainer(ctx, c, wallet)
+	chiaContainer, err := assembleChiaContainer(ctx, wallet, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
 	}
@@ -314,7 +312,7 @@ func assembleDeployment(ctx context.Context, c client.Client, wallet k8schianetv
 	return deploy, nil
 }
 
-func assembleChiaContainer(ctx context.Context, c client.Client, wallet k8schianetv1.ChiaWallet) (corev1.Container, error) {
+func assembleChiaContainer(ctx context.Context, wallet k8schianetv1.ChiaWallet, networkData *map[string]string) (corev1.Container, error) {
 	input := kube.AssembleChiaContainerInputs{
 		Image:           wallet.Spec.ChiaConfig.Image,
 		ImagePullPolicy: wallet.Spec.ImagePullPolicy,
@@ -322,7 +320,7 @@ func assembleChiaContainer(ctx context.Context, c client.Client, wallet k8schian
 		VolumeMounts:    getChiaVolumeMounts(),
 	}
 
-	env, err := getChiaEnv(ctx, c, wallet)
+	env, err := getChiaEnv(ctx, wallet, networkData)
 	if err != nil {
 		return corev1.Container{}, err
 	}

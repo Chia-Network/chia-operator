@@ -71,8 +71,20 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		metrics.ChiaCrawlers.Add(1.0)
 	}
 
+	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
+	networkData, err := kube.GetChiaNetworkData(ctx, r.Client, crawler.Spec.ChiaConfig.CommonSpecChia, crawler.Namespace)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Get the full_node Port and handle the error one time instead of in every function that needs it
+	fullNodePort, err := kube.GetFullNodePort(crawler.Spec.ChiaConfig.CommonSpecChia, networkData)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("encountered error retrieving the full_node Port to use: %v", err)
+	}
+
 	// Assemble Peer Service
-	peerSrv := assemblePeerService(crawler)
+	peerSrv := assemblePeerService(crawler, fullNodePort)
 	if err := controllerutil.SetControllerReference(&crawler, &peerSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to assemble crawler peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
@@ -84,7 +96,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// Assemble All Service
-	allSrv := assembleAllService(crawler)
+	allSrv := assembleAllService(crawler, fullNodePort)
 	if err := controllerutil.SetControllerReference(&crawler, &allSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to assemble crawler all-port Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
@@ -151,7 +163,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// Assemble Deployment
-	deploy, err := assembleDeployment(ctx, r.Client, crawler)
+	deploy, err := assembleDeployment(crawler, fullNodePort, networkData)
 	if err != nil {
 		r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to assemble crawler Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaCrawlerReconciler ChiaCrawler=%s %v", req.NamespacedName, err)

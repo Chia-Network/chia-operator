@@ -5,10 +5,7 @@ Copyright 2023 Chia Network Inc.
 package chiaseeder
 
 import (
-	"context"
 	"fmt"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -25,7 +22,7 @@ import (
 const chiaseederNamePattern = "%s-seeder"
 
 // assemblePeerService assembles the peer Service resource for a ChiaSeeder CR
-func assemblePeerService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
+func assemblePeerService(seeder k8schianetv1.ChiaSeeder, fullNodePort int32) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
 		Name:      fmt.Sprintf(chiaseederNamePattern, seeder.Name),
 		Namespace: seeder.Namespace,
@@ -43,7 +40,7 @@ func assemblePeerService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 				Name:       "dns-tcp",
 			},
 			{
-				Port:       kube.GetFullNodePort(seeder.Spec.ChiaConfig.CommonSpecChia),
+				Port:       fullNodePort,
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",
@@ -79,7 +76,7 @@ func assemblePeerService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 }
 
 // assembleAllService assembles the all-port Service resource for a ChiaSeeder CR
-func assembleAllService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
+func assembleAllService(seeder k8schianetv1.ChiaSeeder, fullNodePort int32) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
 		Name:      fmt.Sprintf(chiaseederNamePattern, seeder.Name) + "-all",
 		Namespace: seeder.Namespace,
@@ -97,7 +94,7 @@ func assembleAllService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 				Name:       "dns-tcp",
 			},
 			{
-				Port:       kube.GetFullNodePort(seeder.Spec.ChiaConfig.CommonSpecChia),
+				Port:       fullNodePort,
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",
@@ -297,7 +294,7 @@ func assembleVolumeClaim(seeder k8schianetv1.ChiaSeeder) (*corev1.PersistentVolu
 }
 
 // assembleDeployment assembles the seeder Deployment resource for a ChiaSeeder CR
-func assembleDeployment(ctx context.Context, c client.Client, seeder k8schianetv1.ChiaSeeder) (appsv1.Deployment, error) {
+func assembleDeployment(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, networkData *map[string]string) (appsv1.Deployment, error) {
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiaseederNamePattern, seeder.Name),
@@ -323,7 +320,7 @@ func assembleDeployment(ctx context.Context, c client.Client, seeder k8schianetv
 		},
 	}
 
-	chiaContainer, err := assembleChiaContainer(ctx, c, seeder)
+	chiaContainer, err := assembleChiaContainer(seeder, fullNodePort, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
 	}
@@ -377,15 +374,15 @@ func assembleDeployment(ctx context.Context, c client.Client, seeder k8schianetv
 	return deploy, nil
 }
 
-func assembleChiaContainer(ctx context.Context, c client.Client, seeder k8schianetv1.ChiaSeeder) (corev1.Container, error) {
+func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, networkData *map[string]string) (corev1.Container, error) {
 	input := kube.AssembleChiaContainerInputs{
 		Image:           seeder.Spec.ChiaConfig.Image,
 		ImagePullPolicy: seeder.Spec.ImagePullPolicy,
-		Ports:           getChiaPorts(seeder),
+		Ports:           getChiaPorts(seeder, fullNodePort),
 		VolumeMounts:    getChiaVolumeMounts(seeder),
 	}
 
-	env, err := getChiaEnv(ctx, c, seeder)
+	env, err := getChiaEnv(seeder, networkData)
 	if err != nil {
 		return corev1.Container{}, err
 	}

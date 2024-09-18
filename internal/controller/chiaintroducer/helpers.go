@@ -5,10 +5,7 @@ Copyright 2024 Chia Network Inc.
 package chiaintroducer
 
 import (
-	"context"
 	"fmt"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
@@ -76,7 +73,7 @@ func getChiaVolumeMounts(introducer k8schianetv1.ChiaIntroducer) []corev1.Volume
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(ctx context.Context, c client.Client, introducer k8schianetv1.ChiaIntroducer) ([]corev1.EnvVar, error) {
+func getChiaEnv(introducer k8schianetv1.ChiaIntroducer, networkData *map[string]string) ([]corev1.EnvVar, error) {
 	var env []corev1.EnvVar
 
 	// service env var
@@ -92,7 +89,7 @@ func getChiaEnv(ctx context.Context, c client.Client, introducer k8schianetv1.Ch
 	})
 
 	// Add common env
-	commonEnv, err := kube.GetCommonChiaEnv(ctx, c, introducer.ObjectMeta.Namespace, introducer.Spec.ChiaConfig.CommonSpecChia)
+	commonEnv, err := kube.GetCommonChiaEnv(introducer.Spec.ChiaConfig.CommonSpecChia, networkData)
 	if err != nil {
 		return env, err
 	}

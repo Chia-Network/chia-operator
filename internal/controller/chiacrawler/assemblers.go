@@ -5,10 +5,7 @@ Copyright 2024 Chia Network Inc.
 package chiacrawler
 
 import (
-	"context"
 	"fmt"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -25,13 +22,13 @@ import (
 const chiacrawlerNamePattern = "%s-crawler"
 
 // assemblePeerService assembles the peer Service resource for a ChiaCrawler CR
-func assemblePeerService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
+func assemblePeerService(crawler k8schianetv1.ChiaCrawler, fullNodePort int32) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
 		Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
 		Namespace: crawler.Namespace,
 		Ports: []corev1.ServicePort{
 			{
-				Port:       kube.GetFullNodePort(crawler.Spec.ChiaConfig.CommonSpecChia),
+				Port:       fullNodePort,
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",
@@ -62,13 +59,13 @@ func assemblePeerService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 }
 
 // assembleAllService assembles the all-port Service resource for a ChiaCrawler CR
-func assembleAllService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
+func assembleAllService(crawler k8schianetv1.ChiaCrawler, fullNodePort int32) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
 		Name:      fmt.Sprintf(chiacrawlerNamePattern, crawler.Name) + "-all",
 		Namespace: crawler.Namespace,
 		Ports: []corev1.ServicePort{
 			{
-				Port:       kube.GetFullNodePort(crawler.Spec.ChiaConfig.CommonSpecChia),
+				Port:       fullNodePort,
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",
@@ -238,7 +235,7 @@ func assembleVolumeClaim(crawler k8schianetv1.ChiaCrawler) (*corev1.PersistentVo
 }
 
 // assembleDeployment assembles the crawler Deployment resource for a ChiaCrawler CR
-func assembleDeployment(ctx context.Context, c client.Client, crawler k8schianetv1.ChiaCrawler) (appsv1.Deployment, error) {
+func assembleDeployment(crawler k8schianetv1.ChiaCrawler, fullNodePort int32, networkData *map[string]string) (appsv1.Deployment, error) {
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
@@ -264,7 +261,7 @@ func assembleDeployment(ctx context.Context, c client.Client, crawler k8schianet
 		},
 	}
 
-	chiaContainer, err := assembleChiaContainer(ctx, c, crawler)
+	chiaContainer, err := assembleChiaContainer(crawler, fullNodePort, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
 	}
@@ -315,7 +312,7 @@ func assembleDeployment(ctx context.Context, c client.Client, crawler k8schianet
 	return deploy, nil
 }
 
-func assembleChiaContainer(ctx context.Context, c client.Client, crawler k8schianetv1.ChiaCrawler) (corev1.Container, error) {
+func assembleChiaContainer(crawler k8schianetv1.ChiaCrawler, fullNodePort int32, networkData *map[string]string) (corev1.Container, error) {
 	input := kube.AssembleChiaContainerInputs{
 		Image:           crawler.Spec.ChiaConfig.Image,
 		ImagePullPolicy: crawler.Spec.ImagePullPolicy,
@@ -327,7 +324,7 @@ func assembleChiaContainer(ctx context.Context, c client.Client, crawler k8schia
 			},
 			{
 				Name:          "peers",
-				ContainerPort: kube.GetFullNodePort(crawler.Spec.ChiaConfig.CommonSpecChia),
+				ContainerPort: fullNodePort,
 				Protocol:      "TCP",
 			},
 			{
@@ -339,7 +336,7 @@ func assembleChiaContainer(ctx context.Context, c client.Client, crawler k8schia
 		VolumeMounts: getChiaVolumeMounts(crawler),
 	}
 
-	env, err := getChiaEnv(ctx, c, crawler)
+	env, err := getChiaEnv(crawler, networkData)
 	if err != nil {
 		return corev1.Container{}, err
 	}

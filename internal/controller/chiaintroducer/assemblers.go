@@ -5,10 +5,7 @@ Copyright 2024 Chia Network Inc.
 package chiaintroducer
 
 import (
-	"context"
 	"fmt"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -25,13 +22,13 @@ import (
 const chiaintroducerNamePattern = "%s-introducer"
 
 // assemblePeerService assembles the peer Service resource for a ChiaIntroducer CR
-func assemblePeerService(introducer k8schianetv1.ChiaIntroducer) corev1.Service {
+func assemblePeerService(introducer k8schianetv1.ChiaIntroducer, fullNodePort int32) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
 		Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name),
 		Namespace: introducer.Namespace,
 		Ports: []corev1.ServicePort{
 			{
-				Port:       kube.GetFullNodePort(introducer.Spec.ChiaConfig.CommonSpecChia),
+				Port:       fullNodePort,
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",
@@ -62,13 +59,13 @@ func assemblePeerService(introducer k8schianetv1.ChiaIntroducer) corev1.Service 
 }
 
 // assembleAllService assembles the all-port Service resource for a ChiaIntroducer CR
-func assembleAllService(introducer k8schianetv1.ChiaIntroducer) corev1.Service {
+func assembleAllService(introducer k8schianetv1.ChiaIntroducer, fullNodePort int32) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
 		Name:      fmt.Sprintf(chiaintroducerNamePattern, introducer.Name) + "-all",
 		Namespace: introducer.Namespace,
 		Ports: []corev1.ServicePort{
 			{
-				Port:       kube.GetFullNodePort(introducer.Spec.ChiaConfig.CommonSpecChia),
+				Port:       fullNodePort,
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",
@@ -195,7 +192,7 @@ func assembleVolumeClaim(introducer k8schianetv1.ChiaIntroducer) (*corev1.Persis
 }
 
 // assembleDeployment assembles the introducer Deployment resource for a ChiaIntroducer CR
-func assembleDeployment(ctx context.Context, c client.Client, introducer k8schianetv1.ChiaIntroducer) (appsv1.Deployment, error) {
+func assembleDeployment(introducer k8schianetv1.ChiaIntroducer, fullNodePort int32, networkData *map[string]string) (appsv1.Deployment, error) {
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiaintroducerNamePattern, introducer.Name),
@@ -221,7 +218,7 @@ func assembleDeployment(ctx context.Context, c client.Client, introducer k8schia
 		},
 	}
 
-	chiaContainer, err := assembleChiaContainer(ctx, c, introducer)
+	chiaContainer, err := assembleChiaContainer(introducer, fullNodePort, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
 	}
@@ -272,7 +269,7 @@ func assembleDeployment(ctx context.Context, c client.Client, introducer k8schia
 	return deploy, nil
 }
 
-func assembleChiaContainer(ctx context.Context, c client.Client, introducer k8schianetv1.ChiaIntroducer) (corev1.Container, error) {
+func assembleChiaContainer(introducer k8schianetv1.ChiaIntroducer, fullNodePort int32, networkData *map[string]string) (corev1.Container, error) {
 	input := kube.AssembleChiaContainerInputs{
 		Image:           introducer.Spec.ChiaConfig.Image,
 		ImagePullPolicy: introducer.Spec.ImagePullPolicy,
@@ -284,14 +281,14 @@ func assembleChiaContainer(ctx context.Context, c client.Client, introducer k8sc
 			},
 			{
 				Name:          "peers",
-				ContainerPort: kube.GetFullNodePort(introducer.Spec.ChiaConfig.CommonSpecChia),
+				ContainerPort: fullNodePort,
 				Protocol:      "TCP",
 			},
 		},
 		VolumeMounts: getChiaVolumeMounts(introducer),
 	}
 
-	env, err := getChiaEnv(ctx, c, introducer)
+	env, err := getChiaEnv(introducer, networkData)
 	if err != nil {
 		return corev1.Container{}, err
 	}

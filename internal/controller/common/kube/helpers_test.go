@@ -155,22 +155,36 @@ func TestShouldRollIntoMainPeerService(t *testing.T) {
 
 func TestGetFullNodePort(t *testing.T) {
 	// Get Mainnet port
-	actual := GetFullNodePort(k8schianetv1.CommonSpecChia{})
+	actual, err := GetFullNodePort(k8schianetv1.CommonSpecChia{}, nil)
+	require.NoError(t, err)
 	require.Equal(t, int32(consts.MainnetNodePort), actual, "expected mainnet full_node port")
 
 	// Get default testnet port
 	testTrue := true
-	actual = GetFullNodePort(k8schianetv1.CommonSpecChia{
+	actual, err = GetFullNodePort(k8schianetv1.CommonSpecChia{
 		Testnet: &testTrue,
-	})
+	}, nil)
+	require.NoError(t, err)
 	require.Equal(t, int32(consts.TestnetNodePort), actual, "expected testnet full_node port")
 
 	// Get custom full_node port
-	var port uint16 = 58441
-	actual = GetFullNodePort(k8schianetv1.CommonSpecChia{
-		NetworkPort: &port,
-	})
-	require.Equal(t, int32(port), actual, "expected custom full_node port")
+	var customPort uint16 = 58441
+	actual, err = GetFullNodePort(k8schianetv1.CommonSpecChia{
+		NetworkPort: &customPort,
+	}, nil)
+	require.NoError(t, err)
+	require.Equal(t, int32(customPort), actual, "expected custom full_node port")
+
+	// Get custom full_node port, defined in a ChiaNetwork
+	networkDataPort := 58442
+	networkData := map[string]string{
+		"network_port": "58442",
+	}
+	actual, err = GetFullNodePort(k8schianetv1.CommonSpecChia{
+		NetworkPort: &customPort,
+	}, &networkData)
+	require.NoError(t, err)
+	require.Equal(t, int32(networkDataPort), actual, "expected custom full_node port from network data")
 }
 
 func TestGetChiaRootVolume(t *testing.T) {
