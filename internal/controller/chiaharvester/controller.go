@@ -71,6 +71,12 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		metrics.ChiaHarvesters.Add(1.0)
 	}
 
+	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
+	networkData, err := kube.GetChiaNetworkData(ctx, r.Client, harvester.Spec.ChiaConfig.CommonSpecChia, harvester.Namespace)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	// Assemble Peer Service
 	peerSrv := assemblePeerService(harvester)
 	if err := controllerutil.SetControllerReference(&harvester, &peerSrv, r.Scheme); err != nil {
@@ -151,7 +157,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Assemble Deployment
-	deploy, err := assembleDeployment(ctx, r.Client, harvester)
+	deploy, err := assembleDeployment(harvester, networkData)
 	if err != nil {
 		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)

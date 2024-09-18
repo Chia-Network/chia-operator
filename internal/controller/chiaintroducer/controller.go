@@ -71,8 +71,20 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		metrics.ChiaIntroducers.Add(1.0)
 	}
 
+	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
+	networkData, err := kube.GetChiaNetworkData(ctx, r.Client, introducer.Spec.ChiaConfig.CommonSpecChia, introducer.Namespace)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Get the full_node Port and handle the error one time instead of in every function that needs it
+	fullNodePort, err := kube.GetFullNodePort(introducer.Spec.ChiaConfig.CommonSpecChia, networkData)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("encountered error retrieving the full_node Port to use: %v", err)
+	}
+
 	// Assemble Peer Service
-	peerSrv := assemblePeerService(introducer)
+	peerSrv := assemblePeerService(introducer, fullNodePort)
 	if err := controllerutil.SetControllerReference(&introducer, &peerSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
@@ -84,7 +96,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	// Assemble All Service
-	allSrv := assembleAllService(introducer)
+	allSrv := assembleAllService(introducer, fullNodePort)
 	if err := controllerutil.SetControllerReference(&introducer, &allSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer all-port Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
@@ -139,7 +151,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	// Assemble Deployment
-	deploy, err := assembleDeployment(ctx, r.Client, introducer)
+	deploy, err := assembleDeployment(introducer, fullNodePort, networkData)
 	if err != nil {
 		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)

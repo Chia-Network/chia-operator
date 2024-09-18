@@ -71,8 +71,20 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		metrics.ChiaNodes.Add(1.0)
 	}
 
+	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
+	networkData, err := kube.GetChiaNetworkData(ctx, r.Client, node.Spec.ChiaConfig.CommonSpecChia, node.Namespace)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Get the full_node Port and handle the error one time instead of in every function that needs it
+	fullNodePort, err := kube.GetFullNodePort(node.Spec.ChiaConfig.CommonSpecChia, networkData)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("encountered error retrieving the full_node Port to use: %v", err)
+	}
+
 	// Assemble Peer Service
-	peerSrv := assemblePeerService(node)
+	peerSrv := assemblePeerService(node, fullNodePort)
 	if err := controllerutil.SetControllerReference(&node, &peerSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
@@ -84,7 +96,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Assemble All Service
-	allSrv := assembleAllService(node)
+	allSrv := assembleAllService(node, fullNodePort)
 	if err := controllerutil.SetControllerReference(&node, &allSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node all-port Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
@@ -96,7 +108,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Assemble Headless Peer Service
-	headlessPeerSrv := assembleHeadlessPeerService(node)
+	headlessPeerSrv := assembleHeadlessPeerService(node, fullNodePort)
 	if err := controllerutil.SetControllerReference(&node, &headlessPeerSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node headless peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling headless peer Service: %v", req.NamespacedName, err)
@@ -108,7 +120,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Assemble Local Peer Service
-	localPeerSrv := assembleLocalPeerService(node)
+	localPeerSrv := assembleLocalPeerService(node, fullNodePort)
 	if err := controllerutil.SetControllerReference(&node, &localPeerSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node local peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s encountered error assembling local peer Service: %v", req.NamespacedName, err)
@@ -170,7 +182,7 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Assemble StatefulSet
-	stateful, err := assembleStatefulset(ctx, r.Client, node)
+	stateful, err := assembleStatefulset(ctx, node, fullNodePort, networkData)
 	if err != nil {
 		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "Failed to assemble node Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)

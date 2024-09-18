@@ -12,13 +12,13 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // GetCommonLabels gives some common labels for chia-operator related objects
@@ -102,14 +102,27 @@ func GetChiaDaemonServicePorts() []corev1.ServicePort {
 }
 
 // GetFullNodePort determines the correct full_node port to use
-func GetFullNodePort(chia k8schianetv1.CommonSpecChia) int32 {
+func GetFullNodePort(chia k8schianetv1.CommonSpecChia, networkData *map[string]string) (int32, error) {
+	if networkData != nil {
+		data := *networkData
+		port, exists := data["network_port"]
+		if exists {
+			// This exists as an integer on the ChiaNetwork and gets converted to a string for the ConfigMap,
+			// so this should never return an error, but we'll check it anyway.
+			i, err := strconv.Atoi(port)
+			if err != nil {
+				return 0, fmt.Errorf("failed to convert network_port \"%s\" to an integer value: %v", port, err)
+			}
+			return int32(i), nil
+		}
+	}
 	if chia.NetworkPort != nil {
-		return int32(*chia.NetworkPort)
+		return int32(*chia.NetworkPort), nil
 	}
 	if chia.Testnet != nil && *chia.Testnet {
-		return consts.TestnetNodePort
+		return consts.TestnetNodePort, nil
 	}
-	return consts.MainnetNodePort
+	return consts.MainnetNodePort, nil
 }
 
 // GetExistingChiaRootVolume returns a corev1 API Volume specification for CHIA_ROOT.
@@ -150,7 +163,7 @@ func GetExistingChiaRootVolume(storage *k8schianetv1.StorageConfig) corev1.Volum
 }
 
 // GetCommonChiaEnv retrieves the environment variables from the CommonSpecChia config struct
-func GetCommonChiaEnv(ctx context.Context, c client.Client, namespace string, commonSpecChia k8schianetv1.CommonSpecChia) ([]corev1.EnvVar, error) {
+func GetCommonChiaEnv(commonSpecChia k8schianetv1.CommonSpecChia, networkData *map[string]string) ([]corev1.EnvVar, error) {
 	var env []corev1.EnvVar
 
 	// CHIA_ROOT env var
@@ -182,9 +195,13 @@ func GetCommonChiaEnv(ctx context.Context, c client.Client, namespace string, co
 	}
 
 	// network_port env var
+	port, err := GetFullNodePort(commonSpecChia, networkData)
+	if err != nil {
+		return []corev1.EnvVar{}, err
+	}
 	env = append(env, corev1.EnvVar{
 		Name:  "network_port",
-		Value: strconv.Itoa(int(GetFullNodePort(commonSpecChia))),
+		Value: strconv.Itoa(int(port)),
 	})
 
 	// introducer_address env var
@@ -240,21 +257,11 @@ func GetCommonChiaEnv(ctx context.Context, c client.Client, namespace string, co
 		})
 	}
 
-	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
-	if commonSpecChia.ChiaNetwork != nil && *commonSpecChia.ChiaNetwork != "" {
-		var chianetworkConfig corev1.ConfigMap
-		err := c.Get(ctx, types.NamespacedName{
-			Name:      *commonSpecChia.ChiaNetwork,
-			Namespace: namespace,
-		}, &chianetworkConfig)
-		if err != nil && errors.IsNotFound(err) {
-			return []corev1.EnvVar{}, fmt.Errorf("ChiaNetwork specified but its ConfigMap was not found: %v", err)
-		} else if err != nil {
-			return []corev1.EnvVar{}, fmt.Errorf("error getting existing ChiaNetwork's ConfigMap: %v", err)
-		}
-
+	// Use ChiaNetwork data to override settings on the actual resource
+	if networkData != nil {
 		// Loop over data keys, see if any match current environment variables. Overwrite the environment variable, or append a new one
-		for k, v := range chianetworkConfig.Data {
+		data := *networkData
+		for k, v := range data {
 			found := false
 			for i := range env {
 				if env[i].Name == k {
@@ -283,4 +290,22 @@ func GetCommonChiaEnv(ctx context.Context, c client.Client, namespace string, co
 	})
 
 	return env, nil
+}
+
+func GetChiaNetworkData(ctx context.Context, c client.Client, config k8schianetv1.CommonSpecChia, namespace string) (*map[string]string, error) {
+	if config.ChiaNetwork != nil && *config.ChiaNetwork != "" {
+		var chianetworkConfig corev1.ConfigMap
+		err := c.Get(ctx, types.NamespacedName{
+			Name:      *config.ChiaNetwork,
+			Namespace: namespace,
+		}, &chianetworkConfig)
+		if err != nil && errors.IsNotFound(err) {
+			return nil, fmt.Errorf("ChiaNetwork specified but its ConfigMap was not found: %v", err)
+		} else if err != nil {
+			return nil, fmt.Errorf("error getting specified ChiaNetwork's ConfigMap: %v", err)
+		}
+
+		return &chianetworkConfig.Data, nil
+	}
+	return nil, nil
 }

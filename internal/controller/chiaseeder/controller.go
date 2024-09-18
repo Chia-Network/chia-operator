@@ -87,8 +87,20 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		metrics.ChiaSeeders.Add(1.0)
 	}
 
+	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
+	networkData, err := kube.GetChiaNetworkData(ctx, r.Client, seeder.Spec.ChiaConfig.CommonSpecChia, seeder.Namespace)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Get the full_node Port and handle the error one time instead of in every function that needs it
+	fullNodePort, err := kube.GetFullNodePort(seeder.Spec.ChiaConfig.CommonSpecChia, networkData)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("encountered error retrieving the full_node Port to use: %v", err)
+	}
+
 	// Assemble Peer Service
-	peerSrv := assemblePeerService(seeder)
+	peerSrv := assemblePeerService(seeder, fullNodePort)
 	if err := controllerutil.SetControllerReference(&seeder, &peerSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
@@ -100,7 +112,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Assemble All Service
-	allSrv := assembleAllService(seeder)
+	allSrv := assembleAllService(seeder, fullNodePort)
 	if err := controllerutil.SetControllerReference(&seeder, &allSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder all-port Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
@@ -181,7 +193,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Assemble Deployment
-	deploy, err := assembleDeployment(ctx, r.Client, seeder)
+	deploy, err := assembleDeployment(seeder, fullNodePort, networkData)
 	if err != nil {
 		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)

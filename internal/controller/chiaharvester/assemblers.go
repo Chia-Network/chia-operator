@@ -5,10 +5,7 @@ Copyright 2023 Chia Network Inc.
 package chiaharvester
 
 import (
-	"context"
 	"fmt"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -238,7 +235,7 @@ func assembleVolumeClaim(harvester k8schianetv1.ChiaHarvester) (*corev1.Persiste
 }
 
 // assembleDeployment assembles the harvester Deployment resource for a ChiaHarvester CR
-func assembleDeployment(ctx context.Context, c client.Client, harvester k8schianetv1.ChiaHarvester) (appsv1.Deployment, error) {
+func assembleDeployment(harvester k8schianetv1.ChiaHarvester, networkData *map[string]string) (appsv1.Deployment, error) {
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
@@ -264,7 +261,7 @@ func assembleDeployment(ctx context.Context, c client.Client, harvester k8schian
 		},
 	}
 
-	chiaContainer, err := assembleChiaContainer(ctx, c, harvester)
+	chiaContainer, err := assembleChiaContainer(harvester, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
 	}
@@ -315,7 +312,7 @@ func assembleDeployment(ctx context.Context, c client.Client, harvester k8schian
 	return deploy, nil
 }
 
-func assembleChiaContainer(ctx context.Context, c client.Client, harvester k8schianetv1.ChiaHarvester) (corev1.Container, error) {
+func assembleChiaContainer(harvester k8schianetv1.ChiaHarvester, networkData *map[string]string) (corev1.Container, error) {
 	input := kube.AssembleChiaContainerInputs{
 		Image:           harvester.Spec.ChiaConfig.Image,
 		ImagePullPolicy: harvester.Spec.ImagePullPolicy,
@@ -339,7 +336,7 @@ func assembleChiaContainer(ctx context.Context, c client.Client, harvester k8sch
 		VolumeMounts: getChiaVolumeMounts(harvester),
 	}
 
-	env, err := getChiaEnv(ctx, c, harvester)
+	env, err := getChiaEnv(harvester, networkData)
 	if err != nil {
 		return corev1.Container{}, err
 	}

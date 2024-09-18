@@ -71,6 +71,12 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		metrics.ChiaFarmers.Add(1.0)
 	}
 
+	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
+	networkData, err := kube.GetChiaNetworkData(ctx, r.Client, farmer.Spec.ChiaConfig.CommonSpecChia, farmer.Namespace)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	// Assemble Peer Service
 	peerSrv := assemblePeerService(farmer)
 	if err := controllerutil.SetControllerReference(&farmer, &peerSrv, r.Scheme); err != nil {
@@ -151,7 +157,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Assemble Deployment
-	deploy, err := assembleDeployment(ctx, r.Client, farmer)
+	deploy, err := assembleDeployment(farmer, networkData)
 	if err != nil {
 		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)

@@ -72,6 +72,12 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		metrics.ChiaTimelords.Add(1.0)
 	}
 
+	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
+	networkData, err := kube.GetChiaNetworkData(ctx, r.Client, timelord.Spec.ChiaConfig.CommonSpecChia, timelord.Namespace)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	// Assemble Peer Service
 	peerSrv := assemblePeerService(timelord)
 	if err := controllerutil.SetControllerReference(&timelord, &peerSrv, r.Scheme); err != nil {
@@ -166,7 +172,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Assemble Deployment
-	deploy, err := assembleDeployment(ctx, r.Client, timelord)
+	deploy, err := assembleDeployment(timelord, networkData)
 	if err != nil {
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)

@@ -8,8 +8,6 @@ import (
 	"context"
 	"fmt"
 
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,13 +21,13 @@ import (
 const chianodeNamePattern = "%s-node"
 
 // assemblePeerService assembles the peer Service resource for a ChiaNode CR
-func assemblePeerService(node k8schianetv1.ChiaNode) corev1.Service {
+func assemblePeerService(node k8schianetv1.ChiaNode, fullNodePort int32) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
 		Name:      fmt.Sprintf(chianodeNamePattern, node.Name),
 		Namespace: node.Namespace,
 		Ports: []corev1.ServicePort{
 			{
-				Port:       kube.GetFullNodePort(node.Spec.ChiaConfig.CommonSpecChia),
+				Port:       fullNodePort,
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",
@@ -65,13 +63,13 @@ func assemblePeerService(node k8schianetv1.ChiaNode) corev1.Service {
 }
 
 // assembleAllService assembles the all-port Service resource for a ChiaNode CR
-func assembleAllService(node k8schianetv1.ChiaNode) corev1.Service {
+func assembleAllService(node k8schianetv1.ChiaNode, fullNodePort int32) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
 		Name:      fmt.Sprintf(chianodeNamePattern, node.Name) + "-all",
 		Namespace: node.Namespace,
 		Ports: []corev1.ServicePort{
 			{
-				Port:       kube.GetFullNodePort(node.Spec.ChiaConfig.CommonSpecChia),
+				Port:       fullNodePort,
 				TargetPort: intstr.FromString("peers"),
 				Protocol:   "TCP",
 				Name:       "peers",
@@ -236,8 +234,8 @@ func assembleChiaHealthcheckService(node k8schianetv1.ChiaNode) corev1.Service {
 }
 
 // assembleHeadlessPeerService assembles the headless peer Service for a Chianode CR
-func assembleHeadlessPeerService(node k8schianetv1.ChiaNode) corev1.Service {
-	srv := assemblePeerService(node)
+func assembleHeadlessPeerService(node k8schianetv1.ChiaNode, fullNodePort int32) corev1.Service {
+	srv := assemblePeerService(node, fullNodePort)
 
 	srv.Name = srv.Name + "-headless"
 	srv.Annotations = node.Spec.AdditionalMetadata.Annotations // Overwrites the annotations from the peer Service, since those may contain some related to tools like external-dns
@@ -248,8 +246,8 @@ func assembleHeadlessPeerService(node k8schianetv1.ChiaNode) corev1.Service {
 }
 
 // assembleHeadlessPeerService assembles the headless peer Service for a Chianode CR
-func assembleLocalPeerService(node k8schianetv1.ChiaNode) corev1.Service {
-	srv := assemblePeerService(node)
+func assembleLocalPeerService(node k8schianetv1.ChiaNode, fullNodePort int32) corev1.Service {
+	srv := assemblePeerService(node, fullNodePort)
 
 	srv.Name = srv.Name + "-internal"
 	srv.Annotations = node.Spec.AdditionalMetadata.Annotations // Overwrites the annotations from the peer Service, since those may contain some related to tools like external-dns
@@ -261,7 +259,7 @@ func assembleLocalPeerService(node k8schianetv1.ChiaNode) corev1.Service {
 }
 
 // assembleStatefulset assembles the node StatefulSet resource for a ChiaNode CR
-func assembleStatefulset(ctx context.Context, c client.Client, node k8schianetv1.ChiaNode) (appsv1.StatefulSet, error) {
+func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNodePort int32, networkData *map[string]string) (appsv1.StatefulSet, error) {
 	vols, volClaimTemplates := getChiaVolumesAndTemplates(node)
 
 	stateful := appsv1.StatefulSet{
@@ -293,7 +291,7 @@ func assembleStatefulset(ctx context.Context, c client.Client, node k8schianetv1
 		},
 	}
 
-	chiaContainer, err := assembleChiaContainer(ctx, c, node)
+	chiaContainer, err := assembleChiaContainer(ctx, node, fullNodePort, networkData)
 	if err != nil {
 		return appsv1.StatefulSet{}, err
 	}
@@ -347,7 +345,7 @@ func assembleStatefulset(ctx context.Context, c client.Client, node k8schianetv1
 	return stateful, nil
 }
 
-func assembleChiaContainer(ctx context.Context, c client.Client, node k8schianetv1.ChiaNode) (corev1.Container, error) {
+func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode, fullNodePort int32, networkData *map[string]string) (corev1.Container, error) {
 	input := kube.AssembleChiaContainerInputs{
 		Image:           node.Spec.ChiaConfig.Image,
 		ImagePullPolicy: node.Spec.ImagePullPolicy,
@@ -359,7 +357,7 @@ func assembleChiaContainer(ctx context.Context, c client.Client, node k8schianet
 			},
 			{
 				Name:          "peers",
-				ContainerPort: kube.GetFullNodePort(node.Spec.ChiaConfig.CommonSpecChia),
+				ContainerPort: fullNodePort,
 				Protocol:      "TCP",
 			},
 			{
@@ -371,7 +369,7 @@ func assembleChiaContainer(ctx context.Context, c client.Client, node k8schianet
 		VolumeMounts: getChiaVolumeMounts(),
 	}
 
-	env, err := getChiaEnv(ctx, c, node)
+	env, err := getChiaEnv(ctx, node, networkData)
 	if err != nil {
 		return corev1.Container{}, err
 	}
