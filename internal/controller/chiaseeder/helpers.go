@@ -142,7 +142,7 @@ func getChiaEnv(seeder k8schianetv1.ChiaSeeder, networkData *map[string]string) 
 }
 
 // getChiaPorts returns the ports to a chia container
-func getChiaPorts(seeder k8schianetv1.ChiaSeeder, fullNodePort int32) []corev1.ContainerPort {
+func getChiaPorts(fullNodePort int32) []corev1.ContainerPort {
 	return []corev1.ContainerPort{
 		{
 			Name:          "daemon",

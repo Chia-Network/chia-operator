@@ -378,7 +378,7 @@ func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, n
 	input := kube.AssembleChiaContainerInputs{
 		Image:           seeder.Spec.ChiaConfig.Image,
 		ImagePullPolicy: seeder.Spec.ImagePullPolicy,
-		Ports:           getChiaPorts(seeder, fullNodePort),
+		Ports:           getChiaPorts(fullNodePort),
 		VolumeMounts:    getChiaVolumeMounts(seeder),
 	}
 
