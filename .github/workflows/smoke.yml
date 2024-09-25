@@ -91,15 +91,19 @@ jobs:
           timeout=600
           endtime=$((SECONDS+timeout))
           while [ $SECONDS -lt $endtime ]; do
-            ready_status=$(kubectl get pod chianode-test-node-0 -o=jsonpath='{.status.containerStatuses[*].ready}')
-            statuses_grep_false=$(echo "$ready_status" | grep false)
-            if [ "$statuses_grep_false" = "" ]; then
-              echo "All containers in Pod are ready: $ready_status"
-              found=1
-              break
+            ready_status=$(kubectl get pod chianode-test-node-0 -o=jsonpath='{.status.containerStatuses[*].ready}' || true)
+            if [ "$ready_status" != "" ]; then
+              statuses_grep_false=$(echo "$ready_status" | grep false)
+              if [ "$statuses_grep_false" = "" ]; then
+                echo "All containers in Pod are ready: $ready_status"
+                found=1
+                break
+              else
+                echo "Container ready states: $ready_status. Waiting... ${SECONDS}/${endtime}"
+              fi
             else
-              echo "Container ready states: $ready_status. Waiting... ${SECONDS}/${endtime}"
-            fi
+              echo "kubectl command failed this iteration, sleeping until next iteration... ${SECONDS}/${endtime}"
+            fi            
             sleep 5
           done
           if [ "$found" -eq 0 ]; then
