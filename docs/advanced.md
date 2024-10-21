@@ -108,7 +108,7 @@ spec:
           value: "init_container_value"
 ```
 
-## Specify the version of Chia
+## Specify a Chia version
 
 Operator releases tend to pin to the current latest version of chia (at the time the release was published) but if you'd like to manage the version of chia ran yourself, there's a field to do so:
 
@@ -122,4 +122,6 @@ spec:
     image: ghcr.io/chia-network/chia:2.4.3
 ```
 
-The example shows a ChiaNode (full_node) resource on v2.4.3 of chia, but this field is also available on other resources.
+The example shows a ChiaNode (full_node) resource on v2.4.3 of chia, but this field is also available on other resources. 
+
+Since this is an image field, you can point to any OCI image containing chia, but note that this operator makes heavy use of the [chia-docker](https://github.com/Chia-Network/chia-docker) entrypoint script for setting a lot of the chia configuration, so it should be compatible with that script to ensure your Chia services start up properly. Using an image that isn't at least based on the official chia-docker image will likely result in a broken installation.
