@@ -297,24 +297,15 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 	}
 	stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, chiaContainer)
 
-	if len(node.Spec.InitContainers) != 0 {
-		// Overwrite any volumeMounts specified in init containers. Not currently supported.
-		for _, cont := range node.Spec.InitContainers {
-			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+	// Get Init Containers
+	stateful.Spec.Template.Spec.InitContainers = kube.GetExtraContainers(node.Spec.InitContainers, chiaContainer)
+	// Add Init Container Volumes
+	stateful.Spec.Template.Spec.Volumes = append(stateful.Spec.Template.Spec.Volumes, node.Spec.InitContainers.Volumes...)
 
-			// Share chia volume mounts if enabled
-			if cont.ShareVolumeMounts {
-				cont.Container.VolumeMounts = getChiaVolumeMounts()
-			}
-
-			// Share chia env if enabled
-			if cont.ShareEnv {
-				cont.Container.Env = append(cont.Container.Env, chiaContainer.Env...)
-			}
-
-			stateful.Spec.Template.Spec.InitContainers = append(stateful.Spec.Template.Spec.InitContainers, cont.Container)
-		}
-	}
+	// Get Sidecar Containers
+	stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, kube.GetExtraContainers(node.Spec.Sidecars, chiaContainer)...)
+	// Add Sidecar Container Volumes
+	stateful.Spec.Template.Spec.Volumes = append(stateful.Spec.Template.Spec.Volumes, node.Spec.Sidecars.Volumes...)
 
 	if node.Spec.ImagePullSecrets != nil && len(*node.Spec.ImagePullSecrets) != 0 {
 		stateful.Spec.Template.Spec.ImagePullSecrets = *node.Spec.ImagePullSecrets
@@ -334,10 +325,6 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 
 	if node.Spec.PodSecurityContext != nil {
 		stateful.Spec.Template.Spec.SecurityContext = node.Spec.PodSecurityContext
-	}
-
-	if len(node.Spec.Sidecars.Containers) > 0 {
-		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, node.Spec.Sidecars.Containers...)
 	}
 
 	// TODO add pod affinity, tolerations

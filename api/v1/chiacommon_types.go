@@ -16,11 +16,11 @@ type CommonSpec struct {
 
 	// InitContainers allows defining a list of containers that will run as init containers in the kubernetes Pods this resource creates
 	// +optional
-	InitContainers []InitContainer `json:"initContainers,omitempty"`
+	InitContainers ExtraContainers `json:"initContainers,omitempty"`
 
 	// Sidecars allows defining a list of containers and volumes that will share the kubernetes Pod alongside Chia containers
 	// +optional
-	Sidecars Sidecars `json:"sidecars,omitempty"`
+	Sidecars ExtraContainers `json:"sidecars,omitempty"`
 
 	//StorageConfig defines the Chia container's CHIA_ROOT storage config
 	// +optional
@@ -48,11 +48,15 @@ type CommonSpec struct {
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 }
 
-// InitContainer allows defining a container that will run as an init container for a kubernetes resource
-type InitContainer struct {
-	// Container allows defining a container that will share the kubernetes Pod alongside Chia containers.
+// ExtraContainers allows defining a list of containers that will share the kubernetes Pod alongside Chia containers, or run as init containers
+type ExtraContainers struct {
+	// Containers allows defining a list of containers that will share the kubernetes Pod alongside Chia containers
 	// +optional
-	Container corev1.Container `json:"container,omitempty"`
+	Containers []corev1.Container `json:"containers,omitempty"`
+
+	// Volumes allows defining a list of volumes that can be mounted by sidecar containers
+	// +optional
+	Volumes []corev1.Volume `json:"volumes,omitempty"`
 
 	// ShareVolumeMounts if set to true, shares any volume mounts from the main chia container to this init container
 	// +optional
@@ -61,17 +65,6 @@ type InitContainer struct {
 	// ShareEnv if set to true, shares the environment variables from the main chia container. Useful if the init container's image is a derivative of the chia-docker image.
 	// +optional
 	ShareEnv bool `json:"shareEnv,omitempty"`
-}
-
-// Sidecars allows defining a list of containers that will share the kubernetes Pod alongside Chia containers
-type Sidecars struct {
-	// Containers allows defining a list of containers that will share the kubernetes Pod alongside Chia containers
-	// +optional
-	Containers []corev1.Container `json:"containers,omitempty"`
-
-	// Volumes allows defining a list of volumes that can be mounted by sidecar containers
-	// +optional
-	Volumes []corev1.Volume `json:"volumes,omitempty"`
 }
 
 // CommonSpecChia represents the common configuration options for a chia spec
