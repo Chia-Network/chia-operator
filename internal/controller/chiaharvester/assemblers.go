@@ -267,24 +267,15 @@ func assembleDeployment(harvester k8schianetv1.ChiaHarvester, networkData *map[s
 	}
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaContainer)
 
-	if len(harvester.Spec.InitContainers) != 0 {
-		// Overwrite any volumeMounts specified in init containers. Not currently supported.
-		for _, cont := range harvester.Spec.InitContainers {
-			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+	// Get Init Containers
+	deploy.Spec.Template.Spec.InitContainers = kube.GetExtraContainers(harvester.Spec.InitContainers, chiaContainer)
+	// Add Init Container Volumes
+	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, harvester.Spec.InitContainers.Volumes...)
 
-			// Share chia volume mounts if enabled
-			if cont.ShareVolumeMounts {
-				cont.Container.VolumeMounts = getChiaVolumeMounts(harvester)
-			}
-
-			// Share chia env if enabled
-			if cont.ShareEnv {
-				cont.Container.Env = append(cont.Container.Env, chiaContainer.Env...)
-			}
-
-			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
-		}
-	}
+	// Get Sidecar Containers
+	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, kube.GetExtraContainers(harvester.Spec.Sidecars, chiaContainer)...)
+	// Add Sidecar Container Volumes
+	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, harvester.Spec.Sidecars.Volumes...)
 
 	if harvester.Spec.ImagePullSecrets != nil && len(*harvester.Spec.ImagePullSecrets) != 0 {
 		deploy.Spec.Template.Spec.ImagePullSecrets = *harvester.Spec.ImagePullSecrets
@@ -301,10 +292,6 @@ func assembleDeployment(harvester k8schianetv1.ChiaHarvester, networkData *map[s
 
 	if harvester.Spec.PodSecurityContext != nil {
 		deploy.Spec.Template.Spec.SecurityContext = harvester.Spec.PodSecurityContext
-	}
-
-	if len(harvester.Spec.Sidecars.Containers) > 0 {
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, harvester.Spec.Sidecars.Containers...)
 	}
 
 	// TODO add pod affinity, tolerations

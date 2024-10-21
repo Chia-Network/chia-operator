@@ -302,24 +302,15 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord, networkData *map[string]st
 	}
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaContainer)
 
-	if len(tl.Spec.InitContainers) != 0 {
-		// Overwrite any volumeMounts specified in init containers. Not currently supported.
-		for _, cont := range tl.Spec.InitContainers {
-			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+	// Get Init Containers
+	deploy.Spec.Template.Spec.InitContainers = kube.GetExtraContainers(tl.Spec.InitContainers, chiaContainer)
+	// Add Init Container Volumes
+	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, tl.Spec.InitContainers.Volumes...)
 
-			// Share chia volume mounts if enabled
-			if cont.ShareVolumeMounts {
-				cont.Container.VolumeMounts = getChiaVolumeMounts()
-			}
-
-			// Share chia env if enabled
-			if cont.ShareEnv {
-				cont.Container.Env = append(cont.Container.Env, chiaContainer.Env...)
-			}
-
-			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
-		}
-	}
+	// Get Sidecar Containers
+	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, kube.GetExtraContainers(tl.Spec.Sidecars, chiaContainer)...)
+	// Add Sidecar Container Volumes
+	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, tl.Spec.Sidecars.Volumes...)
 
 	if tl.Spec.ImagePullSecrets != nil && len(*tl.Spec.ImagePullSecrets) != 0 {
 		deploy.Spec.Template.Spec.ImagePullSecrets = *tl.Spec.ImagePullSecrets
@@ -340,10 +331,6 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord, networkData *map[string]st
 
 	if tl.Spec.PodSecurityContext != nil {
 		deploy.Spec.Template.Spec.SecurityContext = tl.Spec.PodSecurityContext
-	}
-
-	if len(tl.Spec.Sidecars.Containers) > 0 {
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, tl.Spec.Sidecars.Containers...)
 	}
 
 	// TODO add pod affinity, tolerations

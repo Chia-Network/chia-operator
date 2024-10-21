@@ -267,24 +267,15 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler, fullNodePort int32, ne
 	}
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaContainer)
 
-	if len(crawler.Spec.InitContainers) != 0 {
-		// Overwrite any volumeMounts specified in init containers. Not currently supported.
-		for _, cont := range crawler.Spec.InitContainers {
-			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+	// Get Init Containers
+	deploy.Spec.Template.Spec.InitContainers = kube.GetExtraContainers(crawler.Spec.InitContainers, chiaContainer)
+	// Add Init Container Volumes
+	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, crawler.Spec.InitContainers.Volumes...)
 
-			// Share chia volume mounts if enabled
-			if cont.ShareVolumeMounts {
-				cont.Container.VolumeMounts = getChiaVolumeMounts(crawler)
-			}
-
-			// Share chia env if enabled
-			if cont.ShareEnv {
-				cont.Container.Env = append(cont.Container.Env, chiaContainer.Env...)
-			}
-
-			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
-		}
-	}
+	// Get Sidecar Containers
+	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, kube.GetExtraContainers(crawler.Spec.Sidecars, chiaContainer)...)
+	// Add Sidecar Container Volumes
+	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, crawler.Spec.Sidecars.Volumes...)
 
 	if crawler.Spec.ImagePullSecrets != nil && len(*crawler.Spec.ImagePullSecrets) != 0 {
 		deploy.Spec.Template.Spec.ImagePullSecrets = *crawler.Spec.ImagePullSecrets
@@ -301,10 +292,6 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler, fullNodePort int32, ne
 
 	if crawler.Spec.PodSecurityContext != nil {
 		deploy.Spec.Template.Spec.SecurityContext = crawler.Spec.PodSecurityContext
-	}
-
-	if len(crawler.Spec.Sidecars.Containers) > 0 {
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, crawler.Spec.Sidecars.Containers...)
 	}
 
 	// TODO add pod affinity, tolerations

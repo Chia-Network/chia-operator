@@ -267,24 +267,15 @@ func assembleDeployment(farmer k8schianetv1.ChiaFarmer, networkData *map[string]
 	}
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaContainer)
 
-	if len(farmer.Spec.InitContainers) != 0 {
-		// Overwrite any volumeMounts specified in init containers. Not currently supported.
-		for _, cont := range farmer.Spec.InitContainers {
-			cont.Container.VolumeMounts = []corev1.VolumeMount{}
+	// Get Init Containers
+	deploy.Spec.Template.Spec.InitContainers = kube.GetExtraContainers(farmer.Spec.InitContainers, chiaContainer)
+	// Add Init Container Volumes
+	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, farmer.Spec.InitContainers.Volumes...)
 
-			// Share chia volume mounts if enabled
-			if cont.ShareVolumeMounts {
-				cont.Container.VolumeMounts = getChiaVolumeMounts()
-			}
-
-			// Share chia env if enabled
-			if cont.ShareEnv {
-				cont.Container.Env = append(cont.Container.Env, chiaContainer.Env...)
-			}
-
-			deploy.Spec.Template.Spec.InitContainers = append(deploy.Spec.Template.Spec.InitContainers, cont.Container)
-		}
-	}
+	// Get Sidecar Containers
+	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, kube.GetExtraContainers(farmer.Spec.Sidecars, chiaContainer)...)
+	// Add Sidecar Container Volumes
+	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, farmer.Spec.Sidecars.Volumes...)
 
 	if farmer.Spec.ImagePullSecrets != nil && len(*farmer.Spec.ImagePullSecrets) != 0 {
 		deploy.Spec.Template.Spec.ImagePullSecrets = *farmer.Spec.ImagePullSecrets
@@ -301,10 +292,6 @@ func assembleDeployment(farmer k8schianetv1.ChiaFarmer, networkData *map[string]
 
 	if farmer.Spec.PodSecurityContext != nil {
 		deploy.Spec.Template.Spec.SecurityContext = farmer.Spec.PodSecurityContext
-	}
-
-	if len(farmer.Spec.Sidecars.Containers) > 0 {
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, farmer.Spec.Sidecars.Containers...)
 	}
 
 	// TODO add pod affinity, tolerations
