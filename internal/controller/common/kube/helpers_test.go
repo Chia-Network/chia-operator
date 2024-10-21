@@ -271,3 +271,79 @@ func TestGetChiaRootVolume(t *testing.T) {
 	})
 	require.Equal(t, expected, actual, "expected hostPath volume")
 }
+
+func TestGetExtraContainers(t *testing.T) {
+	expected := []corev1.Container{
+		{
+			Name:  "testcar",
+			Image: "image:tag",
+			Env: []corev1.EnvVar{
+				{
+					Name:  "foo",
+					Value: "bar",
+				},
+				{
+					Name:  "CHIA_ROOT",
+					Value: "/chia-data",
+				},
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      "foo-volume",
+					MountPath: "/bar/path",
+				},
+				{
+					Name:      "chia-data",
+					MountPath: "/chia-data",
+				},
+			},
+		},
+	}
+
+	actual := GetExtraContainers([]k8schianetv1.ExtraContainer{
+		{
+			Container: corev1.Container{
+				Name:  "testcar",
+				Image: "image:tag",
+				Env: []corev1.EnvVar{
+					{
+						Name:  "foo",
+						Value: "bar",
+					},
+				},
+				VolumeMounts: []corev1.VolumeMount{
+					{
+						Name:      "foo-volume",
+						MountPath: "/bar/path",
+					},
+				},
+			},
+			Volumes: []corev1.Volume{
+				{
+					Name: "foo-volume",
+					VolumeSource: corev1.VolumeSource{
+						EmptyDir: &corev1.EmptyDirVolumeSource{},
+					},
+				},
+			},
+			ShareVolumeMounts: true,
+			ShareEnv:          true,
+		},
+	}, corev1.Container{
+		Name:  "chia",
+		Image: "chia:tag",
+		Env: []corev1.EnvVar{
+			{
+				Name:  "CHIA_ROOT",
+				Value: "/chia-data",
+			},
+		},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "chia-data",
+				MountPath: "/chia-data",
+			},
+		},
+	})
+	require.Equal(t, expected, actual)
+}
