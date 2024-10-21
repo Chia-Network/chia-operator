@@ -305,12 +305,15 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord, networkData *map[string]st
 	// Get Init Containers
 	deploy.Spec.Template.Spec.InitContainers = kube.GetExtraContainers(tl.Spec.InitContainers, chiaContainer)
 	// Add Init Container Volumes
-	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, tl.Spec.InitContainers.Volumes...)
-
+	for _, init := range tl.Spec.InitContainers {
+		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, init.Volumes...)
+	}
 	// Get Sidecar Containers
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, kube.GetExtraContainers(tl.Spec.Sidecars, chiaContainer)...)
 	// Add Sidecar Container Volumes
-	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, tl.Spec.Sidecars.Volumes...)
+	for _, sidecar := range tl.Spec.Sidecars {
+		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, sidecar.Volumes...)
+	}
 
 	if tl.Spec.ImagePullSecrets != nil && len(*tl.Spec.ImagePullSecrets) != 0 {
 		deploy.Spec.Template.Spec.ImagePullSecrets = *tl.Spec.ImagePullSecrets

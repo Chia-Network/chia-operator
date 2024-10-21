@@ -42,11 +42,6 @@ func getChiaVolumesAndTemplates(node k8schianetv1.ChiaNode) ([]corev1.Volume, []
 		v = append(v, *rootVol)
 	}
 
-	// Add sidecar volumes if any exist
-	if len(node.Spec.Sidecars.Volumes) > 0 {
-		v = append(v, node.Spec.Sidecars.Volumes...)
-	}
-
 	return v, vcts
 }
 

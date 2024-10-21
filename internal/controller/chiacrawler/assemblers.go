@@ -270,12 +270,16 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler, fullNodePort int32, ne
 	// Get Init Containers
 	deploy.Spec.Template.Spec.InitContainers = kube.GetExtraContainers(crawler.Spec.InitContainers, chiaContainer)
 	// Add Init Container Volumes
-	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, crawler.Spec.InitContainers.Volumes...)
+	for _, init := range crawler.Spec.InitContainers {
+		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, init.Volumes...)
+	}
 
 	// Get Sidecar Containers
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, kube.GetExtraContainers(crawler.Spec.Sidecars, chiaContainer)...)
 	// Add Sidecar Container Volumes
-	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, crawler.Spec.Sidecars.Volumes...)
+	for _, sidecar := range crawler.Spec.Sidecars {
+		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, sidecar.Volumes...)
+	}
 
 	if crawler.Spec.ImagePullSecrets != nil && len(*crawler.Spec.ImagePullSecrets) != 0 {
 		deploy.Spec.Template.Spec.ImagePullSecrets = *crawler.Spec.ImagePullSecrets

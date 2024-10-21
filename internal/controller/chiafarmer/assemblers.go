@@ -270,12 +270,16 @@ func assembleDeployment(farmer k8schianetv1.ChiaFarmer, networkData *map[string]
 	// Get Init Containers
 	deploy.Spec.Template.Spec.InitContainers = kube.GetExtraContainers(farmer.Spec.InitContainers, chiaContainer)
 	// Add Init Container Volumes
-	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, farmer.Spec.InitContainers.Volumes...)
+	for _, init := range farmer.Spec.InitContainers {
+		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, init.Volumes...)
+	}
 
 	// Get Sidecar Containers
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, kube.GetExtraContainers(farmer.Spec.Sidecars, chiaContainer)...)
 	// Add Sidecar Container Volumes
-	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, farmer.Spec.Sidecars.Volumes...)
+	for _, sidecar := range farmer.Spec.Sidecars {
+		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, sidecar.Volumes...)
+	}
 
 	if farmer.Spec.ImagePullSecrets != nil && len(*farmer.Spec.ImagePullSecrets) != 0 {
 		deploy.Spec.Template.Spec.ImagePullSecrets = *farmer.Spec.ImagePullSecrets

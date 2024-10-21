@@ -310,17 +310,19 @@ func GetChiaNetworkData(ctx context.Context, c client.Client, config k8schianetv
 	return nil, nil
 }
 
-func GetExtraContainers(config k8schianetv1.ExtraContainers, chiaContainer corev1.Container) []corev1.Container {
+func GetExtraContainers(config []k8schianetv1.ExtraContainer, chiaContainer corev1.Container) []corev1.Container {
 	var extraContainers []corev1.Container
-	if len(config.Containers) != 0 {
-		for _, cont := range config.Containers {
+	if len(config) != 0 {
+		for _, containerConfig := range config {
+			cont := containerConfig.Container
+
 			// Share chia volume mounts if enabled
-			if config.ShareVolumeMounts {
+			if containerConfig.ShareVolumeMounts {
 				cont.VolumeMounts = append(cont.VolumeMounts, chiaContainer.VolumeMounts...)
 			}
 
 			// Share chia env if enabled
-			if config.ShareEnv {
+			if containerConfig.ShareEnv {
 				cont.Env = append(cont.Env, chiaContainer.Env...)
 			}
 

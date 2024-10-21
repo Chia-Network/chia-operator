@@ -16,11 +16,11 @@ type CommonSpec struct {
 
 	// InitContainers allows defining a list of containers that will run as init containers in the kubernetes Pods this resource creates
 	// +optional
-	InitContainers ExtraContainers `json:"initContainers,omitempty"`
+	InitContainers []ExtraContainer `json:"initContainers,omitempty"`
 
-	// Sidecars allows defining a list of containers and volumes that will share the kubernetes Pod alongside Chia containers
+	// Sidecars allows defining a list of containers and volumes that will share the kubernetes Pod alongside a Chia container
 	// +optional
-	Sidecars ExtraContainers `json:"sidecars,omitempty"`
+	Sidecars []ExtraContainer `json:"sidecars,omitempty"`
 
 	//StorageConfig defines the Chia container's CHIA_ROOT storage config
 	// +optional
@@ -48,21 +48,21 @@ type CommonSpec struct {
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 }
 
-// ExtraContainers allows defining a list of containers that will share the kubernetes Pod alongside Chia containers, or run as init containers
-type ExtraContainers struct {
-	// Containers allows defining a list of containers that will share the kubernetes Pod alongside Chia containers
+// ExtraContainer allows defining a container spec that will share the kubernetes Pod alongside a Chia container, or run as an init container, along with some additional Pod spec configuration
+type ExtraContainer struct {
+	// Container allows defining a container spec that will share the kubernetes Pod alongside a Chia container
 	// +optional
-	Containers []corev1.Container `json:"containers,omitempty"`
+	Container corev1.Container `json:"container,omitempty"`
 
-	// Volumes allows defining a list of volumes that can be mounted by sidecar containers
+	// Volumes allows defining a list of volumes that can be mounted by this container
 	// +optional
 	Volumes []corev1.Volume `json:"volumes,omitempty"`
 
-	// ShareVolumeMounts if set to true, shares any volume mounts from the main chia container to this init container
+	// ShareVolumeMounts if set to true, shares any volume mounts from the main chia container to this container
 	// +optional
 	ShareVolumeMounts bool `json:"shareVolumeMounts,omitempty"`
 
-	// ShareEnv if set to true, shares the environment variables from the main chia container. Useful if the init container's image is a derivative of the chia-docker image.
+	// ShareEnv if set to true, shares the environment variables from the main chia container to this container
 	// +optional
 	ShareEnv bool `json:"shareEnv,omitempty"`
 }

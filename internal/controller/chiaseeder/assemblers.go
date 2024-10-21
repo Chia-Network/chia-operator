@@ -329,12 +329,15 @@ func assembleDeployment(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, netw
 	// Get Init Containers
 	deploy.Spec.Template.Spec.InitContainers = kube.GetExtraContainers(seeder.Spec.InitContainers, chiaContainer)
 	// Add Init Container Volumes
-	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, seeder.Spec.InitContainers.Volumes...)
-
+	for _, init := range seeder.Spec.InitContainers {
+		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, init.Volumes...)
+	}
 	// Get Sidecar Containers
 	deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, kube.GetExtraContainers(seeder.Spec.Sidecars, chiaContainer)...)
 	// Add Sidecar Container Volumes
-	deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, seeder.Spec.Sidecars.Volumes...)
+	for _, sidecar := range seeder.Spec.Sidecars {
+		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, sidecar.Volumes...)
+	}
 
 	if seeder.Spec.ImagePullSecrets != nil && len(*seeder.Spec.ImagePullSecrets) != 0 {
 		deploy.Spec.Template.Spec.ImagePullSecrets = *seeder.Spec.ImagePullSecrets

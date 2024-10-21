@@ -80,11 +80,6 @@ func getChiaVolumes(harvester k8schianetv1.ChiaHarvester) []corev1.Volume {
 		}
 	}
 
-	// Add sidecar volumes if any exist
-	if len(harvester.Spec.Sidecars.Volumes) > 0 {
-		v = append(v, harvester.Spec.Sidecars.Volumes...)
-	}
-
 	return v
 }
 

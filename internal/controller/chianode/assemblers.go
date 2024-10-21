@@ -300,12 +300,16 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 	// Get Init Containers
 	stateful.Spec.Template.Spec.InitContainers = kube.GetExtraContainers(node.Spec.InitContainers, chiaContainer)
 	// Add Init Container Volumes
-	stateful.Spec.Template.Spec.Volumes = append(stateful.Spec.Template.Spec.Volumes, node.Spec.InitContainers.Volumes...)
+	for _, init := range node.Spec.InitContainers {
+		stateful.Spec.Template.Spec.Volumes = append(stateful.Spec.Template.Spec.Volumes, init.Volumes...)
+	}
 
 	// Get Sidecar Containers
 	stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, kube.GetExtraContainers(node.Spec.Sidecars, chiaContainer)...)
 	// Add Sidecar Container Volumes
-	stateful.Spec.Template.Spec.Volumes = append(stateful.Spec.Template.Spec.Volumes, node.Spec.Sidecars.Volumes...)
+	for _, sidecar := range node.Spec.Sidecars {
+		stateful.Spec.Template.Spec.Volumes = append(stateful.Spec.Template.Spec.Volumes, sidecar.Volumes...)
+	}
 
 	if node.Spec.ImagePullSecrets != nil && len(*node.Spec.ImagePullSecrets) != 0 {
 		stateful.Spec.Template.Spec.ImagePullSecrets = *node.Spec.ImagePullSecrets
