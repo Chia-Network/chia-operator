@@ -41,11 +41,6 @@ func getChiaVolumes(tl k8schianetv1.ChiaTimelord) []corev1.Volume {
 		v = append(v, kube.GetExistingChiaRootVolume(tl.Spec.Storage))
 	}
 
-	// Add sidecar volumes if any exist
-	if len(tl.Spec.Sidecars.Volumes) > 0 {
-		v = append(v, tl.Spec.Sidecars.Volumes...)
-	}
-
 	return v
 }
 

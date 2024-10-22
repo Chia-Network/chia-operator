@@ -4,7 +4,7 @@ This documentation describes some advanced (or uncommon) usages of chia-operator
 
 ## Sidecar containers
 
-You can run a container in the same kubernetes Pod as your chia components utilizing the `spec.sidecars` segment of all Chia resources supported by this operator except ChiaCAs.
+You can run a container in the same kubernetes Pod as your chia components utilizing the `spec.sidecars` segment of all Chia resources supported by this operator except ChiaCAs and ChiaNetworks.
 
 To create a Chia component that runs some sidecar container, do something like the following:
 
@@ -19,30 +19,37 @@ spec:
   chiaExporter:
     [...]
   sidecars:
-    containers:
-    - name: sidecar
-      image: nginx:latest
-      ports:
-      - containerPort: 80
-        name: http
-      env:
-      - name: SIDECAR_CONTAINER_VAR
-        value: "sidecar_container_value"
-      volumeMounts:
-      - name: chiaroot
-        mountPath: /data
-      - name: sidecar-data
-        mountPath: /usr/share/nginx/html
-    volumes:
-    - name: sidecar-data
-      emptyDir: {}
+    - container:
+        name: my-sidecar-container
+        image: nginx:latest
+        ports:
+          - containerPort: 80
+            name: http
+        env:
+          - name: SIDECAR_CONTAINER_VAR
+            value: "sidecar_container_value"
+        volumeMounts:
+          - name: sidecar-data
+            mountPath: /usr/share/nginx/html
+      volumes:
+        - name: sidecar-data
+          emptyDir: {}
+      shareVolumeMounts: true
+      shareEnv: true
 ```
 
-If you were to apply this to a cluster, it would create a Statefulset with 3 containers per Pod replica. The container names would be `chia`, `chia-exporter`, and `nginx`. The `nginx` container would expose containerPort 80, an environment variable named `SIDECAR_VAR`, and it would mount the main CHIA_ROOT volume as well as an emptydir volume that we specified for this sidecar that neither the `chia` or `chia-exporter` containers would mount.
+`sidecars` is a list that contains a few keys: `container`, `volumes`, `shareVolumeMounts` and `shareEnv`.
+
+* `container` is just a normal kubernetes container specification which can contain a name, image, environment variables, volumeMounts, etc.
+* `volumes` is a list of kubernetes Volumes that should be added to the Pod specification. You will need to add these to the sidecar container's volumeMounts as shown above.
+* `shareVolumeMounts` if set to true, gives the sidecar container the same volume mounts as the chia container, in the same mountpoints as the chia container.
+* `shareEnv` if set to true, gives the sidecar container the same environment variables as the chia container.
+
+You may specify multiple sidecar containers, additional volumes, and toggle the shareVolumtMounts/shareEnv options separately for each of them in this way.
 
 ## Init containers
 
-You can run a container as an init container in the same kubernetes Pod as your chia components utilizing the `spec.initContainer` segment of all Chia resources supported by this operator except ChiaCAs.
+You can run a container as an init container in the same kubernetes Pod as your chia components utilizing the `spec.initContainers` segment of all Chia resources supported by this operator except ChiaCAs and ChiaNetworks.
 
 To create a Chia component that runs an init container, do something like the following:
 
@@ -61,54 +68,31 @@ spec:
         name: my-init-container
         image: nginx:latest
         ports:
-        - containerPort: 80
-          name: http
+          - containerPort: 80
+            name: http
         env:
-        - name: INIT_CONTAINER_VAR
-          value: "init_container_value"
+          - name: INIT_CONTAINER_VAR
+            value: "init_container_value"
+        volumeMounts:
+          - name: init-data
+            mountPath: /usr/share/nginx/html
+      volumes:
+        - name: init-data
+          emptyDir: {}
+      shareVolumeMounts: true
+      shareEnv: true
 ```
 
-`initContainers` is a list of the normal kubernetes container specification. It does not support or respect setting the volumeMounts field in the container, however. Any volumeMounts specified will be overwritten.
+`initContainers` is a list that contains a few keys: `container`, `volumes`, `shareVolumeMounts` and `shareEnv`.
 
-### Share Chia Volumes
+* `container` is just a normal kubernetes container specification which can contain a name, image, environment variables, volumeMounts, etc.
+* `volumes` is a list of kubernetes Volumes that should be added to the Pod specification. You will need to add these to the init container's volumeMounts as shown above.
+* `shareVolumeMounts` if set to true, gives the init container the same volume mounts as the chia container, in the same mountpoints as the chia container.
+* `shareEnv` if set to true, gives the init container the same environment variables as the chia container.
 
-You can share volumes from the main chia container to your init containers using the following:
+You may specify multiple init containers, additional volumes, and toggle the shareVolumtMounts/shareEnv options separately for each of them in this way.
 
-```yaml
-spec:
-  initContainers:
-    - shareVolumeMounts: true # Option to share the volume mounts from the chia container, useful if you specified a CHIA_ROOT volume and want to add some data to it before chia starts
-      container:
-        name: my-init-container
-        image: nginx:latest
-        ports:
-        - containerPort: 80
-          name: http
-        env:
-        - name: INIT_CONTAINER_VAR
-          value: "init_container_value"
-```
-
-### Share Chia Env
-
-You can share environment variable from the main chia container to your init containers using the following:
-
-```yaml
-spec:
-  initContainers:
-    - shareEnv: true # Option to share the environment variables from the chia container, useful if the init container image is a derivative of the chia-docker image
-      container:
-        name: my-init-container
-        image: nginx:latest
-        ports:
-        - containerPort: 80
-          name: http
-        env:
-        - name: INIT_CONTAINER_VAR
-          value: "init_container_value"
-```
-
-## Specify the version of Chia
+## Specify a Chia version
 
 Operator releases tend to pin to the current latest version of chia (at the time the release was published) but if you'd like to manage the version of chia ran yourself, there's a field to do so:
 
@@ -123,3 +107,5 @@ spec:
 ```
 
 The example shows a ChiaNode (full_node) resource on v2.4.3 of chia, but this field is also available on other resources.
+
+Since this is an image field, you can point to any OCI image containing chia, but note that this operator makes heavy use of the [chia-docker](https://github.com/Chia-Network/chia-docker) entrypoint script for setting a lot of the chia configuration, so it should be compatible with that script to ensure your Chia services start up properly. Using an image that isn't at least based on the official chia-docker image will likely result in a broken installation.

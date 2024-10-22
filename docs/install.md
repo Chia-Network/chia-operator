@@ -1,16 +1,18 @@
 # Installation
 
-There are two parts to this Operator. The CRDs (ChiaCA, ChiaFarmer, ChiaNode, etc.) and the actual operator manager Deployment and related objects. You can install these components in two methods, either by cloning the repository and generating the manifests yourself with kustomize, or with `kubectl apply` on the generated manifests on all releases, starting with release `0.2.1`.
+There are two parts to this Operator. The CRDs (ChiaCA, ChiaFarmer, ChiaNode, etc.) and the actual operator manager Deployment and related objects. You can install these components in two methods, either by cloning the repository and generating the manifests yourself with kustomize, or with `kubectl apply` on the generated manifests on releases.
 
 ## Using the release manifests
 
-Install the CRDs:
+Install the latest CRDs:
 
 ```bash
-kubectl apply -f https://github.com/Chia-Network/chia-operator/releases/latest/download/crd.yaml
+kubectl apply --server-side -f https://github.com/Chia-Network/chia-operator/releases/latest/download/crd.yaml
 ```
 
-Install the controller manager:
+NOTE: In 0.12.0 it became necessary to server-side apply the custom resource definitions.
+
+Install the latest controller manager:
 
 ```bash
 kubectl apply -f https://github.com/Chia-Network/chia-operator/releases/latest/download/manager.yaml

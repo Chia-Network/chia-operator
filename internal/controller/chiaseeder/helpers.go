@@ -44,11 +44,6 @@ func getChiaVolumes(seeder k8schianetv1.ChiaSeeder) []corev1.Volume {
 		v = append(v, kube.GetExistingChiaRootVolume(seeder.Spec.Storage))
 	}
 
-	// Add sidecar volumes if any exist
-	if len(seeder.Spec.Sidecars.Volumes) > 0 {
-		v = append(v, seeder.Spec.Sidecars.Volumes...)
-	}
-
 	return v
 }
 

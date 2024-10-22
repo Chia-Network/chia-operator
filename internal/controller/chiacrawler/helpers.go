@@ -43,11 +43,6 @@ func getChiaVolumes(crawler k8schianetv1.ChiaCrawler) []corev1.Volume {
 		v = append(v, kube.GetExistingChiaRootVolume(crawler.Spec.Storage))
 	}
 
-	// Add sidecar volumes if any exist
-	if len(crawler.Spec.Sidecars.Volumes) > 0 {
-		v = append(v, crawler.Spec.Sidecars.Volumes...)
-	}
-
 	return v
 }
 
