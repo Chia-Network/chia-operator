@@ -35,6 +35,10 @@ type CommonSpec struct {
 	// +optional
 	ImagePullSecrets *[]corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 
+	// ServiceAccountName is an optional name of a Service Account in the target namespace to use for this Chia deployment
+	// +optional
+	ServiceAccountName *string `json:"serviceAccountName,omitempty"`
+
 	// NodeSelector selects a node by key value pairs
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`

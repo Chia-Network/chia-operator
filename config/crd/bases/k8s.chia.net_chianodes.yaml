@@ -5522,6 +5522,10 @@ spec:
                   Statefulset. defaults to 1.
                 format: int32
                 type: integer
+              serviceAccountName:
+                description: ServiceAccountName is an optional name of a Service Account
+                  in the target namespace to use for this Chia deployment
+                type: string
               sidecars:
                 description: Sidecars allows defining a list of containers and volumes
                   that will share the kubernetes Pod alongside a Chia container

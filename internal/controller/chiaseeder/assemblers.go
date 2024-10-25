@@ -320,6 +320,10 @@ func assembleDeployment(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, netw
 		},
 	}
 
+	if seeder.Spec.ServiceAccountName != nil && *seeder.Spec.ServiceAccountName != "" {
+		deploy.Spec.Template.Spec.ServiceAccountName = *seeder.Spec.ServiceAccountName
+	}
+
 	chiaContainer, err := assembleChiaContainer(seeder, fullNodePort, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
@@ -359,7 +363,7 @@ func assembleDeployment(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, netw
 		deploy.Spec.Template.Spec.SecurityContext = seeder.Spec.PodSecurityContext
 	}
 
-	// TODO add pod affinity, tolerations
+	// TODO add pod tolerations
 
 	return deploy, nil
 }

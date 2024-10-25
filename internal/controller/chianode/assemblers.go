@@ -281,7 +281,6 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 					Annotations: node.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					// TODO add: serviceAccountName config
 					Affinity:     node.Spec.Affinity,
 					NodeSelector: node.Spec.NodeSelector,
 					Volumes:      vols,
@@ -289,6 +288,10 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 			},
 			VolumeClaimTemplates: volClaimTemplates,
 		},
+	}
+
+	if node.Spec.ServiceAccountName != nil && *node.Spec.ServiceAccountName != "" {
+		stateful.Spec.Template.Spec.ServiceAccountName = *node.Spec.ServiceAccountName
 	}
 
 	chiaContainer, err := assembleChiaContainer(ctx, node, fullNodePort, networkData)
@@ -331,7 +334,7 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 		stateful.Spec.Template.Spec.SecurityContext = node.Spec.PodSecurityContext
 	}
 
-	// TODO add pod affinity, tolerations
+	// TODO add pod tolerations
 
 	return stateful, nil
 }

@@ -5451,6 +5451,10 @@ spec:
                         type: string
                     type: object
                 type: object
+              serviceAccountName:
+                description: ServiceAccountName is an optional name of a Service Account
+                  in the target namespace to use for this Chia deployment
+                type: string
               sidecars:
                 description: Sidecars allows defining a list of containers and volumes
                   that will share the kubernetes Pod alongside a Chia container

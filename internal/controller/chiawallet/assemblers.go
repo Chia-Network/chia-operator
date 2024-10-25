@@ -261,6 +261,10 @@ func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet, net
 		},
 	}
 
+	if wallet.Spec.ServiceAccountName != nil && *wallet.Spec.ServiceAccountName != "" {
+		deploy.Spec.Template.Spec.ServiceAccountName = *wallet.Spec.ServiceAccountName
+	}
+
 	chiaContainer, err := assembleChiaContainer(ctx, wallet, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
@@ -298,7 +302,7 @@ func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet, net
 		deploy.Spec.Template.Spec.SecurityContext = wallet.Spec.PodSecurityContext
 	}
 
-	// TODO add pod affinity, tolerations
+	// TODO add pod tolerations
 
 	return deploy, nil
 }

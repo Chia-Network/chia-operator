@@ -261,6 +261,10 @@ func assembleDeployment(farmer k8schianetv1.ChiaFarmer, networkData *map[string]
 		},
 	}
 
+	if farmer.Spec.ServiceAccountName != nil && *farmer.Spec.ServiceAccountName != "" {
+		deploy.Spec.Template.Spec.ServiceAccountName = *farmer.Spec.ServiceAccountName
+	}
+
 	chiaContainer, err := assembleChiaContainer(farmer, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
@@ -298,7 +302,7 @@ func assembleDeployment(farmer k8schianetv1.ChiaFarmer, networkData *map[string]
 		deploy.Spec.Template.Spec.SecurityContext = farmer.Spec.PodSecurityContext
 	}
 
-	// TODO add pod affinity, tolerations
+	// TODO add pod tolerations
 
 	return deploy, nil
 }
