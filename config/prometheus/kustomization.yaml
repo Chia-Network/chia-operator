@@ -1,2 +1,4 @@
+namespace: chia-operator-system
+namePrefix: chia-operator-
 resources:
 - monitor.yaml

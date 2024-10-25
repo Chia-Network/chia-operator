@@ -91,6 +91,7 @@ release: manifests kustomize ## Build CRD and Operator manifests with kustomize.
 	mkdir -p release/
 	$(KUSTOMIZE) build config/crd > release/crd.yaml
 	$(KUSTOMIZE) build config/default > release/manager.yaml
+	$(KUSTOMIZE) build config/prometheus > release/monitor.yaml
 
 # If you wish to build the manager image targeting other platforms you can use the --platform flag.
 # (i.e. docker build --platform linux/arm64). However, you must enable docker buildKit for it.

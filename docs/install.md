@@ -18,6 +18,16 @@ Install the latest controller manager:
 kubectl apply -f https://github.com/Chia-Network/chia-operator/releases/latest/download/manager.yaml
 ```
 
+### Prometheus metrics (Optional)
+
+If you have the Prometheus Operator installed in your cluster and would like to use the bundled ServiceMonitor to scrape chia-operator metrics:
+
+```bash
+kubectl apply -f https://github.com/Chia-Network/chia-operator/releases/latest/download/monitor.yaml
+```
+
+This ServiceMonitor is installed in the same namespace as chia-operator, so it will only work in Prometheus Operator configurations that can load ServiceMonitors from any namespace, and also don't have any ServiceMonitorSelectors set.
+
 ## Using kustomize
 
 Clone this repository (and change to its directory):
