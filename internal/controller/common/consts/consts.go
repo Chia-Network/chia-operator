@@ -42,19 +42,19 @@ const (
 	DefaultChiaImageName = "ghcr.io/chia-network/chia"
 
 	// DefaultChiaImageTag contains the default tag name for the chia-docker image
-	DefaultChiaImageTag = "latest"
+	DefaultChiaImageTag = "2.4.4"
 
 	// DefaultChiaExporterImageName contains the default image name for the chia-exporter image
 	DefaultChiaExporterImageName = "ghcr.io/chia-network/chia-exporter"
 
 	// DefaultChiaExporterImageTag contains the default tag name for the chia-exporter image
-	DefaultChiaExporterImageTag = "latest"
+	DefaultChiaExporterImageTag = "0.15.4"
 
 	// DefaultChiaHealthcheckImageName contains the default image name for the chia-healthcheck image
 	DefaultChiaHealthcheckImageName = "ghcr.io/chia-network/chia-healthcheck"
 
 	// DefaultChiaHealthcheckImageTag contains the default tag name for the chia-healthcheck image
-	DefaultChiaHealthcheckImageTag = "latest"
+	DefaultChiaHealthcheckImageTag = "0.3.1"
 )
 
 const (
