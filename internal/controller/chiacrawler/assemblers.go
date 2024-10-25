@@ -261,6 +261,10 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler, fullNodePort int32, ne
 		},
 	}
 
+	if crawler.Spec.ServiceAccountName != nil && *crawler.Spec.ServiceAccountName != "" {
+		deploy.Spec.Template.Spec.ServiceAccountName = *crawler.Spec.ServiceAccountName
+	}
+
 	chiaContainer, err := assembleChiaContainer(crawler, fullNodePort, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
@@ -298,7 +302,7 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler, fullNodePort int32, ne
 		deploy.Spec.Template.Spec.SecurityContext = crawler.Spec.PodSecurityContext
 	}
 
-	// TODO add pod affinity, tolerations
+	// TODO add pod tolerations
 
 	return deploy, nil
 }

@@ -261,6 +261,10 @@ func assembleDeployment(harvester k8schianetv1.ChiaHarvester, networkData *map[s
 		},
 	}
 
+	if harvester.Spec.ServiceAccountName != nil && *harvester.Spec.ServiceAccountName != "" {
+		deploy.Spec.Template.Spec.ServiceAccountName = *harvester.Spec.ServiceAccountName
+	}
+
 	chiaContainer, err := assembleChiaContainer(harvester, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
@@ -298,7 +302,7 @@ func assembleDeployment(harvester k8schianetv1.ChiaHarvester, networkData *map[s
 		deploy.Spec.Template.Spec.SecurityContext = harvester.Spec.PodSecurityContext
 	}
 
-	// TODO add pod affinity, tolerations
+	// TODO add pod tolerations
 
 	return deploy, nil
 }

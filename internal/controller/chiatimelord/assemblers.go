@@ -296,6 +296,10 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord, networkData *map[string]st
 		},
 	}
 
+	if tl.Spec.ServiceAccountName != nil && *tl.Spec.ServiceAccountName != "" {
+		deploy.Spec.Template.Spec.ServiceAccountName = *tl.Spec.ServiceAccountName
+	}
+
 	chiaContainer, err := assembleChiaContainer(tl, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
@@ -336,7 +340,7 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord, networkData *map[string]st
 		deploy.Spec.Template.Spec.SecurityContext = tl.Spec.PodSecurityContext
 	}
 
-	// TODO add pod affinity, tolerations
+	// TODO add pod tolerations
 
 	return deploy, nil
 }

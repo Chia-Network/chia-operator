@@ -200,3 +200,12 @@ If you need to specify your image pull policy for container images:
 spec:
   imagePullPolicy: "IfNotPresent"
 ```
+
+## Specify a Service Account
+
+If you need to specify an existing ServiceAccount for your chia deployments, you can do so. This assumes the ServiceAccount already exists in the same namespace as this Chia resource, it won't create one for you.
+
+```yaml
+spec:
+  serviceAccountName: "my-service-account"
+```

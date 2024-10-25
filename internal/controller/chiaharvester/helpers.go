@@ -150,7 +150,7 @@ func getChiaEnv(harvester k8schianetv1.ChiaHarvester, networkData *map[string]st
 	})
 
 	// recursive_plot_scan env var -- needed because all plot drives are just mounted as subdirs under `/plots`.
-	// TODO make plot mount paths configurable -- make this var optional
+	// TODO should we make plot mount paths configurable -- making this var optional? Is there a major con to using the recursive plot scan feature?
 	env = append(env, corev1.EnvVar{
 		Name:  "recursive_plot_scan",
 		Value: "true",
