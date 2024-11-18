@@ -279,6 +279,10 @@ type Service struct {
 	// +optional
 	IPFamilies *[]corev1.IPFamily `json:"ipFamilies,omitempty"`
 
+	// ExternalTrafficPolicy sets the external traffic policy for the service
+	// +optional
+	ExternalTrafficPolicy *corev1.ServiceExternalTrafficPolicy `json:"externalTrafficPolicy,omitempty"`
+
 	// RollIntoPeerService tells the controller to not actually generate this Service, but instead roll the Service ports of this Service into the peer Service.
 	// The peer Service is often considered the primary Service generated for a chia resource, as it is the most likely Service to expose publicly.
 	// This option is default, and only provides its functionality on chia-healthcheck Services. It may be included to other Services someday if a use case arises.

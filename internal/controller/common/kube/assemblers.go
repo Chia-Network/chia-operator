@@ -3,24 +3,26 @@ package kube
 import (
 	"fmt"
 
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 )
 
 // AssembleCommonServiceInputs contains configuration inputs to the AssembleCommonService function
 type AssembleCommonServiceInputs struct {
-	Name           string
-	Namespace      string
-	Labels         map[string]string
-	Annotations    map[string]string
-	OwnerReference []metav1.OwnerReference
-	IPFamilyPolicy *corev1.IPFamilyPolicy
-	IPFamilies     *[]corev1.IPFamily
-	ServiceType    *corev1.ServiceType
-	Ports          []corev1.ServicePort
-	SelectorLabels map[string]string
+	Name                  string
+	Namespace             string
+	Labels                map[string]string
+	Annotations           map[string]string
+	OwnerReference        []metav1.OwnerReference
+	IPFamilyPolicy        *corev1.IPFamilyPolicy
+	IPFamilies            *[]corev1.IPFamily
+	ServiceType           *corev1.ServiceType
+	ExternalTrafficPolicy *corev1.ServiceExternalTrafficPolicy
+	Ports                 []corev1.ServicePort
+	SelectorLabels        map[string]string
 }
 
 // AssembleCommonService accepts some values and outputs a kubernetes Service definition in a standard way
@@ -42,6 +44,10 @@ func AssembleCommonService(input AssembleCommonServiceInputs) corev1.Service {
 
 	if input.ServiceType != nil {
 		srv.Spec.Type = *input.ServiceType
+	}
+
+	if input.ExternalTrafficPolicy != nil {
+		srv.Spec.ExternalTrafficPolicy = *input.ExternalTrafficPolicy
 	}
 
 	if input.IPFamilies != nil {

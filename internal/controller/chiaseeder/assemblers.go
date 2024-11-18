@@ -49,6 +49,7 @@ func assemblePeerService(seeder k8schianetv1.ChiaSeeder, fullNodePort int32) cor
 	}
 
 	inputs.ServiceType = seeder.Spec.ChiaConfig.PeerService.ServiceType
+	inputs.ExternalTrafficPolicy = seeder.Spec.ChiaConfig.PeerService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.PeerService.IPFamilyPolicy
 	inputs.IPFamilies = seeder.Spec.ChiaConfig.PeerService.IPFamilies
 
@@ -110,6 +111,7 @@ func assembleAllService(seeder k8schianetv1.ChiaSeeder, fullNodePort int32) core
 	inputs.Ports = append(inputs.Ports, kube.GetChiaDaemonServicePorts()...)
 
 	inputs.ServiceType = seeder.Spec.ChiaConfig.AllService.ServiceType
+	inputs.ExternalTrafficPolicy = seeder.Spec.ChiaConfig.AllService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.AllService.IPFamilyPolicy
 	inputs.IPFamilies = seeder.Spec.ChiaConfig.AllService.IPFamilies
 
@@ -140,6 +142,7 @@ func assembleDaemonService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 	}
 
 	inputs.ServiceType = seeder.Spec.ChiaConfig.DaemonService.ServiceType
+	inputs.ExternalTrafficPolicy = seeder.Spec.ChiaConfig.DaemonService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
 	inputs.IPFamilies = seeder.Spec.ChiaConfig.DaemonService.IPFamilies
 
@@ -177,6 +180,7 @@ func assembleRPCService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 	}
 
 	inputs.ServiceType = seeder.Spec.ChiaConfig.RPCService.ServiceType
+	inputs.ExternalTrafficPolicy = seeder.Spec.ChiaConfig.RPCService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.RPCService.IPFamilyPolicy
 	inputs.IPFamilies = seeder.Spec.ChiaConfig.RPCService.IPFamilies
 
@@ -207,6 +211,7 @@ func assembleChiaExporterService(seeder k8schianetv1.ChiaSeeder) corev1.Service 
 	}
 
 	inputs.ServiceType = seeder.Spec.ChiaExporterConfig.Service.ServiceType
+	inputs.ExternalTrafficPolicy = seeder.Spec.ChiaExporterConfig.Service.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = seeder.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = seeder.Spec.ChiaExporterConfig.Service.IPFamilies
 
@@ -237,6 +242,7 @@ func assembleChiaHealthcheckService(seeder k8schianetv1.ChiaSeeder) corev1.Servi
 	}
 
 	inputs.ServiceType = seeder.Spec.ChiaHealthcheckConfig.Service.ServiceType
+	inputs.ExternalTrafficPolicy = seeder.Spec.ChiaHealthcheckConfig.Service.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = seeder.Spec.ChiaHealthcheckConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = seeder.Spec.ChiaHealthcheckConfig.Service.IPFamilies
 

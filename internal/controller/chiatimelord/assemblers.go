@@ -37,6 +37,7 @@ func assemblePeerService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	}
 
 	inputs.ServiceType = tl.Spec.ChiaConfig.PeerService.ServiceType
+	inputs.ExternalTrafficPolicy = tl.Spec.ChiaConfig.PeerService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = tl.Spec.ChiaConfig.PeerService.IPFamilyPolicy
 	inputs.IPFamilies = tl.Spec.ChiaConfig.PeerService.IPFamilies
 
@@ -86,6 +87,7 @@ func assembleAllService(timelord k8schianetv1.ChiaTimelord) corev1.Service {
 	inputs.Ports = append(inputs.Ports, kube.GetChiaDaemonServicePorts()...)
 
 	inputs.ServiceType = timelord.Spec.ChiaConfig.AllService.ServiceType
+	inputs.ExternalTrafficPolicy = timelord.Spec.ChiaConfig.AllService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = timelord.Spec.ChiaConfig.AllService.IPFamilyPolicy
 	inputs.IPFamilies = timelord.Spec.ChiaConfig.AllService.IPFamilies
 
@@ -116,6 +118,7 @@ func assembleDaemonService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	}
 
 	inputs.ServiceType = tl.Spec.ChiaConfig.DaemonService.ServiceType
+	inputs.ExternalTrafficPolicy = tl.Spec.ChiaConfig.DaemonService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = tl.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
 	inputs.IPFamilies = tl.Spec.ChiaConfig.DaemonService.IPFamilies
 
@@ -153,6 +156,7 @@ func assembleRPCService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	}
 
 	inputs.ServiceType = tl.Spec.ChiaConfig.RPCService.ServiceType
+	inputs.ExternalTrafficPolicy = tl.Spec.ChiaConfig.RPCService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = tl.Spec.ChiaConfig.RPCService.IPFamilyPolicy
 	inputs.IPFamilies = tl.Spec.ChiaConfig.RPCService.IPFamilies
 
@@ -183,6 +187,7 @@ func assembleChiaExporterService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	}
 
 	inputs.ServiceType = tl.Spec.ChiaExporterConfig.Service.ServiceType
+	inputs.ExternalTrafficPolicy = tl.Spec.ChiaExporterConfig.Service.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = tl.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = tl.Spec.ChiaExporterConfig.Service.IPFamilies
 
@@ -213,6 +218,7 @@ func assembleChiaHealthcheckService(tl k8schianetv1.ChiaTimelord) corev1.Service
 	}
 
 	inputs.ServiceType = tl.Spec.ChiaHealthcheckConfig.Service.ServiceType
+	inputs.ExternalTrafficPolicy = tl.Spec.ChiaHealthcheckConfig.Service.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = tl.Spec.ChiaHealthcheckConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = tl.Spec.ChiaHealthcheckConfig.Service.IPFamilies
 
