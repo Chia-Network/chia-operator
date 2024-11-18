@@ -11,12 +11,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
-	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
+	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 )
 
 const chiawalletNamePattern = "%s-wallet"
@@ -37,6 +38,7 @@ func assemblePeerService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	}
 
 	inputs.ServiceType = wallet.Spec.ChiaConfig.PeerService.ServiceType
+	inputs.ExternalTrafficPolicy = wallet.Spec.ChiaConfig.PeerService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = wallet.Spec.ChiaConfig.PeerService.IPFamilyPolicy
 	inputs.IPFamilies = wallet.Spec.ChiaConfig.PeerService.IPFamilies
 
@@ -81,6 +83,7 @@ func assembleAllService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	inputs.Ports = append(inputs.Ports, kube.GetChiaDaemonServicePorts()...)
 
 	inputs.ServiceType = wallet.Spec.ChiaConfig.AllService.ServiceType
+	inputs.ExternalTrafficPolicy = wallet.Spec.ChiaConfig.AllService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = wallet.Spec.ChiaConfig.AllService.IPFamilyPolicy
 	inputs.IPFamilies = wallet.Spec.ChiaConfig.AllService.IPFamilies
 
@@ -111,6 +114,7 @@ func assembleDaemonService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	}
 
 	inputs.ServiceType = wallet.Spec.ChiaConfig.DaemonService.ServiceType
+	inputs.ExternalTrafficPolicy = wallet.Spec.ChiaConfig.DaemonService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = wallet.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
 	inputs.IPFamilies = wallet.Spec.ChiaConfig.DaemonService.IPFamilies
 
@@ -148,6 +152,7 @@ func assembleRPCService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	}
 
 	inputs.ServiceType = wallet.Spec.ChiaConfig.RPCService.ServiceType
+	inputs.ExternalTrafficPolicy = wallet.Spec.ChiaConfig.RPCService.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = wallet.Spec.ChiaConfig.RPCService.IPFamilyPolicy
 	inputs.IPFamilies = wallet.Spec.ChiaConfig.RPCService.IPFamilies
 
@@ -178,6 +183,7 @@ func assembleChiaExporterService(wallet k8schianetv1.ChiaWallet) corev1.Service 
 	}
 
 	inputs.ServiceType = wallet.Spec.ChiaExporterConfig.Service.ServiceType
+	inputs.ExternalTrafficPolicy = wallet.Spec.ChiaExporterConfig.Service.ExternalTrafficPolicy
 	inputs.IPFamilyPolicy = wallet.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = wallet.Spec.ChiaExporterConfig.Service.IPFamilies
 
