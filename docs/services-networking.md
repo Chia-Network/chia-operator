@@ -75,3 +75,16 @@ spec:
         - IPv4
         - IPv6
 ```
+
+## External Traffic Policy
+
+Depending on the configuration of your cluster, it may be useful to change the external traffic policy for any publicly exposed services.
+
+```yaml
+spec:
+  chia:
+    peerService:
+      enabled: true
+      type: LoadBalancer
+      externalTrafficPolicy: Local
+```
