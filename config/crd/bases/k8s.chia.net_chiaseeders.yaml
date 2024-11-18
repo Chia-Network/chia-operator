@@ -985,6 +985,10 @@ spec:
                         description: Enabled is a boolean selector for a Service if
                           it should be generated.
                         type: boolean
+                      externalTrafficPolicy:
+                        description: ExternalTrafficPolicy sets the external traffic
+                          policy for the service
+                        type: string
                       ipFamilies:
                         description: IPFamilies represents a list of IP families (IPv4
                           and/or IPv6) required by a Service
@@ -1043,6 +1047,10 @@ spec:
                         description: Enabled is a boolean selector for a Service if
                           it should be generated.
                         type: boolean
+                      externalTrafficPolicy:
+                        description: ExternalTrafficPolicy sets the external traffic
+                          policy for the service
+                        type: string
                       ipFamilies:
                         description: IPFamilies represents a list of IP families (IPv4
                           and/or IPv6) required by a Service
@@ -1279,6 +1287,10 @@ spec:
                         description: Enabled is a boolean selector for a Service if
                           it should be generated.
                         type: boolean
+                      externalTrafficPolicy:
+                        description: ExternalTrafficPolicy sets the external traffic
+                          policy for the service
+                        type: string
                       ipFamilies:
                         description: IPFamilies represents a list of IP families (IPv4
                           and/or IPv6) required by a Service
@@ -1541,6 +1553,10 @@ spec:
                         description: Enabled is a boolean selector for a Service if
                           it should be generated.
                         type: boolean
+                      externalTrafficPolicy:
+                        description: ExternalTrafficPolicy sets the external traffic
+                          policy for the service
+                        type: string
                       ipFamilies:
                         description: IPFamilies represents a list of IP families (IPv4
                           and/or IPv6) required by a Service
@@ -1979,6 +1995,10 @@ spec:
                         description: Enabled is a boolean selector for a Service if
                           it should be generated.
                         type: boolean
+                      externalTrafficPolicy:
+                        description: ExternalTrafficPolicy sets the external traffic
+                          policy for the service
+                        type: string
                       ipFamilies:
                         description: IPFamilies represents a list of IP families (IPv4
                           and/or IPv6) required by a Service
@@ -2043,6 +2063,10 @@ spec:
                         description: Enabled is a boolean selector for a Service if
                           it should be generated.
                         type: boolean
+                      externalTrafficPolicy:
+                        description: ExternalTrafficPolicy sets the external traffic
+                          policy for the service
+                        type: string
                       ipFamilies:
                         description: IPFamilies represents a list of IP families (IPv4
                           and/or IPv6) required by a Service
