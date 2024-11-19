@@ -35,7 +35,8 @@ Some of Chia's configuration can be changed from within the CR.
 spec:
   chia:
     minimumHeight: 240000 # Only consider nodes synced at least to this height
-    bootstrapPeer: "mainnet-node.chia.svc.cluster.local" # Peers used for the initial crawler run to find peers
+    bootstrapPeers: 
+      - "mainnet-node.chia.svc.cluster.local" # Peers used for the initial crawler run to find peers
     ttl: 900 # field on DNS records that controls the length of time that a record is considered valid
 ```
 

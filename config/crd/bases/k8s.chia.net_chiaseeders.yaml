@@ -1142,9 +1142,16 @@ spec:
                         type: string
                     type: object
                   bootstrapPeer:
-                    description: BootstrapPeer a peer to bootstrap the seeder's peer
-                      database
+                    description: |-
+                      BootstrapPeer a peer to bootstrap the seeder's peer database.
+                      DEPRECATED: Use BootstrapPeers instead.
                     type: string
+                  bootstrapPeers:
+                    description: BootstrapPeers a list of peers to bootstrap the seeder's
+                      peer database
+                    items:
+                      type: string
+                    type: array
                   caSecretName:
                     description: CASecretName is the name of the secret that contains
                       the CA crt and key. Not required for seeders.

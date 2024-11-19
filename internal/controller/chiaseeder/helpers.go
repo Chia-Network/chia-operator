@@ -6,6 +6,7 @@ package chiaseeder
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
@@ -85,7 +86,12 @@ func getChiaEnv(seeder k8schianetv1.ChiaSeeder, networkData *map[string]string) 
 	})
 
 	// seeder_bootstrap_peers env var
-	if seeder.Spec.ChiaConfig.BootstrapPeer != nil {
+	if seeder.Spec.ChiaConfig.BootstrapPeers != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "seeder_bootstrap_peers",
+			Value: strings.Join(*seeder.Spec.ChiaConfig.BootstrapPeers, ","),
+		})
+	} else if seeder.Spec.ChiaConfig.BootstrapPeer != nil {
 		env = append(env, corev1.EnvVar{
 			Name:  "seeder_bootstrap_peers",
 			Value: *seeder.Spec.ChiaConfig.BootstrapPeer,
