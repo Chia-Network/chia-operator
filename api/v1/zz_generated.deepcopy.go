@@ -1382,6 +1382,17 @@ func (in *CommonSpecChia) DeepCopyInto(out *CommonSpecChia) {
 	in.DaemonService.DeepCopyInto(&out.DaemonService)
 	in.RPCService.DeepCopyInto(&out.RPCService)
 	in.AllService.DeepCopyInto(&out.AllService)
+	if in.AdditionalEnv != nil {
+		in, out := &in.AdditionalEnv, &out.AdditionalEnv
+		*out = new([]corev1.EnvVar)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make([]corev1.EnvVar, len(*in))
+			for i := range *in {
+				(*in)[i].DeepCopyInto(&(*out)[i])
+			}
+		}
+	}
 	if in.LivenessProbe != nil {
 		in, out := &in.LivenessProbe, &out.LivenessProbe
 		*out = new(corev1.Probe)
@@ -1556,6 +1567,11 @@ func (in *Service) DeepCopyInto(out *Service) {
 			*out = make([]corev1.IPFamily, len(*in))
 			copy(*out, *in)
 		}
+	}
+	if in.ExternalTrafficPolicy != nil {
+		in, out := &in.ExternalTrafficPolicy, &out.ExternalTrafficPolicy
+		*out = new(corev1.ServiceExternalTrafficPolicy)
+		**out = **in
 	}
 	if in.RollIntoPeerService != nil {
 		in, out := &in.RollIntoPeerService, &out.RollIntoPeerService

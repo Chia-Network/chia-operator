@@ -58,6 +58,25 @@ spec:
 
 Before setting these, ensure you have an idea of how much memory and cpu the chia service being deployed tends to use under normal circumstances. If too low of a limit is specified, the chia container may restart often. If given too great of requests, you may be wasting some of the scheduling capabilities of a kubernetes node.
 
+## Chia container additional environment variables
+
+WARNING: This is a dangerous feature for advanced use cases. This can override variables set by the operator, which may cause issues deploying chia services. The vast majority of uses for additional environment variables should be solved with settings within the CRD. But under some circumstances you may want to set some chia container env for niche settings for chia-tools to plant in your chia configuration. If you have a use for setting additional container env, please make an Issue so we can discuss potentially adding it to the CRD.
+
+```yaml
+spec:
+  chia:
+    additionalEnv:
+      # Set normal environment variable key-value
+      - name: FOO
+        value: BAR
+      # Set using valueFrom
+      - name: HELLO
+        valueFrom:
+          configMapKeyRef:
+            name: my-configmap
+            key: WORLD
+```
+
 ## Pod Affinity
 
 You can set Pod affinity and anti-affinity rules for any custom resource like so (this is just an example):

@@ -143,6 +143,11 @@ type CommonSpecChia struct {
 	// +optional
 	AllService Service `json:"allService,omitempty"`
 
+	// AdditionalEnv contain a list of additional environment variables to be supplied to the chia container.
+	// These variables will be placed at the end of the environment variable list in the resulting container, this means they overwrite variables of the same name created by the operator in the container env.
+	// +optional
+	AdditionalEnv *[]corev1.EnvVar `json:"additionalEnv,omitempty"`
+
 	// Periodic probe of container liveness.
 	// +optional
 	LivenessProbe *corev1.Probe `json:"livenessProbe,omitempty"`

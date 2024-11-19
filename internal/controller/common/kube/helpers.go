@@ -289,6 +289,11 @@ func GetCommonChiaEnv(commonSpecChia k8schianetv1.CommonSpecChia, networkData *m
 		return env[i].Name < env[j].Name
 	})
 
+	// Add override additional env - this needs to happen last because these variables should overwrite the sorted variables set before
+	if commonSpecChia.AdditionalEnv != nil {
+		env = append(env, *commonSpecChia.AdditionalEnv...)
+	}
+
 	return env, nil
 }
 
