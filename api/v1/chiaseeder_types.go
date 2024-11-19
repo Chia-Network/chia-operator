@@ -29,13 +29,18 @@ type ChiaSeederSpec struct {
 type ChiaSeederSpecChia struct {
 	CommonSpecChia `json:",inline"`
 
-	// BootstrapPeer a peer to bootstrap the seeder's peer database
+	// BootstrapPeer a peer to bootstrap the seeder's peer database.
+	// DEPRECATED: Use BootstrapPeers instead.
 	// +optional
-	BootstrapPeer *string `json:"bootstrapPeer"`
+	BootstrapPeer *string `json:"bootstrapPeer,omitempty"`
+
+	// BootstrapPeers a list of peers to bootstrap the seeder's peer database
+	// +optional
+	BootstrapPeers *[]string `json:"bootstrapPeers,omitempty"`
 
 	// MinimumHeight only consider nodes synced at least to this height
 	// +optional
-	MinimumHeight *uint64 `json:"minimumHeight"`
+	MinimumHeight *uint64 `json:"minimumHeight,omitempty"`
 
 	// DomainName the name of the NS record for your server with a trailing period. (ex. "seeder.example.com.")
 	DomainName string `json:"domainName"`
@@ -48,11 +53,11 @@ type ChiaSeederSpecChia struct {
 
 	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
 	// +optional
-	CASecretName *string `json:"caSecretName"`
+	CASecretName *string `json:"caSecretName,omitempty"`
 
 	// TTL field on DNS records that controls the length of time that a record is considered valid
 	// +optional
-	TTL *uint32 `json:"ttl"`
+	TTL *uint32 `json:"ttl,omitempty"`
 }
 
 // ChiaSeederStatus defines the observed state of ChiaSeeder

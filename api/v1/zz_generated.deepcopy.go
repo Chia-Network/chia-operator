@@ -976,6 +976,15 @@ func (in *ChiaSeederSpecChia) DeepCopyInto(out *ChiaSeederSpecChia) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.BootstrapPeers != nil {
+		in, out := &in.BootstrapPeers, &out.BootstrapPeers
+		*out = new([]string)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make([]string, len(*in))
+			copy(*out, *in)
+		}
+	}
 	if in.MinimumHeight != nil {
 		in, out := &in.MinimumHeight, &out.MinimumHeight
 		*out = new(uint64)
