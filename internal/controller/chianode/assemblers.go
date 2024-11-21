@@ -245,8 +245,9 @@ func assembleHeadlessPeerService(node k8schianetv1.ChiaNode, fullNodePort int32)
 
 	srv.Name = srv.Name + "-headless"
 	srv.Annotations = node.Spec.AdditionalMetadata.Annotations // Overwrites the annotations from the peer Service, since those may contain some related to tools like external-dns
-	srv.Spec.Type = "ClusterIP"
+	srv.Spec.Type = corev1.ServiceTypeClusterIP
 	srv.Spec.ClusterIP = "None"
+	srv.Spec.ExternalTrafficPolicy = corev1.ServiceExternalTrafficPolicyCluster
 
 	return srv
 }
@@ -257,9 +258,10 @@ func assembleLocalPeerService(node k8schianetv1.ChiaNode, fullNodePort int32) co
 
 	srv.Name = srv.Name + "-internal"
 	srv.Annotations = node.Spec.AdditionalMetadata.Annotations // Overwrites the annotations from the peer Service, since those may contain some related to tools like external-dns
-	srv.Spec.Type = "ClusterIP"
+	srv.Spec.Type = corev1.ServiceTypeClusterIP
 	local := corev1.ServiceInternalTrafficPolicyLocal
 	srv.Spec.InternalTrafficPolicy = &local
+	srv.Spec.ExternalTrafficPolicy = corev1.ServiceExternalTrafficPolicyCluster
 
 	return srv
 }
