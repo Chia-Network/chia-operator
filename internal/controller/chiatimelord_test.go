@@ -39,7 +39,12 @@ var _ = Describe("ChiaTimelord controller", func() {
 				Spec: apiv1.ChiaTimelordSpec{
 					ChiaConfig: apiv1.ChiaTimelordSpecChia{
 						CASecretName: "test-secret",
-						FullNodePeer: "node.default.svc.cluster.local:58444",
+						FullNodePeers: &[]apiv1.FullNodePeer{
+							{
+								Host: "node.default.svc.cluster.local",
+								Port: 58444,
+							},
+						},
 					},
 				},
 			}
@@ -47,7 +52,12 @@ var _ = Describe("ChiaTimelord controller", func() {
 				Spec: apiv1.ChiaTimelordSpec{
 					ChiaConfig: apiv1.ChiaTimelordSpecChia{
 						CASecretName: "test-secret",
-						FullNodePeer: "node.default.svc.cluster.local:58444",
+						FullNodePeers: &[]apiv1.FullNodePeer{
+							{
+								Host: "node.default.svc.cluster.local",
+								Port: 58444,
+							},
+						},
 					},
 					CommonSpec: apiv1.CommonSpec{
 						ImagePullPolicy: "Always",

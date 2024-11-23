@@ -354,3 +354,12 @@ type HostPathVolumeConfig struct {
 	// +optional
 	Path string `json:"path,omitempty"`
 }
+
+// FullNodePeer config for a full node peer - host and port
+type FullNodePeer struct {
+	// Host is the IP address or hostname to a full_node peer.
+	Host string `json:"host"`
+
+	// Port is the port number the full_node's peer port is listening on.
+	Port uint16 `json:"port"`
+}

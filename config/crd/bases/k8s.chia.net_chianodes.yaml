@@ -1203,6 +1203,26 @@ spec:
                     description: DNSIntroducerAddress can be set to a hostname to
                       a DNS Introducer server.
                     type: string
+                  fullNodePeers:
+                    description: FullNodePeers is a list of hostnames/IPs and port
+                      numbers to full_node peers.
+                    items:
+                      description: FullNodePeer config for a full node peer - host
+                        and port
+                      properties:
+                        host:
+                          description: Host is the IP address or hostname to a full_node
+                            peer.
+                          type: string
+                        port:
+                          description: Port is the port number the full_node's peer
+                            port is listening on.
+                          type: integer
+                      required:
+                      - host
+                      - port
+                      type: object
+                    type: array
                   image:
                     description: Image defines the image to use for the chia component
                       containers

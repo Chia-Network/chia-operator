@@ -36,6 +36,9 @@ spec:
     trustedCIDRs:
       - "192.168.0.0/16"
       - "10.0.0.0/8"
+    fullNodePeers: 
+      - host: "node.default.svc.cluster.local"
+        port: 58444
   chiaExporter:
     enabled: true
     serviceLabels:
@@ -82,6 +85,12 @@ spec:
 				},
 				CASecretName: "chiaca-secret",
 				TrustedCIDRs: &expectCIDRs,
+				FullNodePeers: &[]FullNodePeer{
+					{
+						Host: "node.default.svc.cluster.local",
+						Port: 58444,
+					},
+				},
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{

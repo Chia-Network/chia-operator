@@ -172,7 +172,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Assemble Deployment
-	deploy, err := assembleDeployment(timelord, networkData)
+	deploy, err := assembleDeployment(ctx, timelord, networkData)
 	if err != nil {
 		r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaTimelordReconciler ChiaTimelord=%s %v", req.NamespacedName, err)

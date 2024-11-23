@@ -33,7 +33,9 @@ spec:
     dnsIntroducerAddress: dns-introducer.svc.cluster.local
     timezone: "UTC"
     logLevel: "INFO"
-    fullNodePeer: "node.default.svc.cluster.local:58444"
+    fullNodePeers: 
+      - host: "node.default.svc.cluster.local"
+        port: 58444
   chiaExporter:
     enabled: true
     serviceLabels:
@@ -75,7 +77,12 @@ spec:
 					DNSIntroducerAddress: &dnsIntroducerAddress,
 				},
 				CASecretName: "chiaca-secret",
-				FullNodePeer: "node.default.svc.cluster.local:58444",
+				FullNodePeers: &[]FullNodePeer{
+					{
+						Host: "node.default.svc.cluster.local",
+						Port: 58444,
+					},
+				},
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{

@@ -1207,7 +1207,30 @@ spec:
                     description: |-
                       FullNodePeer defines the farmer's full_node peer in host:port format.
                       In Kubernetes this is likely to be <node service name>.<namespace>.svc.cluster.local:8555
+                      Either fullNodePeer or fullNodePeers should be specified. fullNodePeers takes precedence.
+                      Deprecated in favor of fullNodePeers.
                     type: string
+                  fullNodePeers:
+                    description: |-
+                      FullNodePeers is a list of hostnames/IPs and port numbers to full_node peers.
+                      Either fullNodePeer or fullNodePeers should be specified. fullNodePeers takes precedence.
+                    items:
+                      description: FullNodePeer config for a full node peer - host
+                        and port
+                      properties:
+                        host:
+                          description: Host is the IP address or hostname to a full_node
+                            peer.
+                          type: string
+                        port:
+                          description: Port is the port number the full_node's peer
+                            port is listening on.
+                          type: integer
+                      required:
+                      - host
+                      - port
+                      type: object
+                    type: array
                   image:
                     description: Image defines the image to use for the chia component
                       containers
@@ -2074,7 +2097,6 @@ spec:
                     type: string
                 required:
                 - caSecretName
-                - fullNodePeer
                 - secretKey
                 type: object
               chiaExporter:

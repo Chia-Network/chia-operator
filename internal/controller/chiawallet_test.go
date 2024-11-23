@@ -39,7 +39,12 @@ var _ = Describe("ChiaWallet controller", func() {
 				Spec: apiv1.ChiaWalletSpec{
 					ChiaConfig: apiv1.ChiaWalletSpecChia{
 						CASecretName: "test-secret",
-						FullNodePeer: "node.default.svc.cluster.local:58444",
+						FullNodePeers: &[]apiv1.FullNodePeer{
+							{
+								Host: "node.default.svc.cluster.local",
+								Port: 58444,
+							},
+						},
 						SecretKey: apiv1.ChiaSecretKey{
 							Name: "testkeys",
 							Key:  "key.txt",
@@ -51,7 +56,12 @@ var _ = Describe("ChiaWallet controller", func() {
 				Spec: apiv1.ChiaWalletSpec{
 					ChiaConfig: apiv1.ChiaWalletSpecChia{
 						CASecretName: "test-secret",
-						FullNodePeer: "node.default.svc.cluster.local:58444",
+						FullNodePeers: &[]apiv1.FullNodePeer{
+							{
+								Host: "node.default.svc.cluster.local",
+								Port: 58444,
+							},
+						},
 						SecretKey: apiv1.ChiaSecretKey{
 							Name: "testkeys",
 							Key:  "key.txt",

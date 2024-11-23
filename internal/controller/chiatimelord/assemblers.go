@@ -5,6 +5,7 @@ Copyright 2023 Chia Network Inc.
 package chiatimelord
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -276,7 +277,7 @@ func assembleVolumeClaim(tl k8schianetv1.ChiaTimelord) (*corev1.PersistentVolume
 }
 
 // assembleDeployment assembles the tl Deployment resource for a ChiaTimelord CR
-func assembleDeployment(tl k8schianetv1.ChiaTimelord, networkData *map[string]string) (appsv1.Deployment, error) {
+func assembleDeployment(ctx context.Context, tl k8schianetv1.ChiaTimelord, networkData *map[string]string) (appsv1.Deployment, error) {
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiatimelordNamePattern, tl.Name),
@@ -306,7 +307,7 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord, networkData *map[string]st
 		deploy.Spec.Template.Spec.ServiceAccountName = *tl.Spec.ServiceAccountName
 	}
 
-	chiaContainer, err := assembleChiaContainer(tl, networkData)
+	chiaContainer, err := assembleChiaContainer(ctx, tl, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
 	}
@@ -351,7 +352,7 @@ func assembleDeployment(tl k8schianetv1.ChiaTimelord, networkData *map[string]st
 	return deploy, nil
 }
 
-func assembleChiaContainer(tl k8schianetv1.ChiaTimelord, networkData *map[string]string) (corev1.Container, error) {
+func assembleChiaContainer(ctx context.Context, tl k8schianetv1.ChiaTimelord, networkData *map[string]string) (corev1.Container, error) {
 	input := kube.AssembleChiaContainerInputs{
 		Image:           tl.Spec.ChiaConfig.Image,
 		ImagePullPolicy: tl.Spec.ImagePullPolicy,
@@ -375,7 +376,7 @@ func assembleChiaContainer(tl k8schianetv1.ChiaTimelord, networkData *map[string
 		VolumeMounts: getChiaVolumeMounts(),
 	}
 
-	env, err := getChiaEnv(tl, networkData)
+	env, err := getChiaEnv(ctx, tl, networkData)
 	if err != nil {
 		return corev1.Container{}, err
 	}

@@ -41,6 +41,10 @@ type ChiaNodeSpecChia struct {
 	// See: https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them
 	// +optional
 	TrustedCIDRs *[]string `json:"trustedCIDRs,omitempty"`
+
+	// FullNodePeers is a list of hostnames/IPs and port numbers to full_node peers.
+	// +optional
+	FullNodePeers *[]FullNodePeer `json:"fullNodePeers,omitempty"`
 }
 
 // ChiaNodeStatus defines the observed state of ChiaNode

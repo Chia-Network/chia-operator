@@ -6,6 +6,7 @@ package kube
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strconv"
@@ -335,4 +336,13 @@ func GetExtraContainers(config []k8schianetv1.ExtraContainer, chiaContainer core
 		}
 	}
 	return extraContainers
+}
+
+// MarshalFullNodePeers returns a byte slice of JSON marshalled data representing a full_node_peers list in the config
+func MarshalFullNodePeers(peers []k8schianetv1.FullNodePeer) ([]byte, error) {
+	data, err := json.Marshal(peers)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling peers list to JSON: %w", err)
+	}
+	return data, nil
 }
