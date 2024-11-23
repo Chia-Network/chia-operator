@@ -42,7 +42,7 @@ type ChiaTimelordSpecChia struct {
 	// FullNodePeers is a list of hostnames/IPs and port numbers to full_node peers.
 	// Either fullNodePeer or fullNodePeers should be specified. fullNodePeers takes precedence.
 	// +optional
-	FullNodePeers *[]FullNodePeer `json:"fullNodePeers,omitempty"`
+	FullNodePeers *[]Peer `json:"fullNodePeers,omitempty"`
 }
 
 // ChiaTimelordStatus defines the observed state of ChiaTimelord

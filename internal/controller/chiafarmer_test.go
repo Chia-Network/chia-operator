@@ -39,7 +39,7 @@ var _ = Describe("ChiaFarmer controller", func() {
 				Spec: apiv1.ChiaFarmerSpec{
 					ChiaConfig: apiv1.ChiaFarmerSpecChia{
 						CASecretName: "test-secret",
-						FullNodePeers: &[]apiv1.FullNodePeer{
+						FullNodePeers: &[]apiv1.Peer{
 							{
 								Host: "node.default.svc.cluster.local",
 								Port: 58444,
@@ -56,7 +56,7 @@ var _ = Describe("ChiaFarmer controller", func() {
 				Spec: apiv1.ChiaFarmerSpec{
 					ChiaConfig: apiv1.ChiaFarmerSpecChia{
 						CASecretName: "test-secret",
-						FullNodePeers: &[]apiv1.FullNodePeer{
+						FullNodePeers: &[]apiv1.Peer{
 							{
 								Host: "node.default.svc.cluster.local",
 								Port: 58444,

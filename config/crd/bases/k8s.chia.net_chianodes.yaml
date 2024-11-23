@@ -1207,8 +1207,7 @@ spec:
                     description: FullNodePeers is a list of hostnames/IPs and port
                       numbers to full_node peers.
                     items:
-                      description: FullNodePeer config for a full node peer - host
-                        and port
+                      description: Peer config for a peer - host and port
                       properties:
                         host:
                           description: Host is the IP address or hostname to a full_node

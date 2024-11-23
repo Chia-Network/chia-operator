@@ -44,7 +44,7 @@ type ChiaNodeSpecChia struct {
 
 	// FullNodePeers is a list of hostnames/IPs and port numbers to full_node peers.
 	// +optional
-	FullNodePeers *[]FullNodePeer `json:"fullNodePeers,omitempty"`
+	FullNodePeers *[]Peer `json:"fullNodePeers,omitempty"`
 }
 
 // ChiaNodeStatus defines the observed state of ChiaNode

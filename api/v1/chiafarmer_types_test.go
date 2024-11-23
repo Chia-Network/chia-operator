@@ -80,7 +80,7 @@ spec:
 					DNSIntroducerAddress: &dnsIntroducerAddress,
 				},
 				CASecretName: "chiaca-secret",
-				FullNodePeers: &[]FullNodePeer{
+				FullNodePeers: &[]Peer{
 					{
 						Host: "node.default.svc.cluster.local",
 						Port: 58444,

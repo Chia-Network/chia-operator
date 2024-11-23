@@ -41,7 +41,7 @@ type ChiaWalletSpecChia struct {
 	// FullNodePeers is a list of hostnames/IPs and port numbers to full_node peers.
 	// Either fullNodePeer or fullNodePeers should be specified. fullNodePeers takes precedence.
 	// +optional
-	FullNodePeers *[]FullNodePeer `json:"fullNodePeers,omitempty"`
+	FullNodePeers *[]Peer `json:"fullNodePeers,omitempty"`
 
 	// TrustedCIDRs is a list of CIDRs that this chia component should trust peers from
 	// See: https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them

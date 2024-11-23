@@ -85,7 +85,7 @@ spec:
 				},
 				CASecretName: "chiaca-secret",
 				TrustedCIDRs: &expectCIDRs,
-				FullNodePeers: &[]FullNodePeer{
+				FullNodePeers: &[]Peer{
 					{
 						Host: "node.default.svc.cluster.local",
 						Port: 58444,
