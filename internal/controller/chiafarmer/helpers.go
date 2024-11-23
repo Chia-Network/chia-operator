@@ -7,6 +7,7 @@ package chiafarmer
 import (
 	"context"
 	"fmt"
+
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
