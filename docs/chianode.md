@@ -25,6 +25,19 @@ spec:
 
 If you would like to ensure your replicas get scheduled on different kubernetes nodes, view the [Pod Affinity documentation.](all.md#pod-affinity)
 
+## Full Node Peers
+
+You may optionally specify a list of full_nodes for peer(s) to sync your node from.
+
+```yaml
+spec:
+  chia:
+    # A local full_node using kubernetes DNS names
+    fullNodePeers:
+      - host: "node.default.svc.cluster.local"
+        port: 8444
+```
+
 ## CHIA_ROOT storage
 
 `CHIA_ROOT` is an environment variable that tells chia services where to expect a data directory to be for local chia state. You can store your chia state persistently a couple of different ways: either with a host mount or a persistent volume claim.
