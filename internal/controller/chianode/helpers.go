@@ -131,6 +131,19 @@ func getChiaEnv(ctx context.Context, node k8schianetv1.ChiaNode, networkData *ma
 		Value: "none",
 	})
 
+	// node peer env var
+	if node.Spec.ChiaConfig.FullNodePeers != nil {
+		fnp, err := kube.MarshalFullNodePeers(*node.Spec.ChiaConfig.FullNodePeers)
+		if err != nil {
+			logr.Error(err, "given full_node peers could not be marshaled to JSON, they may not appear in your chia configuration")
+		} else {
+			env = append(env, corev1.EnvVar{
+				Name:  "chia.full_node.full_node_peers",
+				Value: string(fnp),
+			})
+		}
+	}
+
 	// trusted_cidrs env var
 	if node.Spec.ChiaConfig.TrustedCIDRs != nil {
 		// TODO should any special CIDR input checking happen here

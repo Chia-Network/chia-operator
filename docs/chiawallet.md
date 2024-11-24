@@ -36,14 +36,17 @@ type: Opaque
 
 Replace the text value for `key.txt` with your mnemonic, and then reference it in your ChiaWallet resource in the way shown above.
 
-## Full Node Peer
+## Full Node Peers
 
-You may optionally specify a local full_node for a peer to sync your wallet from.
+You may optionally specify a list of full_nodes for peer(s) to sync your wallet from.
 
 ```yaml
 spec:
   chia:
-    fullNodePeer: "node.default.svc.cluster.local:8444"
+    # A local full_node using kubernetes DNS names
+    fullNodePeers:
+      - host: "node.default.svc.cluster.local"
+        port: 8444
 ```
 
 ## Trusted Peers

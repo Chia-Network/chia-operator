@@ -12,7 +12,10 @@ metadata:
 spec:
   chia:
     caSecretName: chiaca-secret # A kubernetes Secret containing certificate authority files
-    fullNodePeer: "node.default.svc.cluster.local:8444" # A local full_node using kubernetes DNS names
+    # A full_node using kubernetes DNS names
+    fullNodePeers:
+      - host: "node.default.svc.cluster.local"
+        port: 8444
 ```
 
 ## More Info

@@ -5,7 +5,10 @@ Copyright 2023 Chia Network Inc.
 package chiatimelord
 
 import (
+	"context"
 	"fmt"
+
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 
@@ -59,7 +62,8 @@ func getChiaVolumeMounts() []corev1.VolumeMount {
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
-func getChiaEnv(timelord k8schianetv1.ChiaTimelord, networkData *map[string]string) ([]corev1.EnvVar, error) {
+func getChiaEnv(ctx context.Context, timelord k8schianetv1.ChiaTimelord, networkData *map[string]string) ([]corev1.EnvVar, error) {
+	logr := log.FromContext(ctx)
 	var env []corev1.EnvVar
 
 	// service env var
@@ -69,10 +73,22 @@ func getChiaEnv(timelord k8schianetv1.ChiaTimelord, networkData *map[string]stri
 	})
 
 	// node peer env var
-	env = append(env, corev1.EnvVar{
-		Name:  "full_node_peer",
-		Value: timelord.Spec.ChiaConfig.FullNodePeer,
-	})
+	if timelord.Spec.ChiaConfig.FullNodePeers != nil {
+		fnp, err := kube.MarshalFullNodePeers(*timelord.Spec.ChiaConfig.FullNodePeers)
+		if err != nil {
+			logr.Error(err, "given full_node peers could not be marshaled to JSON, they may not appear in your chia configuration")
+		} else {
+			env = append(env, corev1.EnvVar{
+				Name:  "chia.timelord.full_node_peers",
+				Value: string(fnp),
+			})
+		}
+	} else if timelord.Spec.ChiaConfig.FullNodePeer != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "full_node_peer",
+			Value: *timelord.Spec.ChiaConfig.FullNodePeer,
+		})
+	}
 
 	// keys env var -- no keys required for a timelord
 	env = append(env, corev1.EnvVar{

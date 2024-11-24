@@ -128,10 +128,20 @@ func getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet, networkData
 	})
 
 	// node peer env var
-	if wallet.Spec.ChiaConfig.FullNodePeer != "" {
+	if wallet.Spec.ChiaConfig.FullNodePeers != nil {
+		fnp, err := kube.MarshalFullNodePeers(*wallet.Spec.ChiaConfig.FullNodePeers)
+		if err != nil {
+			logr.Error(err, "given full_node peers could not be marshaled to JSON, they may not appear in your chia configuration")
+		} else {
+			env = append(env, corev1.EnvVar{
+				Name:  "chia.wallet.full_node_peers",
+				Value: string(fnp),
+			})
+		}
+	} else if wallet.Spec.ChiaConfig.FullNodePeer != nil {
 		env = append(env, corev1.EnvVar{
 			Name:  "full_node_peer",
-			Value: wallet.Spec.ChiaConfig.FullNodePeer,
+			Value: *wallet.Spec.ChiaConfig.FullNodePeer,
 		})
 	}
 

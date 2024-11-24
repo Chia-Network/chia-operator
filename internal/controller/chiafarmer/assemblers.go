@@ -5,6 +5,7 @@ Copyright 2023 Chia Network Inc.
 package chiafarmer
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -240,7 +241,7 @@ func assembleVolumeClaim(farmer k8schianetv1.ChiaFarmer) (*corev1.PersistentVolu
 }
 
 // assembleDeployment assembles the farmer Deployment resource for a ChiaFarmer CR
-func assembleDeployment(farmer k8schianetv1.ChiaFarmer, networkData *map[string]string) (appsv1.Deployment, error) {
+func assembleDeployment(ctx context.Context, farmer k8schianetv1.ChiaFarmer, networkData *map[string]string) (appsv1.Deployment, error) {
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
@@ -270,7 +271,7 @@ func assembleDeployment(farmer k8schianetv1.ChiaFarmer, networkData *map[string]
 		deploy.Spec.Template.Spec.ServiceAccountName = *farmer.Spec.ServiceAccountName
 	}
 
-	chiaContainer, err := assembleChiaContainer(farmer, networkData)
+	chiaContainer, err := assembleChiaContainer(ctx, farmer, networkData)
 	if err != nil {
 		return appsv1.Deployment{}, err
 	}
@@ -312,7 +313,7 @@ func assembleDeployment(farmer k8schianetv1.ChiaFarmer, networkData *map[string]
 	return deploy, nil
 }
 
-func assembleChiaContainer(farmer k8schianetv1.ChiaFarmer, networkData *map[string]string) (corev1.Container, error) {
+func assembleChiaContainer(ctx context.Context, farmer k8schianetv1.ChiaFarmer, networkData *map[string]string) (corev1.Container, error) {
 	input := kube.AssembleChiaContainerInputs{
 		Image:           farmer.Spec.ChiaConfig.Image,
 		ImagePullPolicy: farmer.Spec.ImagePullPolicy,
@@ -336,7 +337,7 @@ func assembleChiaContainer(farmer k8schianetv1.ChiaFarmer, networkData *map[stri
 		VolumeMounts: getChiaVolumeMounts(),
 	}
 
-	env, err := getChiaEnv(farmer, networkData)
+	env, err := getChiaEnv(ctx, farmer, networkData)
 	if err != nil {
 		return corev1.Container{}, err
 	}

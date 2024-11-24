@@ -33,8 +33,15 @@ type ChiaWalletSpecChia struct {
 
 	// FullNodePeer defines the farmer's full_node peer in host:port format.
 	// In Kubernetes this is likely to be <node service name>.<namespace>.svc.cluster.local:8555
+	// Either fullNodePeer or fullNodePeers should be specified. fullNodePeers takes precedence.
+	// Deprecated in favor of fullNodePeers.
 	// +optional
-	FullNodePeer string `json:"fullNodePeer,omitempty"`
+	FullNodePeer *string `json:"fullNodePeer,omitempty"`
+
+	// FullNodePeers is a list of hostnames/IPs and port numbers to full_node peers.
+	// Either fullNodePeer or fullNodePeers should be specified. fullNodePeers takes precedence.
+	// +optional
+	FullNodePeers *[]Peer `json:"fullNodePeers,omitempty"`
 
 	// TrustedCIDRs is a list of CIDRs that this chia component should trust peers from
 	// See: https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them

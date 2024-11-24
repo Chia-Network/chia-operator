@@ -33,7 +33,9 @@ spec:
     dnsIntroducerAddress: dns-introducer.svc.cluster.local
     timezone: "UTC"
     logLevel: "INFO"
-    fullNodePeer: "node.default.svc.cluster.local:58444"
+    fullNodePeers: 
+      - host: "node.default.svc.cluster.local"
+        port: 58444
     secretKey:
       name: "chiakey-secret"
       key: "key.txt"
@@ -85,7 +87,12 @@ spec:
 					DNSIntroducerAddress: &dnsIntroducerAddress,
 				},
 				CASecretName: "chiaca-secret",
-				FullNodePeer: "node.default.svc.cluster.local:58444",
+				FullNodePeers: &[]Peer{
+					{
+						Host: "node.default.svc.cluster.local",
+						Port: 58444,
+					},
+				},
 				SecretKey: ChiaSecretKey{
 					Name: "chiakey-secret",
 					Key:  "key.txt",
