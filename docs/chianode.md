@@ -27,7 +27,7 @@ If you would like to ensure your replicas get scheduled on different kubernetes 
 
 ## Full Node Peers
 
-You may optionally specify a list of full_nodes for peer(s) to sync your node from.
+You may optionally specify a list of full_nodes peer(s) that your node will always try to remain connected to.
 
 ```yaml
 spec:
