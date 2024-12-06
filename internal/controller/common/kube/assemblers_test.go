@@ -497,7 +497,7 @@ func TestAssembleChiaHealthcheckProbe_Minimal(t *testing.T) {
 		},
 	}
 	actual := AssembleChiaHealthcheckProbe(AssembleChiaHealthcheckProbeInputs{
-		Kind: consts.ChiaSeederKind,
+		Path: "/seeder",
 	})
 	require.Equal(t, expected, *actual)
 }
@@ -508,7 +508,7 @@ func TestAssembleChiaHealthcheckProbe_Full(t *testing.T) {
 	expected := corev1.Probe{
 		ProbeHandler: corev1.ProbeHandler{
 			HTTPGet: &corev1.HTTPGetAction{
-				Path: "/seeder",
+				Path: "/seeder/readiness",
 				Port: intstr.FromInt32(consts.ChiaHealthcheckPort),
 			},
 		},
@@ -516,7 +516,7 @@ func TestAssembleChiaHealthcheckProbe_Full(t *testing.T) {
 		PeriodSeconds:    periodSec,
 	}
 	actual := AssembleChiaHealthcheckProbe(AssembleChiaHealthcheckProbeInputs{
-		Kind:             consts.ChiaSeederKind,
+		Path:             "/seeder/readiness",
 		FailureThreshold: &failThresh,
 		PeriodSeconds:    &periodSec,
 	})

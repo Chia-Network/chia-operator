@@ -247,7 +247,7 @@ func AssembleChiaHealthcheckContainer(input AssembleChiaHealthcheckContainerInpu
 
 // AssembleChiaHealthcheckProbeInputs contains configuration inputs to the AssembleChiaHealthcheckProbe function
 type AssembleChiaHealthcheckProbeInputs struct {
-	Kind             consts.ChiaKind
+	Path             string
 	FailureThreshold *int32
 	PeriodSeconds    *int32
 }
@@ -256,7 +256,7 @@ func AssembleChiaHealthcheckProbe(input AssembleChiaHealthcheckProbeInputs) *cor
 	probe := corev1.Probe{
 		ProbeHandler: corev1.ProbeHandler{
 			HTTPGet: &corev1.HTTPGetAction{
-				Path: "/",
+				Path: input.Path,
 				Port: intstr.FromInt32(consts.ChiaHealthcheckPort),
 			},
 		},
@@ -270,15 +270,5 @@ func AssembleChiaHealthcheckProbe(input AssembleChiaHealthcheckProbeInputs) *cor
 		probe.PeriodSeconds = *input.PeriodSeconds
 	}
 
-	switch input.Kind {
-	case consts.ChiaNodeKind:
-		probe.ProbeHandler.HTTPGet.Path = "/full_node"
-	case consts.ChiaSeederKind:
-		probe.ProbeHandler.HTTPGet.Path = "/seeder"
-	case consts.ChiaTimelordKind:
-		probe.ProbeHandler.HTTPGet.Path = "/timelord"
-	default:
-		return nil
-	}
 	return &probe
 }
