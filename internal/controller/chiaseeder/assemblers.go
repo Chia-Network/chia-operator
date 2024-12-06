@@ -417,7 +417,7 @@ func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, n
 		input.LivenessProbe = seeder.Spec.ChiaConfig.LivenessProbe
 	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
 		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Kind: consts.ChiaSeederKind,
+			Path: "/seeder",
 		})
 	}
 
@@ -425,7 +425,7 @@ func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, n
 		input.ReadinessProbe = seeder.Spec.ChiaConfig.ReadinessProbe
 	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
 		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Kind: consts.ChiaSeederKind,
+			Path: "/seeder/readiness",
 		})
 	}
 
@@ -435,7 +435,7 @@ func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, n
 		failThresh := int32(30)
 		periodSec := int32(10)
 		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Kind:             consts.ChiaSeederKind,
+			Path:             "/seeder/readiness",
 			FailureThreshold: &failThresh,
 			PeriodSeconds:    &periodSec,
 		})

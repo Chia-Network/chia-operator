@@ -403,7 +403,7 @@ func assembleChiaContainer(ctx context.Context, tl k8schianetv1.ChiaTimelord, ne
 		input.LivenessProbe = tl.Spec.ChiaConfig.LivenessProbe
 	} else if tl.Spec.ChiaHealthcheckConfig.Enabled {
 		input.LivenessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Kind: consts.ChiaTimelordKind,
+			Path: "/timelord",
 		})
 	}
 
@@ -411,7 +411,7 @@ func assembleChiaContainer(ctx context.Context, tl k8schianetv1.ChiaTimelord, ne
 		input.ReadinessProbe = tl.Spec.ChiaConfig.ReadinessProbe
 	} else if tl.Spec.ChiaHealthcheckConfig.Enabled {
 		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Kind: consts.ChiaTimelordKind,
+			Path: "/timelord/readiness",
 		})
 	}
 
@@ -421,7 +421,7 @@ func assembleChiaContainer(ctx context.Context, tl k8schianetv1.ChiaTimelord, ne
 		failThresh := int32(30)
 		periodSec := int32(10)
 		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Kind:             consts.ChiaTimelordKind,
+			Path:             "/timelord/readiness",
 			FailureThreshold: &failThresh,
 			PeriodSeconds:    &periodSec,
 		})
