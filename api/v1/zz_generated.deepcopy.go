@@ -1648,6 +1648,16 @@ func (in *Service) DeepCopyInto(out *Service) {
 		*out = new(corev1.ServiceExternalTrafficPolicy)
 		**out = **in
 	}
+	if in.SessionAffinity != nil {
+		in, out := &in.SessionAffinity, &out.SessionAffinity
+		*out = new(corev1.ServiceAffinity)
+		**out = **in
+	}
+	if in.SessionAffinityConfig != nil {
+		in, out := &in.SessionAffinityConfig, &out.SessionAffinityConfig
+		*out = new(corev1.SessionAffinityConfig)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.RollIntoPeerService != nil {
 		in, out := &in.RollIntoPeerService, &out.RollIntoPeerService
 		*out = new(bool)

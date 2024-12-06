@@ -21,6 +21,8 @@ type AssembleCommonServiceInputs struct {
 	IPFamilies            *[]corev1.IPFamily
 	ServiceType           *corev1.ServiceType
 	ExternalTrafficPolicy *corev1.ServiceExternalTrafficPolicy
+	SessionAffinity       *corev1.ServiceAffinity
+	SessionAffinityConfig *corev1.SessionAffinityConfig
 	Ports                 []corev1.ServicePort
 	SelectorLabels        map[string]string
 }
@@ -49,6 +51,12 @@ func AssembleCommonService(input AssembleCommonServiceInputs) corev1.Service {
 	if input.ExternalTrafficPolicy != nil {
 		srv.Spec.ExternalTrafficPolicy = *input.ExternalTrafficPolicy
 	}
+
+	if input.SessionAffinity != nil {
+		srv.Spec.SessionAffinity = *input.SessionAffinity
+	}
+
+	srv.Spec.SessionAffinityConfig = input.SessionAffinityConfig
 
 	if input.IPFamilies != nil {
 		srv.Spec.IPFamilies = *input.IPFamilies

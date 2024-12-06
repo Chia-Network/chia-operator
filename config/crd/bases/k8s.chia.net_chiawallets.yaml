@@ -1136,6 +1136,27 @@ spec:
                           The peer Service is often considered the primary Service generated for a chia resource, as it is the most likely Service to expose publicly.
                           This option is default, and only provides its functionality on chia-healthcheck Services. It may be included to other Services someday if a use case arises.
                         type: boolean
+                      sessionAffinity:
+                        description: SessionAffinity can be set to "ClientIP" to enable
+                          session affinity based on client IP
+                        type: string
+                      sessionAffinityConfig:
+                        description: SessionAffinityConfig allows configuring the
+                          settings for sessionAffinity
+                        properties:
+                          clientIP:
+                            description: clientIP contains the configurations of Client
+                              IP based session affinity.
+                            properties:
+                              timeoutSeconds:
+                                description: |-
+                                  timeoutSeconds specifies the seconds of ClientIP type session sticky time.
+                                  The value must be >0 && <=86400(for 1 day) if ServiceAffinity == "ClientIP".
+                                  Default value is 10800(for 3 hours).
+                                format: int32
+                                type: integer
+                            type: object
+                        type: object
                       type:
                         description: ServiceType is the Type of the Service. Defaults
                           to ClusterIP
@@ -1194,6 +1215,27 @@ spec:
                           The peer Service is often considered the primary Service generated for a chia resource, as it is the most likely Service to expose publicly.
                           This option is default, and only provides its functionality on chia-healthcheck Services. It may be included to other Services someday if a use case arises.
                         type: boolean
+                      sessionAffinity:
+                        description: SessionAffinity can be set to "ClientIP" to enable
+                          session affinity based on client IP
+                        type: string
+                      sessionAffinityConfig:
+                        description: SessionAffinityConfig allows configuring the
+                          settings for sessionAffinity
+                        properties:
+                          clientIP:
+                            description: clientIP contains the configurations of Client
+                              IP based session affinity.
+                            properties:
+                              timeoutSeconds:
+                                description: |-
+                                  timeoutSeconds specifies the seconds of ClientIP type session sticky time.
+                                  The value must be >0 && <=86400(for 1 day) if ServiceAffinity == "ClientIP".
+                                  Default value is 10800(for 3 hours).
+                                format: int32
+                                type: integer
+                            type: object
+                        type: object
                       type:
                         description: ServiceType is the Type of the Service. Defaults
                           to ClusterIP
@@ -1448,6 +1490,27 @@ spec:
                           The peer Service is often considered the primary Service generated for a chia resource, as it is the most likely Service to expose publicly.
                           This option is default, and only provides its functionality on chia-healthcheck Services. It may be included to other Services someday if a use case arises.
                         type: boolean
+                      sessionAffinity:
+                        description: SessionAffinity can be set to "ClientIP" to enable
+                          session affinity based on client IP
+                        type: string
+                      sessionAffinityConfig:
+                        description: SessionAffinityConfig allows configuring the
+                          settings for sessionAffinity
+                        properties:
+                          clientIP:
+                            description: clientIP contains the configurations of Client
+                              IP based session affinity.
+                            properties:
+                              timeoutSeconds:
+                                description: |-
+                                  timeoutSeconds specifies the seconds of ClientIP type session sticky time.
+                                  The value must be >0 && <=86400(for 1 day) if ServiceAffinity == "ClientIP".
+                                  Default value is 10800(for 3 hours).
+                                format: int32
+                                type: integer
+                            type: object
+                        type: object
                       type:
                         description: ServiceType is the Type of the Service. Defaults
                           to ClusterIP
@@ -1710,6 +1773,27 @@ spec:
                           The peer Service is often considered the primary Service generated for a chia resource, as it is the most likely Service to expose publicly.
                           This option is default, and only provides its functionality on chia-healthcheck Services. It may be included to other Services someday if a use case arises.
                         type: boolean
+                      sessionAffinity:
+                        description: SessionAffinity can be set to "ClientIP" to enable
+                          session affinity based on client IP
+                        type: string
+                      sessionAffinityConfig:
+                        description: SessionAffinityConfig allows configuring the
+                          settings for sessionAffinity
+                        properties:
+                          clientIP:
+                            description: clientIP contains the configurations of Client
+                              IP based session affinity.
+                            properties:
+                              timeoutSeconds:
+                                description: |-
+                                  timeoutSeconds specifies the seconds of ClientIP type session sticky time.
+                                  The value must be >0 && <=86400(for 1 day) if ServiceAffinity == "ClientIP".
+                                  Default value is 10800(for 3 hours).
+                                format: int32
+                                type: integer
+                            type: object
+                        type: object
                       type:
                         description: ServiceType is the Type of the Service. Defaults
                           to ClusterIP
@@ -2168,6 +2252,27 @@ spec:
                           The peer Service is often considered the primary Service generated for a chia resource, as it is the most likely Service to expose publicly.
                           This option is default, and only provides its functionality on chia-healthcheck Services. It may be included to other Services someday if a use case arises.
                         type: boolean
+                      sessionAffinity:
+                        description: SessionAffinity can be set to "ClientIP" to enable
+                          session affinity based on client IP
+                        type: string
+                      sessionAffinityConfig:
+                        description: SessionAffinityConfig allows configuring the
+                          settings for sessionAffinity
+                        properties:
+                          clientIP:
+                            description: clientIP contains the configurations of Client
+                              IP based session affinity.
+                            properties:
+                              timeoutSeconds:
+                                description: |-
+                                  timeoutSeconds specifies the seconds of ClientIP type session sticky time.
+                                  The value must be >0 && <=86400(for 1 day) if ServiceAffinity == "ClientIP".
+                                  Default value is 10800(for 3 hours).
+                                format: int32
+                                type: integer
+                            type: object
+                        type: object
                       type:
                         description: ServiceType is the Type of the Service. Defaults
                           to ClusterIP
