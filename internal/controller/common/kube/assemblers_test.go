@@ -3,10 +3,12 @@ package kube
 import (
 	"testing"
 
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
+
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -101,19 +103,27 @@ func TestAssembleCommonService_Full(t *testing.T) {
 			Selector: map[string]string{
 				"app.kubernetes.io/name": "test",
 			},
+			SessionAffinity: corev1.ServiceAffinityClientIP,
+			SessionAffinityConfig: &corev1.SessionAffinityConfig{
+				ClientIP: &corev1.ClientIPConfig{
+					TimeoutSeconds: ptr.To(int32(300)),
+				},
+			},
 		},
 	}
 	actual := AssembleCommonService(AssembleCommonServiceInputs{
-		Name:           expected.ObjectMeta.Name,
-		Namespace:      expected.ObjectMeta.Namespace,
-		Labels:         expected.ObjectMeta.Labels,
-		Annotations:    expected.ObjectMeta.Annotations,
-		OwnerReference: expected.ObjectMeta.OwnerReferences,
-		Ports:          expected.Spec.Ports,
-		SelectorLabels: expected.Spec.Selector,
-		ServiceType:    &expected.Spec.Type,
-		IPFamilyPolicy: expected.Spec.IPFamilyPolicy,
-		IPFamilies:     &expected.Spec.IPFamilies,
+		Name:                  expected.ObjectMeta.Name,
+		Namespace:             expected.ObjectMeta.Namespace,
+		Labels:                expected.ObjectMeta.Labels,
+		Annotations:           expected.ObjectMeta.Annotations,
+		OwnerReference:        expected.ObjectMeta.OwnerReferences,
+		Ports:                 expected.Spec.Ports,
+		SelectorLabels:        expected.Spec.Selector,
+		ServiceType:           &expected.Spec.Type,
+		IPFamilyPolicy:        expected.Spec.IPFamilyPolicy,
+		IPFamilies:            &expected.Spec.IPFamilies,
+		SessionAffinity:       &expected.Spec.SessionAffinity,
+		SessionAffinityConfig: expected.Spec.SessionAffinityConfig,
 	})
 	require.Equal(t, expected, actual)
 }
