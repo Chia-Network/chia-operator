@@ -268,9 +268,10 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler, fullNodePort int32, ne
 					Annotations: crawler.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity:     crawler.Spec.Affinity,
-					NodeSelector: crawler.Spec.NodeSelector,
-					Volumes:      getChiaVolumes(crawler),
+					Affinity:                  crawler.Spec.Affinity,
+					TopologySpreadConstraints: crawler.Spec.TopologySpreadConstraints,
+					NodeSelector:              crawler.Spec.NodeSelector,
+					Volumes:                   getChiaVolumes(crawler),
 				},
 			},
 		},

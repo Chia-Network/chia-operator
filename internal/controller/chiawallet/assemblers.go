@@ -269,9 +269,10 @@ func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet, net
 					Annotations: wallet.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity:     wallet.Spec.Affinity,
-					NodeSelector: wallet.Spec.NodeSelector,
-					Volumes:      getChiaVolumes(wallet),
+					Affinity:                  wallet.Spec.Affinity,
+					TopologySpreadConstraints: wallet.Spec.TopologySpreadConstraints,
+					NodeSelector:              wallet.Spec.NodeSelector,
+					Volumes:                   getChiaVolumes(wallet),
 				},
 			},
 		},

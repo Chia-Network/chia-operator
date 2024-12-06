@@ -222,9 +222,10 @@ func assembleDeployment(introducer k8schianetv1.ChiaIntroducer, fullNodePort int
 					Annotations: introducer.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity:     introducer.Spec.Affinity,
-					NodeSelector: introducer.Spec.NodeSelector,
-					Volumes:      getChiaVolumes(introducer),
+					Affinity:                  introducer.Spec.Affinity,
+					TopologySpreadConstraints: introducer.Spec.TopologySpreadConstraints,
+					NodeSelector:              introducer.Spec.NodeSelector,
+					Volumes:                   getChiaVolumes(introducer),
 				},
 			},
 		},

@@ -96,6 +96,24 @@ spec:
           topologyKey: "kubernetes.io/hostname"
 ```
 
+## Topology Spread Constraints
+
+You can also use `TopologySpreadConstraints` to describe how a group of pods ought to spread across topology domains. The Scheduler will schedule pods in a way which abides by the constraints. All topology spread constraints are ANDed.
+
+```yaml
+spec:
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: "kubernetes.io/hostname"
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchExpressions:
+          - key: app
+            operator: In
+            values:
+              - my-app
+```
+
 ## Pod Security Contexts
 
 This sets the securityContext for a pod.

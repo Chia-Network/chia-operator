@@ -330,9 +330,10 @@ func assembleDeployment(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, netw
 					Annotations: seeder.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity:     seeder.Spec.Affinity,
-					NodeSelector: seeder.Spec.NodeSelector,
-					Volumes:      getChiaVolumes(seeder),
+					Affinity:                  seeder.Spec.Affinity,
+					TopologySpreadConstraints: seeder.Spec.TopologySpreadConstraints,
+					NodeSelector:              seeder.Spec.NodeSelector,
+					Volumes:                   getChiaVolumes(seeder),
 				},
 			},
 		},

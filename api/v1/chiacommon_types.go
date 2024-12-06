@@ -50,6 +50,10 @@ type CommonSpec struct {
 	// Affinity defines a group of affinity or anti-affinity rules
 	// +optional
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+
+	// TopologySpreadConstraints describes how a group of pods ought to spread across topology domains.
+	// +optional
+	TopologySpreadConstraints []corev1.TopologySpreadConstraint `json:"topologySpreadConstraints,omitempty"`
 }
 
 // ExtraContainer allows defining a container spec that will share the kubernetes Pod alongside a Chia container, or run as an init container, along with some additional Pod spec configuration
