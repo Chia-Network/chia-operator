@@ -100,7 +100,7 @@ spec:
       sessionAffinity: ClientIP
 ```
 
-You can further control the session affinity settings if the default values to not work for your needs.
+You can further control the session affinity settings if the default values do not work for your needs.
 
 ```yaml
 spec:
