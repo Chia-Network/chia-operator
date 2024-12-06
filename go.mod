@@ -3,16 +3,16 @@ module github.com/chia-network/chia-operator
 go 1.22.2
 
 require (
-	github.com/chia-network/go-chia-libs v0.18.1
+	github.com/chia-network/go-chia-libs v0.20.1
 	github.com/google/go-cmp v0.6.0
-	github.com/onsi/ginkgo/v2 v2.21.0
-	github.com/onsi/gomega v1.35.1
+	github.com/onsi/ginkgo/v2 v2.22.0
+	github.com/onsi/gomega v1.36.0
 	github.com/prometheus/client_golang v1.20.5
-	github.com/stretchr/testify v1.9.0
-	k8s.io/api v0.31.2
-	k8s.io/apimachinery v0.31.2
-	k8s.io/client-go v0.31.2
-	sigs.k8s.io/controller-runtime v0.19.1
+	github.com/stretchr/testify v1.10.0
+	k8s.io/api v0.31.3
+	k8s.io/apimachinery v0.31.3
+	k8s.io/client-go v0.31.3
+	sigs.k8s.io/controller-runtime v0.19.3
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -23,7 +23,6 @@ require (
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
 	github.com/evanphx/json-patch v5.9.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
