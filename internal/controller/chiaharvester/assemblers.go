@@ -268,9 +268,10 @@ func assembleDeployment(harvester k8schianetv1.ChiaHarvester, networkData *map[s
 					Annotations: harvester.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity:     harvester.Spec.Affinity,
-					NodeSelector: harvester.Spec.NodeSelector,
-					Volumes:      getChiaVolumes(harvester),
+					Affinity:                  harvester.Spec.Affinity,
+					TopologySpreadConstraints: harvester.Spec.TopologySpreadConstraints,
+					NodeSelector:              harvester.Spec.NodeSelector,
+					Volumes:                   getChiaVolumes(harvester),
 				},
 			},
 		},

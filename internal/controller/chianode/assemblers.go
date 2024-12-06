@@ -301,9 +301,10 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 					Annotations: node.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity:     node.Spec.Affinity,
-					NodeSelector: node.Spec.NodeSelector,
-					Volumes:      vols,
+					Affinity:                  node.Spec.Affinity,
+					TopologySpreadConstraints: node.Spec.TopologySpreadConstraints,
+					NodeSelector:              node.Spec.NodeSelector,
+					Volumes:                   vols,
 				},
 			},
 			VolumeClaimTemplates: volClaimTemplates,

@@ -307,9 +307,10 @@ func assembleDeployment(ctx context.Context, tl k8schianetv1.ChiaTimelord, netwo
 					Annotations: tl.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity:     tl.Spec.Affinity,
-					NodeSelector: tl.Spec.NodeSelector,
-					Volumes:      getChiaVolumes(tl),
+					Affinity:                  tl.Spec.Affinity,
+					TopologySpreadConstraints: tl.Spec.TopologySpreadConstraints,
+					NodeSelector:              tl.Spec.NodeSelector,
+					Volumes:                   getChiaVolumes(tl),
 				},
 			},
 		},

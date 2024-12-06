@@ -269,9 +269,10 @@ func assembleDeployment(ctx context.Context, farmer k8schianetv1.ChiaFarmer, net
 					Annotations: farmer.Spec.AdditionalMetadata.Annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity:     farmer.Spec.Affinity,
-					NodeSelector: farmer.Spec.NodeSelector,
-					Volumes:      getChiaVolumes(farmer),
+					Affinity:                  farmer.Spec.Affinity,
+					TopologySpreadConstraints: farmer.Spec.TopologySpreadConstraints,
+					NodeSelector:              farmer.Spec.NodeSelector,
+					Volumes:                   getChiaVolumes(farmer),
 				},
 			},
 		},
