@@ -88,3 +88,26 @@ spec:
       type: LoadBalancer
       externalTrafficPolicy: Local
 ```
+
+## Session Affinity
+
+Route internal traffic to a consistent backend by setting `sessionAffinity` to `ClientIP`.
+
+```yaml
+spec:
+  chia:
+    rpcService:
+      sessionAffinity: ClientIP
+```
+
+You can further control the session affinity settings if the default values to not work for your needs.
+
+```yaml
+spec:
+  chia:
+    rpcService:
+      sessionAffinity: ClientIP
+      sessionAffinityConfig:
+        clientIP:
+          timeoutSeconds: 300
+```

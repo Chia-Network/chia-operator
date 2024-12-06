@@ -288,6 +288,14 @@ type Service struct {
 	// +optional
 	ExternalTrafficPolicy *corev1.ServiceExternalTrafficPolicy `json:"externalTrafficPolicy,omitempty"`
 
+	// SessionAffinity can be set to "ClientIP" to enable session affinity based on client IP
+	// +optional
+	SessionAffinity *corev1.ServiceAffinity `json:"sessionAffinity,omitempty"`
+
+	// SessionAffinityConfig allows configuring the settings for sessionAffinity
+	// +optional
+	SessionAffinityConfig *corev1.SessionAffinityConfig `json:"sessionAffinityConfig,omitempty"`
+
 	// RollIntoPeerService tells the controller to not actually generate this Service, but instead roll the Service ports of this Service into the peer Service.
 	// The peer Service is often considered the primary Service generated for a chia resource, as it is the most likely Service to expose publicly.
 	// This option is default, and only provides its functionality on chia-healthcheck Services. It may be included to other Services someday if a use case arises.
