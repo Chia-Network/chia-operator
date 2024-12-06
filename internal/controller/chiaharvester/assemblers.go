@@ -38,6 +38,8 @@ func assemblePeerService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 
 	inputs.ServiceType = harvester.Spec.ChiaConfig.PeerService.ServiceType
 	inputs.ExternalTrafficPolicy = harvester.Spec.ChiaConfig.PeerService.ExternalTrafficPolicy
+	inputs.SessionAffinity = harvester.Spec.ChiaConfig.PeerService.SessionAffinity
+	inputs.SessionAffinityConfig = harvester.Spec.ChiaConfig.PeerService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = harvester.Spec.ChiaConfig.PeerService.IPFamilyPolicy
 	inputs.IPFamilies = harvester.Spec.ChiaConfig.PeerService.IPFamilies
 
@@ -83,6 +85,8 @@ func assembleAllService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 
 	inputs.ServiceType = harvester.Spec.ChiaConfig.AllService.ServiceType
 	inputs.ExternalTrafficPolicy = harvester.Spec.ChiaConfig.AllService.ExternalTrafficPolicy
+	inputs.SessionAffinity = harvester.Spec.ChiaConfig.PeerService.SessionAffinity
+	inputs.SessionAffinityConfig = harvester.Spec.ChiaConfig.PeerService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = harvester.Spec.ChiaConfig.AllService.IPFamilyPolicy
 	inputs.IPFamilies = harvester.Spec.ChiaConfig.AllService.IPFamilies
 
@@ -114,6 +118,8 @@ func assembleDaemonService(harvester k8schianetv1.ChiaHarvester) corev1.Service 
 
 	inputs.ServiceType = harvester.Spec.ChiaConfig.DaemonService.ServiceType
 	inputs.ExternalTrafficPolicy = harvester.Spec.ChiaConfig.DaemonService.ExternalTrafficPolicy
+	inputs.SessionAffinity = harvester.Spec.ChiaConfig.PeerService.SessionAffinity
+	inputs.SessionAffinityConfig = harvester.Spec.ChiaConfig.PeerService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = harvester.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
 	inputs.IPFamilies = harvester.Spec.ChiaConfig.DaemonService.IPFamilies
 
@@ -152,6 +158,8 @@ func assembleRPCService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 
 	inputs.ServiceType = harvester.Spec.ChiaConfig.RPCService.ServiceType
 	inputs.ExternalTrafficPolicy = harvester.Spec.ChiaConfig.RPCService.ExternalTrafficPolicy
+	inputs.SessionAffinity = harvester.Spec.ChiaConfig.PeerService.SessionAffinity
+	inputs.SessionAffinityConfig = harvester.Spec.ChiaConfig.PeerService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = harvester.Spec.ChiaConfig.RPCService.IPFamilyPolicy
 	inputs.IPFamilies = harvester.Spec.ChiaConfig.RPCService.IPFamilies
 
@@ -183,6 +191,8 @@ func assembleChiaExporterService(harvester k8schianetv1.ChiaHarvester) corev1.Se
 
 	inputs.ServiceType = harvester.Spec.ChiaExporterConfig.Service.ServiceType
 	inputs.ExternalTrafficPolicy = harvester.Spec.ChiaExporterConfig.Service.ExternalTrafficPolicy
+	inputs.SessionAffinity = harvester.Spec.ChiaConfig.PeerService.SessionAffinity
+	inputs.SessionAffinityConfig = harvester.Spec.ChiaConfig.PeerService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = harvester.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = harvester.Spec.ChiaExporterConfig.Service.IPFamilies
 
