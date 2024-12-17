@@ -85,8 +85,8 @@ func assembleAllService(crawler k8schianetv1.ChiaCrawler, fullNodePort int32) co
 
 	inputs.ServiceType = crawler.Spec.ChiaConfig.AllService.ServiceType
 	inputs.ExternalTrafficPolicy = crawler.Spec.ChiaConfig.AllService.ExternalTrafficPolicy
-	inputs.SessionAffinity = crawler.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = crawler.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = crawler.Spec.ChiaConfig.AllService.SessionAffinity
+	inputs.SessionAffinityConfig = crawler.Spec.ChiaConfig.AllService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.AllService.IPFamilyPolicy
 	inputs.IPFamilies = crawler.Spec.ChiaConfig.AllService.IPFamilies
 
@@ -118,8 +118,8 @@ func assembleDaemonService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 
 	inputs.ServiceType = crawler.Spec.ChiaConfig.DaemonService.ServiceType
 	inputs.ExternalTrafficPolicy = crawler.Spec.ChiaConfig.DaemonService.ExternalTrafficPolicy
-	inputs.SessionAffinity = crawler.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = crawler.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = crawler.Spec.ChiaConfig.DaemonService.SessionAffinity
+	inputs.SessionAffinityConfig = crawler.Spec.ChiaConfig.DaemonService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
 	inputs.IPFamilies = crawler.Spec.ChiaConfig.DaemonService.IPFamilies
 
@@ -158,8 +158,8 @@ func assembleRPCService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 
 	inputs.ServiceType = crawler.Spec.ChiaConfig.RPCService.ServiceType
 	inputs.ExternalTrafficPolicy = crawler.Spec.ChiaConfig.RPCService.ExternalTrafficPolicy
-	inputs.SessionAffinity = crawler.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = crawler.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = crawler.Spec.ChiaConfig.RPCService.SessionAffinity
+	inputs.SessionAffinityConfig = crawler.Spec.ChiaConfig.RPCService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = crawler.Spec.ChiaConfig.RPCService.IPFamilyPolicy
 	inputs.IPFamilies = crawler.Spec.ChiaConfig.RPCService.IPFamilies
 
@@ -191,8 +191,8 @@ func assembleChiaExporterService(crawler k8schianetv1.ChiaCrawler) corev1.Servic
 
 	inputs.ServiceType = crawler.Spec.ChiaExporterConfig.Service.ServiceType
 	inputs.ExternalTrafficPolicy = crawler.Spec.ChiaExporterConfig.Service.ExternalTrafficPolicy
-	inputs.SessionAffinity = crawler.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = crawler.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = crawler.Spec.ChiaExporterConfig.Service.SessionAffinity
+	inputs.SessionAffinityConfig = crawler.Spec.ChiaExporterConfig.Service.SessionAffinityConfig
 	inputs.IPFamilyPolicy = crawler.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = crawler.Spec.ChiaExporterConfig.Service.IPFamilies
 

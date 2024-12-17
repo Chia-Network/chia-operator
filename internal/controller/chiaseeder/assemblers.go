@@ -114,8 +114,8 @@ func assembleAllService(seeder k8schianetv1.ChiaSeeder, fullNodePort int32) core
 
 	inputs.ServiceType = seeder.Spec.ChiaConfig.AllService.ServiceType
 	inputs.ExternalTrafficPolicy = seeder.Spec.ChiaConfig.AllService.ExternalTrafficPolicy
-	inputs.SessionAffinity = seeder.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = seeder.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = seeder.Spec.ChiaConfig.AllService.SessionAffinity
+	inputs.SessionAffinityConfig = seeder.Spec.ChiaConfig.AllService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.AllService.IPFamilyPolicy
 	inputs.IPFamilies = seeder.Spec.ChiaConfig.AllService.IPFamilies
 
@@ -147,8 +147,8 @@ func assembleDaemonService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 
 	inputs.ServiceType = seeder.Spec.ChiaConfig.DaemonService.ServiceType
 	inputs.ExternalTrafficPolicy = seeder.Spec.ChiaConfig.DaemonService.ExternalTrafficPolicy
-	inputs.SessionAffinity = seeder.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = seeder.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = seeder.Spec.ChiaConfig.DaemonService.SessionAffinity
+	inputs.SessionAffinityConfig = seeder.Spec.ChiaConfig.DaemonService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
 	inputs.IPFamilies = seeder.Spec.ChiaConfig.DaemonService.IPFamilies
 
@@ -187,8 +187,8 @@ func assembleRPCService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 
 	inputs.ServiceType = seeder.Spec.ChiaConfig.RPCService.ServiceType
 	inputs.ExternalTrafficPolicy = seeder.Spec.ChiaConfig.RPCService.ExternalTrafficPolicy
-	inputs.SessionAffinity = seeder.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = seeder.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = seeder.Spec.ChiaConfig.RPCService.SessionAffinity
+	inputs.SessionAffinityConfig = seeder.Spec.ChiaConfig.RPCService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = seeder.Spec.ChiaConfig.RPCService.IPFamilyPolicy
 	inputs.IPFamilies = seeder.Spec.ChiaConfig.RPCService.IPFamilies
 
@@ -220,8 +220,8 @@ func assembleChiaExporterService(seeder k8schianetv1.ChiaSeeder) corev1.Service 
 
 	inputs.ServiceType = seeder.Spec.ChiaExporterConfig.Service.ServiceType
 	inputs.ExternalTrafficPolicy = seeder.Spec.ChiaExporterConfig.Service.ExternalTrafficPolicy
-	inputs.SessionAffinity = seeder.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = seeder.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = seeder.Spec.ChiaExporterConfig.Service.SessionAffinity
+	inputs.SessionAffinityConfig = seeder.Spec.ChiaExporterConfig.Service.SessionAffinityConfig
 	inputs.IPFamilyPolicy = seeder.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = seeder.Spec.ChiaExporterConfig.Service.IPFamilies
 
@@ -253,8 +253,8 @@ func assembleChiaHealthcheckService(seeder k8schianetv1.ChiaSeeder) corev1.Servi
 
 	inputs.ServiceType = seeder.Spec.ChiaHealthcheckConfig.Service.ServiceType
 	inputs.ExternalTrafficPolicy = seeder.Spec.ChiaHealthcheckConfig.Service.ExternalTrafficPolicy
-	inputs.SessionAffinity = seeder.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = seeder.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = seeder.Spec.ChiaHealthcheckConfig.Service.SessionAffinity
+	inputs.SessionAffinityConfig = seeder.Spec.ChiaHealthcheckConfig.Service.SessionAffinityConfig
 	inputs.IPFamilyPolicy = seeder.Spec.ChiaHealthcheckConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = seeder.Spec.ChiaHealthcheckConfig.Service.IPFamilies
 
