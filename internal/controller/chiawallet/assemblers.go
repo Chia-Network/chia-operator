@@ -86,8 +86,8 @@ func assembleAllService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 
 	inputs.ServiceType = wallet.Spec.ChiaConfig.AllService.ServiceType
 	inputs.ExternalTrafficPolicy = wallet.Spec.ChiaConfig.AllService.ExternalTrafficPolicy
-	inputs.SessionAffinity = wallet.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = wallet.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = wallet.Spec.ChiaConfig.AllService.SessionAffinity
+	inputs.SessionAffinityConfig = wallet.Spec.ChiaConfig.AllService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = wallet.Spec.ChiaConfig.AllService.IPFamilyPolicy
 	inputs.IPFamilies = wallet.Spec.ChiaConfig.AllService.IPFamilies
 
@@ -119,8 +119,8 @@ func assembleDaemonService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 
 	inputs.ServiceType = wallet.Spec.ChiaConfig.DaemonService.ServiceType
 	inputs.ExternalTrafficPolicy = wallet.Spec.ChiaConfig.DaemonService.ExternalTrafficPolicy
-	inputs.SessionAffinity = wallet.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = wallet.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = wallet.Spec.ChiaConfig.DaemonService.SessionAffinity
+	inputs.SessionAffinityConfig = wallet.Spec.ChiaConfig.DaemonService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = wallet.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
 	inputs.IPFamilies = wallet.Spec.ChiaConfig.DaemonService.IPFamilies
 
@@ -159,8 +159,8 @@ func assembleRPCService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 
 	inputs.ServiceType = wallet.Spec.ChiaConfig.RPCService.ServiceType
 	inputs.ExternalTrafficPolicy = wallet.Spec.ChiaConfig.RPCService.ExternalTrafficPolicy
-	inputs.SessionAffinity = wallet.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = wallet.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = wallet.Spec.ChiaConfig.RPCService.SessionAffinity
+	inputs.SessionAffinityConfig = wallet.Spec.ChiaConfig.RPCService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = wallet.Spec.ChiaConfig.RPCService.IPFamilyPolicy
 	inputs.IPFamilies = wallet.Spec.ChiaConfig.RPCService.IPFamilies
 
@@ -192,8 +192,8 @@ func assembleChiaExporterService(wallet k8schianetv1.ChiaWallet) corev1.Service 
 
 	inputs.ServiceType = wallet.Spec.ChiaExporterConfig.Service.ServiceType
 	inputs.ExternalTrafficPolicy = wallet.Spec.ChiaExporterConfig.Service.ExternalTrafficPolicy
-	inputs.SessionAffinity = wallet.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = wallet.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = wallet.Spec.ChiaExporterConfig.Service.SessionAffinity
+	inputs.SessionAffinityConfig = wallet.Spec.ChiaExporterConfig.Service.SessionAffinityConfig
 	inputs.IPFamilyPolicy = wallet.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = wallet.Spec.ChiaExporterConfig.Service.IPFamilies
 
