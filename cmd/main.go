@@ -6,6 +6,7 @@ package main
 
 import (
 	"flag"
+	"github.com/chia-network/chia-operator/internal/controller/chiadatalayer"
 	"os"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -19,6 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
+	k8sv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/chiaca"
 	"github.com/chia-network/chia-operator/internal/controller/chiacrawler"
 	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
@@ -41,6 +43,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(k8schianetv1.AddToScheme(scheme))
+	utilruntime.Must(k8sv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -162,6 +165,14 @@ func main() {
 		Recorder: mgr.GetEventRecorderFor("chianetwork-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaNetwork")
+		os.Exit(1)
+	}
+	if err = (&chiadatalayer.ChiaDataLayerReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("chiadatalayer-controller"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ChiaDataLayer")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

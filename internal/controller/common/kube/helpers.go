@@ -44,10 +44,18 @@ func CombineMaps(maps ...map[string]string) map[string]string {
 	return keyvalues
 }
 
-// ShouldMakeVolumeClaim returns true if the related PersistentVolumeClaim was configured to be made
-func ShouldMakeVolumeClaim(storage *k8schianetv1.StorageConfig) bool {
+// ShouldMakeChiaRootVolumeClaim returns true if the CHIA_ROOT PersistentVolumeClaim was configured to be made
+func ShouldMakeChiaRootVolumeClaim(storage *k8schianetv1.StorageConfig) bool {
 	if storage != nil && storage.ChiaRoot != nil && storage.ChiaRoot.PersistentVolumeClaim != nil && storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims {
 		return storage.ChiaRoot.PersistentVolumeClaim.GenerateVolumeClaims
+	}
+	return false
+}
+
+// ShouldMakeDataLayerServerFilesVolumeClaim returns true if the server files PersistentVolumeClaim was configured to be made
+func ShouldMakeDataLayerServerFilesVolumeClaim(storage *k8schianetv1.StorageConfig) bool {
+	if storage != nil && storage.DataLayerServerFiles != nil && storage.DataLayerServerFiles.PersistentVolumeClaim != nil && storage.DataLayerServerFiles.PersistentVolumeClaim.GenerateVolumeClaims {
+		return storage.DataLayerServerFiles.PersistentVolumeClaim.GenerateVolumeClaims
 	}
 	return false
 }
@@ -130,7 +138,7 @@ func GetFullNodePort(chia k8schianetv1.CommonSpecChia, networkData *map[string]s
 // If both a PV and hostPath volume are specified for CHIA_ROOT, the PV will take precedence.
 // If both configs are empty, this will fall back to emptyDir so sidecars can mount CHIA_ROOT.
 // NOTE: This function does not handle the mode where the controller generates a CHIA_ROOT PVC, itself.
-// Therefore, if ShouldMakeVolumeClaim is true, specifying the PVC's name should be handled in the controller.
+// Therefore, if ShouldMakeChiaRootVolumeClaim is true, specifying the PVC's name should be handled in the controller.
 func GetExistingChiaRootVolume(storage *k8schianetv1.StorageConfig) corev1.Volume {
 	volumeName := "chiaroot"
 	if storage != nil && storage.ChiaRoot != nil {

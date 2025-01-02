@@ -1,0 +1,27 @@
+# permissions for end users to edit chiadatalayers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: chia-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: chiadatalayer-editor-role
+rules:
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiadatalayers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiadatalayers/status
+  verbs:
+  - get

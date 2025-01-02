@@ -153,7 +153,7 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
-	if kube.ShouldMakeVolumeClaim(timelord.Spec.Storage) {
+	if kube.ShouldMakeChiaRootVolumeClaim(timelord.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(timelord)
 		if err != nil {
 			r.Recorder.Event(&timelord, corev1.EventTypeWarning, "Failed", "Failed to assemble timelord PVC -- Check operator logs.")

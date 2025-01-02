@@ -237,37 +237,6 @@ type AdditionalMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
-/*
-Full storage config example:
-
-storage:
-  chiaRoot:
-    // Only one of persistentVolumeClaim or hostPathVolume should be specified, persistentVolumeClaim will be preferred if both are specified
-    persistentVolumeClaim:
-	  claimName: "chiaroot-data"
-	hostPathVolume:
-      path: "/home/user/storage/chiaroot"
-
-  plots:
-    persistentVolumeClaim:
-	  - claimName: "plot1"
-	  - claimName: "plot2"
-	hostPathVolume:
-	  - path: "/home/user/storage/plots1"
-	  - path: "/home/user/storage/plots2"
-*/
-
-// StorageConfig contains storage configuration settings
-type StorageConfig struct {
-	// Storage configuration for CHIA_ROOT
-	// +optional
-	ChiaRoot *ChiaRootConfig `json:"chiaRoot,omitempty"`
-
-	// Storage configuration for harvester plots
-	// +optional
-	Plots *PlotsConfig `json:"plots,omitempty"`
-}
-
 // Service contains kubernetes Service related configuration options
 type Service struct {
 	AdditionalMetadata `json:",inline"`
@@ -307,6 +276,21 @@ type Service struct {
 	RollIntoPeerService *bool `json:"rollIntoPeerService,omitempty"`
 }
 
+// StorageConfig contains storage configuration settings
+type StorageConfig struct {
+	// Storage configuration for CHIA_ROOT
+	// +optional
+	ChiaRoot *ChiaRootConfig `json:"chiaRoot,omitempty"`
+
+	// Storage configuration for harvester plots
+	// +optional
+	Plots *PlotsConfig `json:"plots,omitempty"`
+
+	// Storage configuration for data_layer server files
+	// +optional
+	DataLayerServerFiles *DataLayerServerFilesConfig `json:"dataLayerServerFiles,omitempty"`
+}
+
 // ChiaRootConfig optional config for CHIA_ROOT persistent storage, likely only needed for Chia full_nodes, but may help in startup time for other components.
 // Both options may be specified but only one can be used, therefore PersistentVolumeClaims will be respected over HostPath volumes if both are specified.
 type ChiaRootConfig struct {
@@ -314,7 +298,7 @@ type ChiaRootConfig struct {
 	// +optional
 	PersistentVolumeClaim *PersistentVolumeClaimConfig `json:"persistentVolumeClaim,omitempty"`
 
-	// HostPathVolume use an existing persistent volume claim to store CHIA_ROOT data
+	// HostPathVolume use an existing directory on the host to store CHIA_ROOT data
 	// +optional
 	HostPathVolume *HostPathVolumeConfig `json:"hostPathVolume,omitempty"`
 }
@@ -329,6 +313,18 @@ type PlotsConfig struct {
 	// HostPathVolume use an existing directory on the host to mount plot directories
 	// +optional
 	HostPathVolume []*HostPathVolumeConfig `json:"hostPathVolume,omitempty"`
+}
+
+// DataLayerServerFilesConfig optional config for data_layer server file persistent storage.
+// Both options may be specified but only one can be used, therefore PersistentVolumeClaims will be respected over HostPath volumes if both are specified.
+type DataLayerServerFilesConfig struct {
+	// PersistentVolumeClaim use an existing persistent volume claim to store server files
+	// +optional
+	PersistentVolumeClaim *PersistentVolumeClaimConfig `json:"persistentVolumeClaim,omitempty"`
+
+	// HostPathVolume use an existing directory on the host to store server files
+	// +optional
+	HostPathVolume *HostPathVolumeConfig `json:"hostPathVolume,omitempty"`
 }
 
 // PersistentVolumeClaimConfig config for PVC volumes in kubernetes

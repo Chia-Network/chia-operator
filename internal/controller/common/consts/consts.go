@@ -61,6 +61,12 @@ const (
 	// DaemonPort defines the port for the Chia daemon
 	DaemonPort = 55400
 
+	// DataLayerHTTPPort defines the port for the data_layer_http instances
+	DataLayerHTTPPort = 8575
+
+	// DataLayerRPCPort defines the port for the data_layer RPC
+	DataLayerRPCPort = 8562
+
 	// FarmerPort defines the port for farmer instances
 	FarmerPort = 8447
 

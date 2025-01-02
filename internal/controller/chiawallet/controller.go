@@ -138,7 +138,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
-	if kube.ShouldMakeVolumeClaim(wallet.Spec.Storage) {
+	if kube.ShouldMakeChiaRootVolumeClaim(wallet.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(wallet)
 		if err != nil {
 			r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet PVC -- Check operator logs.")
