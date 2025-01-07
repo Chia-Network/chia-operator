@@ -20,7 +20,7 @@ import (
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 )
 
-const chiadatalayerNamePattern = "%s-data-layer"
+const chiadatalayerNamePattern = "%s-datalayer"
 
 // assembleDaemonService assembles the daemon Service resource for a ChiaDataLayer CR
 func assembleDaemonService(datalayer k8schianetv1.ChiaDataLayer) corev1.Service {
