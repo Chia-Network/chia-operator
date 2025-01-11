@@ -293,9 +293,9 @@ func (in *ChiaDataLayer) DeepCopyObject() runtime.Object {
 func (in *ChiaDataLayerHTTPSpecChia) DeepCopyInto(out *ChiaDataLayerHTTPSpecChia) {
 	*out = *in
 	in.CommonSpecChia.DeepCopyInto(&out.CommonSpecChia)
-	if in.CASecretName != nil {
-		in, out := &in.CASecretName, &out.CASecretName
-		*out = new(string)
+	if in.Enabled != nil {
+		in, out := &in.Enabled, &out.Enabled
+		*out = new(bool)
 		**out = **in
 	}
 	in.Service.DeepCopyInto(&out.Service)

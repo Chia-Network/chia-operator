@@ -52,13 +52,8 @@ type ChiaDataLayerHTTPSpecChia struct {
 	CommonSpecChia `json:",inline"`
 
 	// Enabled defines whether a data_layer_http sidecar container should run as a sidecar to the chia container
-	// +kubebuilder:default=true
 	// +optional
-	Enabled bool `json:"enabled,omitempty"`
-
-	// CASecretName is the name of the secret that contains the CA crt and key.
-	// +optional
-	CASecretName *string `json:"caSecretName"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Service defines settings for the Service optionally installed with any data_layer_http resource.
 	// This Service will default to being enabled with a ClusterIP Service type if data_layer_http is enabled.

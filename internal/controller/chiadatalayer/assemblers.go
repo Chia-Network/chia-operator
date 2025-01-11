@@ -303,6 +303,10 @@ func assembleDeployment(ctx context.Context, datalayer k8schianetv1.ChiaDataLaye
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(datalayer))
 	}
 
+	if datalayer.Spec.DataLayerHTTPConfig.Enabled != nil && *datalayer.Spec.DataLayerHTTPConfig.Enabled {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleDatalayerHTTPContainer(datalayer))
+	}
+
 	if datalayer.Spec.Strategy != nil {
 		deploy.Spec.Strategy = *datalayer.Spec.Strategy
 	}
@@ -369,4 +373,67 @@ func assembleChiaExporterContainer(datalayer k8schianetv1.ChiaDataLayer) corev1.
 	}
 
 	return kube.AssembleChiaExporterContainer(input)
+}
+
+func assembleDatalayerHTTPContainer(datalayer k8schianetv1.ChiaDataLayer) corev1.Container {
+	container := corev1.Container{
+		Name:            "datalayer-http",
+		ImagePullPolicy: datalayer.Spec.ImagePullPolicy,
+		Ports: []corev1.ContainerPort{
+			{
+				Name:          "http",
+				ContainerPort: consts.DataLayerHTTPPort,
+				Protocol:      "TCP",
+			},
+		},
+		Env: []corev1.EnvVar{
+			{
+				Name:  "service",
+				Value: "data_layer_http",
+			},
+			{
+				Name:  "keys",
+				Value: "none",
+			},
+			{
+				Name:  "chia.data_layer.server_files_location",
+				Value: "/datalayer/server",
+			},
+		},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "server",
+				MountPath: "/datalayer/server",
+			},
+		},
+	}
+
+	image := datalayer.Spec.DataLayerHTTPConfig.Image
+	if image != nil && *image != "" {
+		container.Image = *image
+	} else {
+		container.Image = fmt.Sprintf("%s:%s", consts.DefaultChiaImageName, consts.DefaultChiaImageTag)
+	}
+
+	if datalayer.Spec.DataLayerHTTPConfig.SecurityContext != nil {
+		container.SecurityContext = datalayer.Spec.DataLayerHTTPConfig.SecurityContext
+	}
+
+	if datalayer.Spec.DataLayerHTTPConfig.LivenessProbe != nil {
+		container.LivenessProbe = datalayer.Spec.DataLayerHTTPConfig.LivenessProbe
+	}
+
+	if datalayer.Spec.DataLayerHTTPConfig.ReadinessProbe != nil {
+		container.ReadinessProbe = datalayer.Spec.DataLayerHTTPConfig.ReadinessProbe
+	}
+
+	if datalayer.Spec.DataLayerHTTPConfig.StartupProbe != nil {
+		container.StartupProbe = datalayer.Spec.DataLayerHTTPConfig.StartupProbe
+	}
+
+	if datalayer.Spec.DataLayerHTTPConfig.Resources != nil {
+		container.Resources = *datalayer.Spec.DataLayerHTTPConfig.Resources
+	}
+
+	return container
 }
