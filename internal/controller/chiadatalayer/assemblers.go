@@ -399,6 +399,10 @@ func assembleDatalayerHTTPContainer(datalayer k8schianetv1.ChiaDataLayer) corev1
 				Name:  "chia.data_layer.server_files_location",
 				Value: "/datalayer/server",
 			},
+			{
+				Name:  "chia.daemon_port",
+				Value: "55401", // Avoids port conflict with the main chia container
+			},
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{

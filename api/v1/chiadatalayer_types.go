@@ -17,6 +17,7 @@ type ChiaDataLayerSpec struct {
 	ChiaConfig ChiaDataLayerSpecChia `json:"chia"`
 
 	// DataLayerHTTPConfig defines the desired state of an optional data_layer_http sidecar
+	// +optional
 	DataLayerHTTPConfig ChiaDataLayerHTTPSpecChia `json:"dataLayerHTTP"`
 
 	// Strategy describes how to replace existing pods with new ones.

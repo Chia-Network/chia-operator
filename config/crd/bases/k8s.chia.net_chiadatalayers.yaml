@@ -10656,7 +10656,6 @@ spec:
                 type: array
             required:
             - chia
-            - dataLayerHTTP
             type: object
           status:
             description: ChiaDataLayerStatus defines the observed state of ChiaDataLayer
