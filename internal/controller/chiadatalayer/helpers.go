@@ -57,18 +57,18 @@ func getChiaVolumes(datalayer k8schianetv1.ChiaDataLayer) []corev1.Volume {
 	}
 
 	// data_layer server files volume
-	// TODO finish this
+	serverFilesClaimName := fmt.Sprintf(chiadatalayerNamePattern, datalayer.Name) + "-server"
 	if kube.ShouldMakeChiaRootVolumeClaim(datalayer.Spec.Storage) {
 		v = append(v, corev1.Volume{
 			Name: "server",
 			VolumeSource: corev1.VolumeSource{
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: fmt.Sprintf(chiadatalayerNamePattern, datalayer.Name),
+					ClaimName: serverFilesClaimName,
 				},
 			},
 		})
 	} else {
-		v = append(v, kube.GetExistingChiaRootVolume(datalayer.Spec.Storage))
+		v = append(v, getExistingChiaDatalayerServerVolume(datalayer.Spec.Storage))
 	}
 
 	return v
@@ -183,6 +183,39 @@ func getChiaPorts() []corev1.ContainerPort {
 			Name:          "wallet-rpc",
 			ContainerPort: consts.WalletRPCPort,
 			Protocol:      "TCP",
+		},
+	}
+}
+
+// getExistingChiaDatalayerServerVolume similar to GetExistingChiaRootVolume but for a datalayer server file volume
+func getExistingChiaDatalayerServerVolume(storage *k8schianetv1.StorageConfig) corev1.Volume {
+	volumeName := "server"
+	if storage != nil && storage.DataLayerServerFiles != nil {
+		if storage.DataLayerServerFiles.PersistentVolumeClaim != nil && storage.DataLayerServerFiles.PersistentVolumeClaim.ClaimName != "" {
+			return corev1.Volume{
+				Name: volumeName,
+				VolumeSource: corev1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: storage.DataLayerServerFiles.PersistentVolumeClaim.ClaimName,
+					},
+				},
+			}
+		} else if storage.DataLayerServerFiles.HostPathVolume != nil && storage.DataLayerServerFiles.HostPathVolume.Path != "" {
+			return corev1.Volume{
+				Name: volumeName,
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: storage.DataLayerServerFiles.HostPathVolume.Path,
+					},
+				},
+			}
+		}
+	}
+
+	return corev1.Volume{
+		Name: volumeName,
+		VolumeSource: corev1.VolumeSource{
+			EmptyDir: &corev1.EmptyDirVolumeSource{},
 		},
 	}
 }
