@@ -6,8 +6,9 @@ package main
 
 import (
 	"flag"
-	"github.com/chia-network/chia-operator/internal/controller/chiadatalayer"
 	"os"
+
+	"github.com/chia-network/chia-operator/internal/controller/chiadatalayer"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
