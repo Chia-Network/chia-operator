@@ -10,8 +10,14 @@ Here's a minimal ChiaDataLayer example custom resource (CR):
 apiVersion: k8s.chia.net/v1
 kind: ChiaDataLayer
 metadata:
-  name: my-datalayer
+  name: mainnet
 spec:
   chia:
-    caSecretName: chiaca-secret # A kubernetes Secret containing certificate authority files
+    caSecretName: "chiaca-secret" # A kubernetes Secret containing certificate authority files
+    # A kubernetes Secret named chiakey-secret containing a key.txt file with your mnemonic key
+    secretKey:
+      name: "chiakey-secret"
+      key: "key.txt"
+  dataLayerHTTP:
+    enabled: true
 ```
