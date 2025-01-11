@@ -102,7 +102,7 @@ func getChiaVolumeMounts(datalayer k8schianetv1.ChiaDataLayer) []corev1.VolumeMo
 	// data_layer server files volume
 	v = append(v, corev1.VolumeMount{
 		Name:      "server",
-		MountPath: "/datalayer/server_files",
+		MountPath: "/datalayer/server",
 	})
 
 	return v
@@ -127,7 +127,7 @@ func getChiaEnv(ctx context.Context, datalayer k8schianetv1.ChiaDataLayer, netwo
 
 	env = append(env, corev1.EnvVar{
 		Name:  "chia.data_layer.server_files_location",
-		Value: "/datalayer/server_files",
+		Value: "/datalayer/server",
 	})
 
 	// node peer env var
