@@ -8,8 +8,6 @@ import (
 	"flag"
 	"os"
 
-	"github.com/chia-network/chia-operator/internal/controller/chiadatalayer"
-
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -21,9 +19,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
-	k8sv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/chiaca"
 	"github.com/chia-network/chia-operator/internal/controller/chiacrawler"
+	"github.com/chia-network/chia-operator/internal/controller/chiadatalayer"
 	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
 	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
 	"github.com/chia-network/chia-operator/internal/controller/chiaintroducer"
@@ -44,7 +42,6 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(k8schianetv1.AddToScheme(scheme))
-	utilruntime.Must(k8sv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
