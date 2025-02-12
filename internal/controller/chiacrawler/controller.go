@@ -144,7 +144,7 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
-	if kube.ShouldMakeVolumeClaim(crawler.Spec.Storage) {
+	if kube.ShouldMakeChiaRootVolumeClaim(crawler.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(crawler)
 		if err != nil {
 			r.Recorder.Event(&crawler, corev1.EventTypeWarning, "Failed", "Failed to assemble crawler PVC -- Check operator logs.")

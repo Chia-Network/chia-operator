@@ -48,9 +48,9 @@ func TestCombineMaps(t *testing.T) {
 	require.Equal(t, expected, actual)
 }
 
-func TestShouldMakeVolumeClaim(t *testing.T) {
+func TestShouldMakeChiaRootVolumeClaim(t *testing.T) {
 	// True case
-	actual := ShouldMakeVolumeClaim(&k8schianetv1.StorageConfig{
+	actual := ShouldMakeChiaRootVolumeClaim(&k8schianetv1.StorageConfig{
 		ChiaRoot: &k8schianetv1.ChiaRootConfig{
 			PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
 				GenerateVolumeClaims: true,
@@ -60,17 +60,17 @@ func TestShouldMakeVolumeClaim(t *testing.T) {
 	require.Equal(t, true, actual, "expected should make volume claim")
 
 	// False case - nil storage config
-	actual = ShouldMakeVolumeClaim(nil)
+	actual = ShouldMakeChiaRootVolumeClaim(nil)
 	require.Equal(t, false, actual, "expected should not make volume claim for nil storage config")
 
 	// False case - non-nil storage config, nil ChiaRoot config
-	actual = ShouldMakeVolumeClaim(&k8schianetv1.StorageConfig{
+	actual = ShouldMakeChiaRootVolumeClaim(&k8schianetv1.StorageConfig{
 		ChiaRoot: nil,
 	})
 	require.Equal(t, false, actual, "expected should not make volume claim for nil ChiaRoot config")
 
 	// False case - non-nil storage config, nil PersistentVolumeClaim config
-	actual = ShouldMakeVolumeClaim(&k8schianetv1.StorageConfig{
+	actual = ShouldMakeChiaRootVolumeClaim(&k8schianetv1.StorageConfig{
 		ChiaRoot: &k8schianetv1.ChiaRootConfig{
 			PersistentVolumeClaim: nil,
 		},
@@ -78,7 +78,7 @@ func TestShouldMakeVolumeClaim(t *testing.T) {
 	require.Equal(t, false, actual, "expected should not make volume claim for nil PersistentVolumeClaim config")
 
 	// False case - non-nil storage config, GenerateVolumeClaims set to false
-	actual = ShouldMakeVolumeClaim(&k8schianetv1.StorageConfig{
+	actual = ShouldMakeChiaRootVolumeClaim(&k8schianetv1.StorageConfig{
 		ChiaRoot: &k8schianetv1.ChiaRootConfig{
 			PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
 				GenerateVolumeClaims: false,

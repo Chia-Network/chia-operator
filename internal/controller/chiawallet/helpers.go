@@ -63,7 +63,7 @@ func getChiaVolumes(wallet k8schianetv1.ChiaWallet) []corev1.Volume {
 	})
 
 	// CHIA_ROOT volume
-	if kube.ShouldMakeVolumeClaim(wallet.Spec.Storage) {
+	if kube.ShouldMakeChiaRootVolumeClaim(wallet.Spec.Storage) {
 		v = append(v, corev1.Volume{
 			Name: "chiaroot",
 			VolumeSource: corev1.VolumeSource{

@@ -132,7 +132,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
-	if kube.ShouldMakeVolumeClaim(introducer.Spec.Storage) {
+	if kube.ShouldMakeChiaRootVolumeClaim(introducer.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(introducer)
 		if err != nil {
 			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer PVC -- Check operator logs.")

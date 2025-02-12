@@ -138,7 +138,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
-	if kube.ShouldMakeVolumeClaim(harvester.Spec.Storage) {
+	if kube.ShouldMakeChiaRootVolumeClaim(harvester.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(harvester)
 		if err != nil {
 			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester PVC -- Check operator logs.")

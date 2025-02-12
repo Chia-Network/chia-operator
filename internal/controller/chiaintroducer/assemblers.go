@@ -79,8 +79,8 @@ func assembleAllService(introducer k8schianetv1.ChiaIntroducer, fullNodePort int
 
 	inputs.ServiceType = introducer.Spec.ChiaConfig.AllService.ServiceType
 	inputs.ExternalTrafficPolicy = introducer.Spec.ChiaConfig.AllService.ExternalTrafficPolicy
-	inputs.SessionAffinity = introducer.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = introducer.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = introducer.Spec.ChiaConfig.AllService.SessionAffinity
+	inputs.SessionAffinityConfig = introducer.Spec.ChiaConfig.AllService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = introducer.Spec.ChiaConfig.AllService.IPFamilyPolicy
 	inputs.IPFamilies = introducer.Spec.ChiaConfig.AllService.IPFamilies
 
@@ -112,8 +112,8 @@ func assembleDaemonService(introducer k8schianetv1.ChiaIntroducer) corev1.Servic
 
 	inputs.ServiceType = introducer.Spec.ChiaConfig.DaemonService.ServiceType
 	inputs.ExternalTrafficPolicy = introducer.Spec.ChiaConfig.DaemonService.ExternalTrafficPolicy
-	inputs.SessionAffinity = introducer.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = introducer.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = introducer.Spec.ChiaConfig.DaemonService.SessionAffinity
+	inputs.SessionAffinityConfig = introducer.Spec.ChiaConfig.DaemonService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = introducer.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
 	inputs.IPFamilies = introducer.Spec.ChiaConfig.DaemonService.IPFamilies
 
@@ -145,8 +145,8 @@ func assembleChiaExporterService(introducer k8schianetv1.ChiaIntroducer) corev1.
 
 	inputs.ServiceType = introducer.Spec.ChiaExporterConfig.Service.ServiceType
 	inputs.ExternalTrafficPolicy = introducer.Spec.ChiaExporterConfig.Service.ExternalTrafficPolicy
-	inputs.SessionAffinity = introducer.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = introducer.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = introducer.Spec.ChiaExporterConfig.Service.SessionAffinity
+	inputs.SessionAffinityConfig = introducer.Spec.ChiaExporterConfig.Service.SessionAffinityConfig
 	inputs.IPFamilyPolicy = introducer.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = introducer.Spec.ChiaExporterConfig.Service.IPFamilies
 

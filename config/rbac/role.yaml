@@ -71,6 +71,7 @@ rules:
   resources:
   - chiacas
   - chiacrawlers
+  - chiadatalayers
   - chiafarmers
   - chiaharvesters
   - chiaintroducers
@@ -92,6 +93,7 @@ rules:
   resources:
   - chiacas/finalizers
   - chiacrawlers/finalizers
+  - chiadatalayers/finalizers
   - chiafarmers/finalizers
   - chiaharvesters/finalizers
   - chiaintroducers/finalizers
@@ -107,6 +109,7 @@ rules:
   resources:
   - chiacas/status
   - chiacrawlers/status
+  - chiadatalayers/status
   - chiafarmers/status
   - chiaharvesters/status
   - chiaintroducers/status

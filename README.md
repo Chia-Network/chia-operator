@@ -10,6 +10,7 @@ Kubernetes operator for managing Chia components in kubernetes. Currently suppor
 - introducers
 - seeders
 - crawlers
+- data_layer
 
 Easily run Chia components in Kubernetes by applying simple manifests. A whole farm can be ran with each component isolated in its own pod, with a chia-exporter sidecar to scrape Prometheus metrics.
 

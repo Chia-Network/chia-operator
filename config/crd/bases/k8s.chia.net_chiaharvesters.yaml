@@ -9006,8 +9006,8 @@ spec:
                     description: Storage configuration for CHIA_ROOT
                     properties:
                       hostPathVolume:
-                        description: HostPathVolume use an existing persistent volume
-                          claim to store CHIA_ROOT data
+                        description: HostPathVolume use an existing directory on the
+                          host to store CHIA_ROOT data
                         properties:
                           path:
                             description: |-
@@ -9018,6 +9018,54 @@ spec:
                       persistentVolumeClaim:
                         description: PersistentVolumeClaim use an existing persistent
                           volume claim to store CHIA_ROOT data
+                        properties:
+                          accessModes:
+                            description: |-
+                              AccessModes are the volume access modes. Only relevant for ChiaNodes and use with the GenerateVolumeClaims option.
+                              Defaults to RWO if unspecified.
+                            items:
+                              type: string
+                            type: array
+                          claimName:
+                            description: |-
+                              ClaimName is the name of an existing PersistentVolumeClaim in the target namespace
+                              This field does nothing on ChiaNode resources.
+                              This field does nothing when GenerateVolumeClaims is set to true.
+                            type: string
+                          generateVolumeClaims:
+                            description: |-
+                              GenerateVolumeClaims is mutually exclusive with the ClaimName field, and overrides that field if set.
+                              Instead, an operator generated PVC name will be made, and the operator will provision a volume claim for you.
+                              This field does nothing on ChiaNode resources.
+                            type: boolean
+                          resourceRequest:
+                            description: ResourceRequest is the amount of storage
+                              requested. Only relevant for ChiaNodes and use with
+                              the GenerateVolumeClaims option.
+                            type: string
+                          storageClass:
+                            description: StorageClass is the name of a storage class
+                              for the PVC. Only relevant for ChiaNodes and use with
+                              the GenerateVolumeClaims option.
+                            type: string
+                        type: object
+                    type: object
+                  dataLayerServerFiles:
+                    description: Storage configuration for data_layer server files
+                    properties:
+                      hostPathVolume:
+                        description: HostPathVolume use an existing directory on the
+                          host to store server files
+                        properties:
+                          path:
+                            description: |-
+                              Path use an existing directory on your Pod's host to mount in the Pod's containers.
+                              If a HostPath is used, it is highly recommended that a NodeSelector is used to keep the Pod on the host that has the directory to mount.
+                            type: string
+                        type: object
+                      persistentVolumeClaim:
+                        description: PersistentVolumeClaim use an existing persistent
+                          volume claim to store server files
                         properties:
                           accessModes:
                             description: |-

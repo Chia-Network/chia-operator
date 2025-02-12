@@ -21,6 +21,7 @@ import (
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/chiaca"
 	"github.com/chia-network/chia-operator/internal/controller/chiacrawler"
+	"github.com/chia-network/chia-operator/internal/controller/chiadatalayer"
 	"github.com/chia-network/chia-operator/internal/controller/chiafarmer"
 	"github.com/chia-network/chia-operator/internal/controller/chiaharvester"
 	"github.com/chia-network/chia-operator/internal/controller/chiaintroducer"
@@ -162,6 +163,14 @@ func main() {
 		Recorder: mgr.GetEventRecorderFor("chianetwork-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaNetwork")
+		os.Exit(1)
+	}
+	if err = (&chiadatalayer.ChiaDataLayerReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("chiadatalayer-controller"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ChiaDataLayer")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

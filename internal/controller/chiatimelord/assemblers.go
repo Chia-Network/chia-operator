@@ -91,8 +91,8 @@ func assembleAllService(timelord k8schianetv1.ChiaTimelord) corev1.Service {
 
 	inputs.ServiceType = timelord.Spec.ChiaConfig.AllService.ServiceType
 	inputs.ExternalTrafficPolicy = timelord.Spec.ChiaConfig.AllService.ExternalTrafficPolicy
-	inputs.SessionAffinity = timelord.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = timelord.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = timelord.Spec.ChiaConfig.AllService.SessionAffinity
+	inputs.SessionAffinityConfig = timelord.Spec.ChiaConfig.AllService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = timelord.Spec.ChiaConfig.AllService.IPFamilyPolicy
 	inputs.IPFamilies = timelord.Spec.ChiaConfig.AllService.IPFamilies
 
@@ -124,8 +124,8 @@ func assembleDaemonService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 
 	inputs.ServiceType = tl.Spec.ChiaConfig.DaemonService.ServiceType
 	inputs.ExternalTrafficPolicy = tl.Spec.ChiaConfig.DaemonService.ExternalTrafficPolicy
-	inputs.SessionAffinity = tl.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = tl.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = tl.Spec.ChiaConfig.DaemonService.SessionAffinity
+	inputs.SessionAffinityConfig = tl.Spec.ChiaConfig.DaemonService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = tl.Spec.ChiaConfig.DaemonService.IPFamilyPolicy
 	inputs.IPFamilies = tl.Spec.ChiaConfig.DaemonService.IPFamilies
 
@@ -164,8 +164,8 @@ func assembleRPCService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 
 	inputs.ServiceType = tl.Spec.ChiaConfig.RPCService.ServiceType
 	inputs.ExternalTrafficPolicy = tl.Spec.ChiaConfig.RPCService.ExternalTrafficPolicy
-	inputs.SessionAffinity = tl.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = tl.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = tl.Spec.ChiaConfig.RPCService.SessionAffinity
+	inputs.SessionAffinityConfig = tl.Spec.ChiaConfig.RPCService.SessionAffinityConfig
 	inputs.IPFamilyPolicy = tl.Spec.ChiaConfig.RPCService.IPFamilyPolicy
 	inputs.IPFamilies = tl.Spec.ChiaConfig.RPCService.IPFamilies
 
@@ -197,8 +197,8 @@ func assembleChiaExporterService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 
 	inputs.ServiceType = tl.Spec.ChiaExporterConfig.Service.ServiceType
 	inputs.ExternalTrafficPolicy = tl.Spec.ChiaExporterConfig.Service.ExternalTrafficPolicy
-	inputs.SessionAffinity = tl.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = tl.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = tl.Spec.ChiaExporterConfig.Service.SessionAffinity
+	inputs.SessionAffinityConfig = tl.Spec.ChiaExporterConfig.Service.SessionAffinityConfig
 	inputs.IPFamilyPolicy = tl.Spec.ChiaExporterConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = tl.Spec.ChiaExporterConfig.Service.IPFamilies
 
@@ -230,8 +230,8 @@ func assembleChiaHealthcheckService(tl k8schianetv1.ChiaTimelord) corev1.Service
 
 	inputs.ServiceType = tl.Spec.ChiaHealthcheckConfig.Service.ServiceType
 	inputs.ExternalTrafficPolicy = tl.Spec.ChiaHealthcheckConfig.Service.ExternalTrafficPolicy
-	inputs.SessionAffinity = tl.Spec.ChiaConfig.PeerService.SessionAffinity
-	inputs.SessionAffinityConfig = tl.Spec.ChiaConfig.PeerService.SessionAffinityConfig
+	inputs.SessionAffinity = tl.Spec.ChiaHealthcheckConfig.Service.SessionAffinity
+	inputs.SessionAffinityConfig = tl.Spec.ChiaHealthcheckConfig.Service.SessionAffinityConfig
 	inputs.IPFamilyPolicy = tl.Spec.ChiaHealthcheckConfig.Service.IPFamilyPolicy
 	inputs.IPFamilies = tl.Spec.ChiaHealthcheckConfig.Service.IPFamilies
 

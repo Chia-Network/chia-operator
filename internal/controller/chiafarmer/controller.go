@@ -138,7 +138,7 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
-	if kube.ShouldMakeVolumeClaim(farmer.Spec.Storage) {
+	if kube.ShouldMakeChiaRootVolumeClaim(farmer.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(farmer)
 		if err != nil {
 			r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer PVC -- Check operator logs.")

@@ -22,6 +22,14 @@ var (
 		},
 	)
 
+	// ChiaDataLayers is a gauge metric that keeps a running total of deployed ChiaDataLayers
+	ChiaDataLayers = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "chia_operator_chiadatalayer_total",
+			Help: "Number of ChiaDataLayers objects controlled by this operator",
+		},
+	)
+
 	// ChiaFarmers is a gauge metric that keeps a running total of deployed ChiaFarmers
 	ChiaFarmers = prometheus.NewGauge(
 		prometheus.GaugeOpts{
@@ -91,6 +99,7 @@ func init() {
 	metrics.Registry.MustRegister(
 		ChiaCAs,
 		ChiaCrawlers,
+		ChiaDataLayers,
 		ChiaFarmers,
 		ChiaHarvesters,
 		ChiaIntroducers,

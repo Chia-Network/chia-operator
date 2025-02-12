@@ -256,7 +256,7 @@ func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.S
 // ReconcilePersistentVolumeClaim uses the controller-runtime client to determine if the PVC resource needs to be created or updated
 func ReconcilePersistentVolumeClaim(ctx context.Context, c client.Client, storage *k8schianetv1.StorageConfig, desired corev1.PersistentVolumeClaim) (reconcile.Result, error) {
 	klog := log.FromContext(ctx).WithValues("PersistentVolumeClaim.Namespace", desired.Namespace, "PersistentVolumeClaim.Name", desired.Name)
-	ensurePVCExists := ShouldMakeVolumeClaim(storage)
+	ensurePVCExists := ShouldMakeChiaRootVolumeClaim(storage)
 
 	// Get existing PVC
 	var current corev1.PersistentVolumeClaim

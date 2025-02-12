@@ -174,7 +174,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
-	if kube.ShouldMakeVolumeClaim(seeder.Spec.Storage) {
+	if kube.ShouldMakeChiaRootVolumeClaim(seeder.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(seeder)
 		if err != nil {
 			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder PVC -- Check operator logs.")

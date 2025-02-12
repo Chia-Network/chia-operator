@@ -32,7 +32,7 @@ func getChiaVolumes(seeder k8schianetv1.ChiaSeeder) []corev1.Volume {
 	}
 
 	// CHIA_ROOT volume
-	if kube.ShouldMakeVolumeClaim(seeder.Spec.Storage) {
+	if kube.ShouldMakeChiaRootVolumeClaim(seeder.Spec.Storage) {
 		v = append(v, corev1.Volume{
 			Name: "chiaroot",
 			VolumeSource: corev1.VolumeSource{
