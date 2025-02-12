@@ -19,5 +19,42 @@ spec:
       name: "chiakey-secret"
       key: "key.txt"
   dataLayerHTTP:
-    enabled: true
+    enabled: true # Enabled the data_layer_http sidecar service
 ```
+
+## Full Node Peers
+
+You may optionally specify a list of full_nodes peer(s) that your wallet will always try to remain connected to.
+
+```yaml
+spec:
+  chia:
+    # A local full_node using kubernetes DNS names
+    fullNodePeers:
+      - host: "node.default.svc.cluster.local"
+        port: 8444
+```
+
+## Server files storage
+
+Datalayer stores its server files in `/datalayer/server` inside the container. You can set a persistent volume for this directory by adding the following:
+
+```yaml
+spec:
+  storage:
+    dataLayerServerFiles:
+      persistentVolumeClaim:
+        generateVolumeClaims: true
+        storageClass: ""
+        resourceRequest: "10Gi"
+```
+
+## More Info
+
+This page contains documentation specific to this resource. Please see the rest of the documentation for information on more available configurations.
+
+* [Generic options for all chia-operator resources.](all.md)
+* [chia-exporter configuration](chia-exporter.md)
+* [chia-healthcheck configuration](chia-healthcheck.md)
+* [Services and networking](services-networking.md)
+* [Storage](storage.md)
