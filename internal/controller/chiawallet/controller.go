@@ -17,10 +17,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -40,6 +42,7 @@ var chiawallets = make(map[string]bool)
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch
+//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
@@ -194,5 +197,34 @@ func (r *ChiaWalletReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&k8schianetv1.ChiaWallet{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
+		Watches(
+			&corev1.ConfigMap{},
+			handler.EnqueueRequestsFromMapFunc(r.handleChiaNetworks),
+		).
 		Complete(r)
+}
+
+func (r *ChiaWalletReconciler) handleChiaNetworks(ctx context.Context, obj client.Object) []reconcile.Request {
+	listOps := &client.ListOptions{
+		Namespace: obj.GetNamespace(),
+	}
+	list := &k8schianetv1.ChiaWalletList{}
+	err := r.List(ctx, list, listOps)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(list.Items))
+	for i, item := range list.Items {
+		chiaNetwork := item.Spec.ChiaConfig.ChiaNetwork
+		if chiaNetwork != nil && *chiaNetwork == obj.GetName() {
+			requests[i] = reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      item.GetName(),
+					Namespace: item.GetNamespace(),
+				},
+			}
+		}
+	}
+	return requests
 }
