@@ -1,0 +1,33 @@
+# This rule is not used by the project chia-operator itself.
+# It is provided to allow the cluster admin to help manage permissions for users.
+#
+# Grants permissions to create, update, and delete resources within the k8s.chia.net.
+# This role is intended for users who need to manage these resources
+# but should not control RBAC or manage permissions for others.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: chia-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: chiacertificates-editor-role
+rules:
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiacertificates
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - k8s.chia.net
+  resources:
+  - chiacertificates/status
+  verbs:
+  - get

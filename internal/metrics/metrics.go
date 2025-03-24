@@ -14,6 +14,14 @@ var (
 		},
 	)
 
+	// ChiaCertificates is a gauge metric that keeps a running total of deployed ChiaCertificates
+	ChiaCertificates = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "chia_operator_chiacertificates_total",
+			Help: "Number of ChiaCertificates objects controlled by this operator",
+		},
+	)
+
 	// ChiaCrawlers is a gauge metric that keeps a running total of deployed ChiaCrawlers
 	ChiaCrawlers = prometheus.NewGauge(
 		prometheus.GaugeOpts{
@@ -98,6 +106,7 @@ var (
 func init() {
 	metrics.Registry.MustRegister(
 		ChiaCAs,
+		ChiaCertificates,
 		ChiaCrawlers,
 		ChiaDataLayers,
 		ChiaFarmers,

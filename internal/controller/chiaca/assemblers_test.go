@@ -23,7 +23,7 @@ var testCA = k8schianetv1.ChiaCA{
 func TestAssembleCASecret_DefaultSecretName(t *testing.T) {
 	expected := corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "chiaca",
+			Name:      "testname",
 			Namespace: "testnamespace",
 		},
 		StringData: map[string]string{

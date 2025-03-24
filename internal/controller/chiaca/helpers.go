@@ -6,6 +6,7 @@ package chiaca
 
 import (
 	"context"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -19,7 +20,7 @@ func (r *ChiaCAReconciler) caSecretExists(ctx context.Context, ca k8schianetv1.C
 	var secret corev1.Secret
 	err := r.Get(ctx, types.NamespacedName{
 		Namespace: ca.Namespace,
-		Name:      ca.Spec.Secret,
+		Name:      getChiaCASecretName(ca),
 	}, &secret)
 	if err != nil && errors.IsNotFound(err) {
 		return false, nil
@@ -28,4 +29,13 @@ func (r *ChiaCAReconciler) caSecretExists(ctx context.Context, ca k8schianetv1.C
 		return false, err
 	}
 	return true, nil
+}
+
+// getChiaCASecretName gets the name of the Secret to check if it exists
+func getChiaCASecretName(ca k8schianetv1.ChiaCA) string {
+	secretName := ca.Name
+	if strings.TrimSpace(ca.Spec.Secret) != "" {
+		secretName = ca.Spec.Secret
+	}
+	return secretName
 }

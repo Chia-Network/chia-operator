@@ -1,0 +1,9 @@
+apiVersion: k8s.chia.net/v1
+kind: ChiaCertificates
+metadata:
+  labels:
+    app.kubernetes.io/name: chia-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: chiacertificates-sample
+spec:
+  caSecretName: chiaca-secret

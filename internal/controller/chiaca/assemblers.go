@@ -10,16 +10,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const defaultChiaCASecretName = "chiaca"
-
 func assembleCASecret(ca k8schianetv1.ChiaCA, publicCACrt, publicCAKey, privateCACrt, privateCAKey string) corev1.Secret {
-	secretName := defaultChiaCASecretName
-	if ca.Spec.Secret != "" {
-		secretName = ca.Spec.Secret
-	}
 	return corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      secretName,
+			Name:      getChiaCASecretName(ca),
 			Namespace: ca.Namespace,
 		},
 		StringData: map[string]string{
