@@ -110,7 +110,7 @@ func (r *ChiaCertificatesReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			return ctrl.Result{}, fmt.Errorf("error generating new certificates: %v", err)
 		}
 
-		certMap, err := getCertMap(allCerts)
+		certMap, err := constructCertMap(allCerts)
 		if err != nil {
 			return ctrl.Result{}, fmt.Errorf("error converting certificates to map: %v", err)
 		}

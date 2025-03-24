@@ -48,7 +48,7 @@ var certNodes = map[string]fetchCertKeyPair{
 	"public_wallet":      func(c *tls.ChiaCertificates) *tls.CertificateKeyPair { return c.PublicWallet },
 }
 
-func getCertMap(allCerts *tls.ChiaCertificates) (map[string]string, error) {
+func constructCertMap(allCerts *tls.ChiaCertificates) (map[string]string, error) {
 	certMap := make(map[string]string)
 
 	for filenameBase, fetchCertKeyPairFunc := range certNodes {

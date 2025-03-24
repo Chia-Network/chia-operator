@@ -7,6 +7,7 @@ This resource intakes a Chia CA (certificate authority) Secret that contains at 
 Because this resource requires a pre-existing CA Secret, it is common to use this in conjunction with a ChiaCA, or a manually created CA Secret.
 
 Example usage:
+
 ```yaml
 apiVersion: k8s.chia.net/v1
 kind: ChiaCertificates

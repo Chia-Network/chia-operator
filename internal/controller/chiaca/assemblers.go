@@ -16,7 +16,7 @@ const defaultChiaCASecretName = "chiaca"
 
 func assembleCASecret(ca k8schianetv1.ChiaCA, publicCACrt, publicCAKey, privateCACrt, privateCAKey string) corev1.Secret {
 	secretName := defaultChiaCASecretName
-	if ca.Spec.Secret != strings.TrimSpace("") {
+	if strings.TrimSpace(ca.Spec.Secret) != "" {
 		secretName = ca.Spec.Secret
 	}
 	return corev1.Secret{
