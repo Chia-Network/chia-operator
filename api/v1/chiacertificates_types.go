@@ -10,6 +10,10 @@ import (
 
 // ChiaCertificatesSpec defines the desired state of ChiaCertificates.
 type ChiaCertificatesSpec struct {
+	// Secret defines the name of the secret to contain Certificate files
+	// +optional
+	Secret string `json:"secret,omitempty"`
+
 	// CASecretName is the name of a Secret in the same namespace that contains the private Chia CA
 	CASecretName string `json:"caSecretName"`
 }

@@ -43,6 +43,10 @@ spec:
                 description: CASecretName is the name of a Secret in the same namespace
                   that contains the private Chia CA
                 type: string
+              secret:
+                description: Secret defines the name of the secret to contain Certificate
+                  files
+                type: string
             required:
             - caSecretName
             type: object
