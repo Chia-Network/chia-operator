@@ -69,7 +69,7 @@ func (r *ChiaCertificatesReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	// Check if certificate Secret exists
-	_, certSecretExists, err := r.getSecret(ctx, cr.Namespace, cr.Name)
+	_, certSecretExists, err := r.getSecret(ctx, cr.Namespace, getChiaCertificatesSecretName(cr))
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("encountered error querying for existing Certificates Secret: %v", err)
 	}

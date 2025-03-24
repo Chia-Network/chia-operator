@@ -7,6 +7,9 @@ package chiacertificates
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 
 	"github.com/chia-network/go-chia-libs/pkg/tls"
 	corev1 "k8s.io/api/core/v1"
@@ -28,6 +31,15 @@ func (r *ChiaCertificatesReconciler) getSecret(ctx context.Context, namespace, n
 		return corev1.Secret{}, false, err
 	}
 	return secret, true, nil
+}
+
+// getChiaCertificatesSecretName gets the corresponding name to this resource's Secret
+func getChiaCertificatesSecretName(cr k8schianetv1.ChiaCertificates) string {
+	secretName := cr.Name
+	if strings.TrimSpace(cr.Spec.Secret) != "" {
+		secretName = cr.Spec.Secret
+	}
+	return secretName
 }
 
 type fetchCertKeyPair func(certs *tls.ChiaCertificates) *tls.CertificateKeyPair

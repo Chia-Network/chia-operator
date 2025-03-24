@@ -14,8 +14,8 @@ kind: ChiaCertificates
 metadata:
   name: my-certificates
 spec:
-  caSecretName: my-ca # required: name of the chia CA Secret to use
-  secret: my-certificate-secret # optional: name of the Secret to create (defaults to "chiacertificates")
+  caSecretName: my-ca # required: name of the chia CA Secret in the same namespace to use
+  secret: my-certificate-secret # optional: name of the Secret to create (defaults to the name of the ChiaCertificates resource)
 ```
 
 If applied, this example will create a Secret with all chia cert-key pairs named `my-certificate-secret` from a private certificate authority in a Secret in the same namespace named `my-ca`. 

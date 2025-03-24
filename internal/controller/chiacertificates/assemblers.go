@@ -12,10 +12,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const defaultChiaCertificatesSecretName = "chiacertificates"
-
 func assembleSecret(cr k8schianetv1.ChiaCertificates, certMap map[string]string) corev1.Secret {
-	secretName := defaultChiaCertificatesSecretName
+	secretName := cr.Name
 	if strings.TrimSpace(cr.Spec.Secret) != "" {
 		secretName = cr.Spec.Secret
 	}
