@@ -6,6 +6,7 @@ package chiacertificates
 
 import (
 	"context"
+	stdlibErrors "errors"
 	"fmt"
 	"strings"
 	"time"
@@ -68,15 +69,24 @@ func (r *ChiaCertificatesReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		metrics.ChiaCertificates.Add(1.0)
 	}
 
+	// Verify that certificate Secret name does not match the CA Secret name
+	certSecretName := getChiaCertificatesSecretName(cr)
+	caSecretName := cr.Spec.CASecretName
+	if certSecretName == caSecretName {
+		log.Error(stdlibErrors.New("certificate Secret cannot be the same name as the CA Secret"),
+			"Invalid certificate Secret name", "certificate Secret name", certSecretName, "CA Secret name", caSecretName)
+		return ctrl.Result{}, nil
+	}
+
 	// Check if certificate Secret exists
-	_, certSecretExists, err := r.getSecret(ctx, cr.Namespace, getChiaCertificatesSecretName(cr))
+	_, certSecretExists, err := r.getSecret(ctx, cr.Namespace, certSecretName)
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("encountered error querying for existing Certificates Secret: %v", err)
 	}
 
 	// If Certificates Secret doesn't exist, generate certificates and create one
 	if !certSecretExists {
-		caSecret, caSecretExists, err := r.getSecret(ctx, cr.Namespace, cr.Spec.CASecretName)
+		caSecret, caSecretExists, err := r.getSecret(ctx, cr.Namespace, caSecretName)
 		if err != nil {
 			return ctrl.Result{}, fmt.Errorf("encountered error querying for existing CA Secret: %v", err)
 		}
