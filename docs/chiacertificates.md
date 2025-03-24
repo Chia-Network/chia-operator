@@ -18,7 +18,7 @@ spec:
   secret: my-certificate-secret # optional: name of the Secret to create (defaults to the name of the ChiaCertificates resource)
 ```
 
-If applied, this example will create a Secret with all chia cert-key pairs named `my-certificate-secret` from a private certificate authority in a Secret in the same namespace named `my-ca`. 
+If applied, this example will create a Secret with all chia cert-key pairs named `my-certificate-secret` from a private certificate authority in a Secret in the same namespace named `my-ca`.
 
 ## More Info
 
