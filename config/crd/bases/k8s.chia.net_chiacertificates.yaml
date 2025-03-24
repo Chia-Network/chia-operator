@@ -1,0 +1,62 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.2
+  name: chiacertificates.k8s.chia.net
+spec:
+  group: k8s.chia.net
+  names:
+    kind: ChiaCertificates
+    listKind: ChiaCertificatesList
+    plural: chiacertificates
+    singular: chiacertificates
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: ChiaCertificates is the Schema for the chiacertificates API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ChiaCertificatesSpec defines the desired state of ChiaCertificates.
+            properties:
+              caSecretName:
+                description: CASecretName is the name of a Secret in the same namespace
+                  that contains the private Chia CA
+                type: string
+            required:
+            - caSecretName
+            type: object
+          status:
+            description: ChiaCertificatesStatus defines the observed state of ChiaCertificates.
+            properties:
+              ready:
+                default: false
+                description: Ready says whether the ChiaCertificates is ready, this
+                  should be true when the SSL secret is in the target namespace
+                type: boolean
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

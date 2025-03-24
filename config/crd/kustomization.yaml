@@ -13,6 +13,7 @@ resources:
 - bases/k8s.chia.net_chiacrawlers.yaml
 - bases/k8s.chia.net_chianetworks.yaml
 - bases/k8s.chia.net_chiadatalayers.yaml
+- bases/k8s.chia.net_chiacertificates.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
