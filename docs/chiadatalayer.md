@@ -35,6 +35,20 @@ spec:
         port: 8444
 ```
 
+## Trusted Peers
+
+You can optionally specify a list of [CIDRs](https://aws.amazon.com/what-is/cidr/) that the wallet ran alongside data_layer should trust full_node peers from. View the [Chia documentation on trusted peers](https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them) to understand whether you should use this feature or not.
+
+Here's an example ChiaDataLayer that specifies trusted CIDRs:
+
+```yaml
+spec:
+  chia:
+    trustedCIDRs:
+      - "192.168.1.0/24"
+      - "10.0.0/8"
+```
+
 ## Server files storage
 
 Datalayer stores its server files in `/datalayer/server` inside the container. You can set a persistent volume for this directory by adding the following:
