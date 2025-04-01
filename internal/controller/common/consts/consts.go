@@ -55,6 +55,12 @@ const (
 
 	// DefaultChiaHealthcheckImageTag contains the default tag name for the chia-healthcheck image
 	DefaultChiaHealthcheckImageTag = "latest"
+
+	// DefaultNginxImageName is the default nginx image name
+	DefaultNginxImageName = "nginx"
+
+	// DefaultNginxImageTag is the default nginx image tag
+	DefaultNginxImageTag = "latest"
 )
 
 const (
@@ -108,4 +114,7 @@ const (
 
 	// ChiaHealthcheckPort defines the port for Chia Healthcheck instances
 	ChiaHealthcheckPort = 9950
+
+	// NginxPort defines the port for the nginx sidecar
+	NginxPort = 8575
 )

@@ -220,3 +220,11 @@ func getExistingChiaDatalayerServerVolume(storage *k8schianetv1.StorageConfig) c
 		},
 	}
 }
+
+func shouldMakeNginx(nginx k8schianetv1.ChiaDataLayerNginxSpec) bool {
+	return nginx.Enabled != nil && *nginx.Enabled
+}
+
+func shouldMakeNginxService(nginx k8schianetv1.ChiaDataLayerNginxSpec) bool {
+	return nginx.Enabled != nil && *nginx.Enabled && nginx.Service.Enabled != nil && *nginx.Service.Enabled
+}

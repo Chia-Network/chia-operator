@@ -43,7 +43,7 @@ var chiadatalayers = make(map[string]bool)
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch
-//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch
+//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
@@ -131,6 +131,36 @@ func (r *ChiaDataLayerReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	if err != nil {
 		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to reconcile datalayer chia-exporter Service -- Check operator logs.")
 		return res, err
+	}
+
+	// Assemble Nginx Service
+	if shouldMakeNginxService(datalayer.Spec.NginxConfig) {
+		nginxSrv := assembleNginxService(datalayer)
+		if err := controllerutil.SetControllerReference(&datalayer, &nginxSrv, r.Scheme); err != nil {
+			r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to assemble datalayer nginx Service -- Check operator logs.")
+			return ctrl.Result{}, fmt.Errorf("encountered error assembling nginx Service: %v", err)
+		}
+		// Reconcile Nginx Service
+		res, err = kube.ReconcileService(ctx, r.Client, datalayer.Spec.NginxConfig.Service, nginxSrv, true)
+		if err != nil {
+			r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to reconcile datalayer nginx Service -- Check operator logs.")
+			return res, err
+		}
+	}
+
+	// Assemble Nginx ConfigMap
+	if shouldMakeNginx(datalayer.Spec.NginxConfig) {
+		nginxConfig := assembleNginxConfigMap(datalayer)
+		if err := controllerutil.SetControllerReference(&datalayer, &nginxConfig, r.Scheme); err != nil {
+			r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to assemble datalayer nginx ConfigMap -- Check operator logs.")
+			return ctrl.Result{}, fmt.Errorf("encountered error assembling nginx ConfigMap: %v", err)
+		}
+		// Reconcile Nginx Service
+		res, err = kube.ReconcileConfigMap(ctx, r.Client, nginxConfig)
+		if err != nil {
+			r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to reconcile datalayer nginx ConfigMap -- Check operator logs.")
+			return res, err
+		}
 	}
 
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true

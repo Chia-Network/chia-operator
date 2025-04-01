@@ -141,6 +141,46 @@ func assembleDataLayerHTTPService(datalayer k8schianetv1.ChiaDataLayer) corev1.S
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleNginxService assembles the nginx Service resource for a ChiaDataLayer CR
+func assembleNginxService(datalayer k8schianetv1.ChiaDataLayer) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:      fmt.Sprintf(chiadatalayerNamePattern, datalayer.Name) + "-nginx",
+		Namespace: datalayer.Namespace,
+		Ports: []corev1.ServicePort{
+			{
+				Port:       consts.NginxPort,
+				TargetPort: intstr.FromString("nginx"),
+				Protocol:   "TCP",
+				Name:       "nginx",
+			},
+		},
+	}
+
+	inputs.ServiceType = datalayer.Spec.NginxConfig.Service.ServiceType
+	inputs.ExternalTrafficPolicy = datalayer.Spec.NginxConfig.Service.ExternalTrafficPolicy
+	inputs.SessionAffinity = datalayer.Spec.NginxConfig.Service.SessionAffinity
+	inputs.SessionAffinityConfig = datalayer.Spec.NginxConfig.Service.SessionAffinityConfig
+	inputs.IPFamilyPolicy = datalayer.Spec.NginxConfig.Service.IPFamilyPolicy
+	inputs.IPFamilies = datalayer.Spec.NginxConfig.Service.IPFamilies
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if datalayer.Spec.NginxConfig.Service.Labels != nil {
+		additionalServiceLabels = datalayer.Spec.NginxConfig.Service.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if datalayer.Spec.NginxConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = datalayer.Spec.NginxConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(datalayer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleChiaExporterService assembles the chia-exporter Service resource for a ChiaDataLayer CR
 func assembleChiaExporterService(datalayer k8schianetv1.ChiaDataLayer) corev1.Service {
 	inputs := kube.AssembleCommonServiceInputs{
@@ -244,7 +284,7 @@ func assembleDataLayerFilesVolumeClaim(datalayer k8schianetv1.ChiaDataLayer) (*c
 	return &pvc, nil
 }
 
-// assembleDeployment assembles the datalayer Deployment resource for a ChiaDataLayer CR
+// assembleDeployment assembles the Deployment resource for a ChiaDataLayer CR
 func assembleDeployment(ctx context.Context, datalayer k8schianetv1.ChiaDataLayer, networkData *map[string]string) (appsv1.Deployment, error) {
 	var deploy = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -305,6 +345,21 @@ func assembleDeployment(ctx context.Context, datalayer k8schianetv1.ChiaDataLaye
 
 	if datalayer.Spec.DataLayerHTTPConfig.Enabled != nil && *datalayer.Spec.DataLayerHTTPConfig.Enabled {
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleDatalayerHTTPContainer(datalayer))
+	}
+
+	if datalayer.Spec.NginxConfig.Enabled != nil && *datalayer.Spec.NginxConfig.Enabled {
+		nginxContainer := assembleNginxContainer(datalayer)
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, nginxContainer)
+		deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, corev1.Volume{
+			Name: "nginx-config",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: fmt.Sprintf("%s-nginx-config", datalayer.Name),
+					},
+				},
+			},
+		})
 	}
 
 	if datalayer.Spec.Strategy != nil {
@@ -440,4 +495,81 @@ func assembleDatalayerHTTPContainer(datalayer k8schianetv1.ChiaDataLayer) corev1
 	}
 
 	return container
+}
+
+// assembleNginxContainer assembles the nginx container for a ChiaDataLayer CR
+func assembleNginxContainer(datalayer k8schianetv1.ChiaDataLayer) corev1.Container {
+	container := corev1.Container{
+		Name:            "nginx",
+		Image:           fmt.Sprintf("%s:%s", consts.DefaultNginxImageName, consts.DefaultNginxImageTag),
+		ImagePullPolicy: datalayer.Spec.ImagePullPolicy,
+		Ports: []corev1.ContainerPort{
+			{
+				ContainerPort: consts.NginxPort,
+				Protocol:      "TCP",
+				Name:          "nginx",
+			},
+		},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "nginx-config",
+				MountPath: "/etc/nginx/conf.d",
+			},
+			{
+				Name:      "server",
+				MountPath: "/datalayer/server",
+			},
+		},
+	}
+
+	// Use configured image if specified
+	if datalayer.Spec.NginxConfig.Image != nil && *datalayer.Spec.NginxConfig.Image != "" {
+		container.Image = *datalayer.Spec.NginxConfig.Image
+	}
+
+	// Apply common configuration
+	if datalayer.Spec.NginxConfig.SecurityContext != nil {
+		container.SecurityContext = datalayer.Spec.NginxConfig.SecurityContext
+	}
+
+	if datalayer.Spec.NginxConfig.LivenessProbe != nil {
+		container.LivenessProbe = datalayer.Spec.NginxConfig.LivenessProbe
+	}
+
+	if datalayer.Spec.NginxConfig.ReadinessProbe != nil {
+		container.ReadinessProbe = datalayer.Spec.NginxConfig.ReadinessProbe
+	}
+
+	if datalayer.Spec.NginxConfig.StartupProbe != nil {
+		container.StartupProbe = datalayer.Spec.NginxConfig.StartupProbe
+	}
+
+	if datalayer.Spec.NginxConfig.Resources != nil {
+		container.Resources = *datalayer.Spec.NginxConfig.Resources
+	}
+
+	return container
+}
+
+// assembleNginxConfigMap assembles the configmap for the optional nginx sidecar
+func assembleNginxConfigMap(datalayer k8schianetv1.ChiaDataLayer) corev1.ConfigMap {
+	nginxConfig := fmt.Sprintf(`server {
+    listen %d;
+    root /datalayer/server;
+    index index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}`, consts.NginxPort)
+
+	return corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-nginx-config", datalayer.Name),
+			Namespace: datalayer.Namespace,
+		},
+		Data: map[string]string{
+			"default.conf": nginxConfig,
+		},
+	}
 }

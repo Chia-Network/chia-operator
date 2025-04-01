@@ -6,6 +6,7 @@ package v1
 
 import (
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -19,6 +20,10 @@ type ChiaDataLayerSpec struct {
 	// DataLayerHTTPConfig defines the desired state of an optional data_layer_http sidecar
 	// +optional
 	DataLayerHTTPConfig ChiaDataLayerHTTPSpecChia `json:"dataLayerHTTP"`
+
+	// NginxConfig defines the desired state of an optional nginx sidecar
+	// +optional
+	NginxConfig ChiaDataLayerNginxSpec `json:"nginx"`
 
 	// Strategy describes how to replace existing pods with new ones.
 	// +optional
@@ -60,6 +65,42 @@ type ChiaDataLayerHTTPSpecChia struct {
 	// This Service will default to being enabled with a ClusterIP Service type if data_layer_http is enabled.
 	// +optional
 	Service Service `json:"service,omitempty"`
+}
+
+// ChiaDataLayerNginxSpec defines the desired state of an optional nginx sidecar
+type ChiaDataLayerNginxSpec struct {
+	// Enabled defines whether an nginx sidecar container should run as a sidecar to the chia container
+	// +optional
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Image is the nginx container image to use
+	// +optional
+	Image *string `json:"image,omitempty"`
+
+	// Service defines settings for the Service optionally installed with any nginx resource.
+	// This Service will default to being enabled with a ClusterIP Service type if nginx is enabled.
+	// +optional
+	Service Service `json:"service,omitempty"`
+
+	// SecurityContext defines the security options the container should be run with
+	// +optional
+	SecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
+
+	// LivenessProbe defines the liveness probe for the container
+	// +optional
+	LivenessProbe *corev1.Probe `json:"livenessProbe,omitempty"`
+
+	// ReadinessProbe defines the readiness probe for the container
+	// +optional
+	ReadinessProbe *corev1.Probe `json:"readinessProbe,omitempty"`
+
+	// StartupProbe defines the startup probe for the container
+	// +optional
+	StartupProbe *corev1.Probe `json:"startupProbe,omitempty"`
+
+	// Resources defines the resource requirements for the container
+	// +optional
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // ChiaDataLayerStatus defines the observed state of ChiaDataLayer
