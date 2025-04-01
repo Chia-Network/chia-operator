@@ -92,6 +92,7 @@ spec:
 ```
 
 The `data_layer_http` sidecar:
+
 - Is the official Chia implementation for serving files
 - Runs on port 8575 (configurable via `consts.DataLayerHTTPPort`)
 - Serves files from the data layer server files directory
@@ -129,6 +130,7 @@ spec:
 ```
 
 The nginx sidecar:
+
 - Runs on port 8575 (configurable via `consts.NginxPort`)
 - Serves files from `/datalayer/server` (mounted from the data layer server files volume)
 - Uses a simple nginx configuration that serves static files
@@ -136,6 +138,7 @@ The nginx sidecar:
 - Creates a service to expose the nginx server (configurable via the `service` field)
 
 The nginx sidecar is particularly useful when you want to:
+
 - Serve static files without exposing the data layer HTTP service
 - Use nginx's caching and serving capabilities for better performance
 - Apply custom nginx configurations for serving files
@@ -157,8 +160,8 @@ Note: You can enable both sidecars simultaneously, but they will both try to use
 
 This page contains documentation specific to this resource. Please see the rest of the documentation for information on more available configurations.
 
-* [Generic options for all chia-operator resources.](all.md)
-* [chia-exporter configuration](chia-exporter.md)
-* [chia-healthcheck configuration](chia-healthcheck.md)
-* [Services and networking](services-networking.md)
-* [Storage](storage.md)
+-[Generic options for all chia-operator resources.](all.md)
+-[chia-exporter configuration](chia-exporter.md)
+-[chia-healthcheck configuration](chia-healthcheck.md)
+-[Services and networking](services-networking.md)
+-[Storage](storage.md)
