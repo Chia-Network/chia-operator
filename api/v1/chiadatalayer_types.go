@@ -6,6 +6,7 @@ package v1
 
 import (
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -16,9 +17,9 @@ type ChiaDataLayerSpec struct {
 	// ChiaConfig defines the configuration options available to Chia component containers
 	ChiaConfig ChiaDataLayerSpecChia `json:"chia"`
 
-	// DataLayerHTTPConfig defines the desired state of an optional data_layer_http sidecar
+	// FileserverConfig defines the desired state of an optional fileserver sidecar to server datalayer server files
 	// +optional
-	DataLayerHTTPConfig ChiaDataLayerHTTPSpecChia `json:"dataLayerHTTP"`
+	FileserverConfig FileserverConfig `json:"fileserver"`
 
 	// Strategy describes how to replace existing pods with new ones.
 	// +optional
@@ -47,19 +48,50 @@ type ChiaDataLayerSpecChia struct {
 	TrustedCIDRs *[]string `json:"trustedCIDRs,omitempty"`
 }
 
-// ChiaDataLayerHTTPSpecChia defines the desired state of an optional data_layer_http sidecar
-// data_layer_http is a chia component, and therefore inherits most of the generic configuration options for any chia component
-type ChiaDataLayerHTTPSpecChia struct {
-	CommonSpecChia `json:",inline"`
-
-	// Enabled defines whether a data_layer_http sidecar container should run as a sidecar to the chia container
+// FileserverConfig defines the desired state of an optional fileserver sidecar
+// data_layer_http is the default fileserver but can be configured to use nginx or any other webserver application
+type FileserverConfig struct {
+	// Enabled defines whether a fileserver container should run as a sidecar to the chia container
 	// +optional
 	Enabled *bool `json:"enabled,omitempty"`
 
-	// Service defines settings for the Service optionally installed with any data_layer_http resource.
-	// This Service will default to being enabled with a ClusterIP Service type if data_layer_http is enabled.
+	// Image defines the image to use for the chia component containers
 	// +optional
-	Service Service `json:"service,omitempty"`
+	Image *string `json:"image,omitempty"`
+
+	// ServerFileMountpath defines the mount path for the server files volume in the container
+	// The volume will be mounted as a read-only volume
+	ServerFileMountpath *string `json:"serverFileMountpath,omitempty"`
+
+	// Service defines settings for the Service optionally installed with any fileserver resource.
+	// This Service will default to being enabled with a ClusterIP Service type if fileserver is enabled.
+	// +optional
+	Service *Service `json:"service,omitempty"`
+
+	// AdditionalEnv contain a list of additional environment variables to be supplied to the chia container.
+	// These variables will be placed at the end of the environment variable list in the resulting container, this means they overwrite variables of the same name created by the operator in the container env.
+	// +optional
+	AdditionalEnv *[]corev1.EnvVar `json:"additionalEnv,omitempty"`
+
+	// Periodic probe of container liveness.
+	// +optional
+	LivenessProbe *corev1.Probe `json:"livenessProbe,omitempty"`
+
+	// Periodic probe of container service readiness.
+	// +optional
+	ReadinessProbe *corev1.Probe `json:"readinessProbe,omitempty"`
+
+	// StartupProbe indicates that the Pod has successfully initialized.
+	// +optional
+	StartupProbe *corev1.Probe `json:"startupProbe,omitempty"`
+
+	// Resources defines the compute resources for the Chia container
+	// +optional
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+
+	// SecurityContext defines the security context for the chia container
+	// +optional
+	SecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
 }
 
 // ChiaDataLayerStatus defines the observed state of ChiaDataLayer
