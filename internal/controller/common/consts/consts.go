@@ -70,6 +70,9 @@ const (
 	// DataLayerHTTPPort defines the port for the data_layer_http instances
 	DataLayerHTTPPort = 8575
 
+	// NginxPort defines the port for the nginx sidecar
+	NginxPort = 8576
+
 	// DataLayerRPCPort defines the port for the data_layer RPC
 	DataLayerRPCPort = 8562
 
@@ -114,7 +117,4 @@ const (
 
 	// ChiaHealthcheckPort defines the port for Chia Healthcheck instances
 	ChiaHealthcheckPort = 9950
-
-	// NginxPort defines the port for the nginx sidecar
-	NginxPort = 8575
 )

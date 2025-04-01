@@ -63,6 +63,96 @@ spec:
         resourceRequest: "10Gi"
 ```
 
+## HTTP File Servers
+
+The `ChiaDataLayer` resource supports two options for serving files over HTTP:
+
+### DataLayer HTTP
+
+The built-in `data_layer_http` sidecar is a Chia component that provides HTTP access to the data layer server files. This is the official Chia implementation for serving files.
+
+```yaml
+apiVersion: chia.network/v1
+kind: ChiaDataLayer
+metadata:
+  name: my-datalayer
+spec:
+  dataLayerHTTP:
+    enabled: true  # Enable the data_layer_http sidecar
+    service:
+      type: ClusterIP  # Optional - defaults to ClusterIP
+      # Available service options:
+      # externalTrafficPolicy
+      # sessionAffinity
+      # sessionAffinityConfig
+      # ipFamilyPolicy
+      # ipFamilies
+      # labels
+      # annotations
+```
+
+The `data_layer_http` sidecar:
+- Is the official Chia implementation for serving files
+- Runs on port 8575 (configurable via `consts.DataLayerHTTPPort`)
+- Serves files from the data layer server files directory
+- Inherits Chia-specific configuration options from `CommonSpecChia`
+
+### Nginx Sidecar
+
+The `ChiaDataLayer` resource supports an optional nginx sidecar container that can be used to serve static files from the data layer server files directory. This is useful for serving files over HTTP without exposing the data layer HTTP service.
+
+```yaml
+apiVersion: chia.network/v1
+kind: ChiaDataLayer
+metadata:
+  name: my-datalayer
+spec:
+  nginx:
+    enabled: true  # Enable the nginx sidecar
+    image: "nginx:1.25"  # Optional - defaults to nginx:latest
+    service:
+      type: ClusterIP  # Optional - defaults to ClusterIP
+      # Available service options:
+      # externalTrafficPolicy
+      # sessionAffinity
+      # sessionAffinityConfig
+      # ipFamilyPolicy
+      # ipFamilies
+      # labels
+      # annotations
+    # Available container configuration options:
+    # securityContext
+    # livenessProbe
+    # readinessProbe
+    # startupProbe
+    # resources
+```
+
+The nginx sidecar:
+- Runs on port 8575 (configurable via `consts.NginxPort`)
+- Serves files from `/datalayer/server` (mounted from the data layer server files volume)
+- Uses a simple nginx configuration that serves static files
+- Can be configured with custom container settings like security context, probes, and resource limits
+- Creates a service to expose the nginx server (configurable via the `service` field)
+
+The nginx sidecar is particularly useful when you want to:
+- Serve static files without exposing the data layer HTTP service
+- Use nginx's caching and serving capabilities for better performance
+- Apply custom nginx configurations for serving files
+
+### Choosing Between HTTP Servers
+
+When deciding between the `data_layer_http` sidecar and the nginx sidecar, consider:
+
+- Use `data_layer_http` if you want the official Chia implementation and don't need additional HTTP server features
+- Use nginx if you need:
+  - Better performance through nginx's caching
+  - Custom nginx configurations
+  - Additional HTTP server features
+  - Separation of concerns between data layer and HTTP serving
+
+Note: You can enable both sidecars simultaneously, but they will both try to use port 8575. In this case, you should configure one of them to use a different port.
+
 ## More Info
 
 This page contains documentation specific to this resource. Please see the rest of the documentation for information on more available configurations.
