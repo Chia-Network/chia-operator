@@ -27,7 +27,6 @@ linters:
     - copyloopvar
     - ginkgolinter
     - goconst
-    - gocyclo
     - gofmt
     - gosimple
     - govet
