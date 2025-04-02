@@ -49,15 +49,15 @@ func assemblePeerService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 	if farmer.Spec.ChiaConfig.PeerService.Labels != nil {
 		additionalServiceLabels = farmer.Spec.ChiaConfig.PeerService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if farmer.Spec.ChiaConfig.PeerService.Annotations != nil {
 		additionalServiceAnnotations = farmer.Spec.ChiaConfig.PeerService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(farmer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(farmer.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -96,15 +96,15 @@ func assembleAllService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 	if farmer.Spec.ChiaConfig.AllService.Labels != nil {
 		additionalServiceLabels = farmer.Spec.ChiaConfig.AllService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if farmer.Spec.ChiaConfig.AllService.Annotations != nil {
 		additionalServiceAnnotations = farmer.Spec.ChiaConfig.AllService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(farmer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(farmer.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -129,15 +129,15 @@ func assembleDaemonService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 	if farmer.Spec.ChiaConfig.DaemonService.Labels != nil {
 		additionalServiceLabels = farmer.Spec.ChiaConfig.DaemonService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if farmer.Spec.ChiaConfig.DaemonService.Annotations != nil {
 		additionalServiceAnnotations = farmer.Spec.ChiaConfig.DaemonService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(farmer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(farmer.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -169,15 +169,15 @@ func assembleRPCService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 	if farmer.Spec.ChiaConfig.RPCService.Labels != nil {
 		additionalServiceLabels = farmer.Spec.ChiaConfig.RPCService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if farmer.Spec.ChiaConfig.RPCService.Annotations != nil {
 		additionalServiceAnnotations = farmer.Spec.ChiaConfig.RPCService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(farmer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(farmer.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -202,15 +202,15 @@ func assembleChiaExporterService(farmer k8schianetv1.ChiaFarmer) corev1.Service 
 	if farmer.Spec.ChiaExporterConfig.Service.Labels != nil {
 		additionalServiceLabels = farmer.Spec.ChiaExporterConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if farmer.Spec.ChiaExporterConfig.Service.Annotations != nil {
 		additionalServiceAnnotations = farmer.Spec.ChiaExporterConfig.Service.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(farmer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(farmer.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -256,8 +256,8 @@ func assembleDeployment(ctx context.Context, farmer k8schianetv1.ChiaFarmer, net
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
 			Namespace:   farmer.Namespace,
-			Labels:      kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
-			Annotations: farmer.Spec.AdditionalMetadata.Annotations,
+			Labels:      kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels),
+			Annotations: farmer.Spec.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -265,8 +265,8 @@ func assembleDeployment(ctx context.Context, farmer k8schianetv1.ChiaFarmer, net
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.AdditionalMetadata.Labels),
-					Annotations: farmer.Spec.AdditionalMetadata.Annotations,
+					Labels:      kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels),
+					Annotations: farmer.Spec.Annotations,
 				},
 				Spec: corev1.PodSpec{
 					Affinity:                  farmer.Spec.Affinity,

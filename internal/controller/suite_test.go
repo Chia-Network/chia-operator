@@ -31,7 +31,6 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	apiv1 "github.com/chia-network/chia-operator/api/v1"
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/chiaseeder"
 	//+kubebuilder:scaffold:imports
@@ -69,9 +68,6 @@ var _ = BeforeSuite(func() {
 	cfg, err = testEnv.Start()
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
-
-	err = apiv1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
 
 	err = k8schianetv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())

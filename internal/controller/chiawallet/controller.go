@@ -55,9 +55,9 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	err := r.Get(ctx, req.NamespacedName, &wallet)
 	if err != nil && errors.IsNotFound(err) {
 		// Remove this object from the map for tracking and subtract this CR's total metric by 1
-		_, exists := chiawallets[req.NamespacedName.String()]
+		_, exists := chiawallets[req.String()]
 		if exists {
-			delete(chiawallets, req.NamespacedName.String())
+			delete(chiawallets, req.String())
 			metrics.ChiaWallets.Sub(1.0)
 		}
 		return ctrl.Result{}, nil
@@ -68,9 +68,9 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
-	_, exists := chiawallets[req.NamespacedName.String()]
+	_, exists := chiawallets[req.String()]
 	if !exists {
-		chiawallets[req.NamespacedName.String()] = true
+		chiawallets[req.String()] = true
 		metrics.ChiaWallets.Add(1.0)
 	}
 

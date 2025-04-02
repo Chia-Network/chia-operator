@@ -57,9 +57,9 @@ func (r *ChiaDataLayerReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	err := r.Get(ctx, req.NamespacedName, &datalayer)
 	if err != nil && errors.IsNotFound(err) {
 		// Remove this object from the map for tracking and subtract this CR's total metric by 1
-		_, exists := chiadatalayers[req.NamespacedName.String()]
+		_, exists := chiadatalayers[req.String()]
 		if exists {
-			delete(chiadatalayers, req.NamespacedName.String())
+			delete(chiadatalayers, req.String())
 			metrics.ChiaDataLayers.Sub(1.0)
 		}
 		return ctrl.Result{}, nil
@@ -70,9 +70,9 @@ func (r *ChiaDataLayerReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
-	_, exists := chiadatalayers[req.NamespacedName.String()]
+	_, exists := chiadatalayers[req.String()]
 	if !exists {
-		chiadatalayers[req.NamespacedName.String()] = true
+		chiadatalayers[req.String()] = true
 		metrics.ChiaDataLayers.Add(1.0)
 	}
 

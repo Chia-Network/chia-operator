@@ -55,9 +55,9 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	err := r.Get(ctx, req.NamespacedName, &node)
 	if err != nil && errors.IsNotFound(err) {
 		// Remove this object from the map for tracking and subtract this CR's total metric by 1
-		_, exists := chianodes[req.NamespacedName.String()]
+		_, exists := chianodes[req.String()]
 		if exists {
-			delete(chianodes, req.NamespacedName.String())
+			delete(chianodes, req.String())
 			metrics.ChiaNodes.Sub(1.0)
 		}
 		return ctrl.Result{}, nil
@@ -68,9 +68,9 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
-	_, exists := chianodes[req.NamespacedName.String()]
+	_, exists := chianodes[req.String()]
 	if !exists {
-		chianodes[req.NamespacedName.String()] = true
+		chianodes[req.String()] = true
 		metrics.ChiaNodes.Add(1.0)
 	}
 

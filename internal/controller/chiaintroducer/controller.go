@@ -55,9 +55,9 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	err := r.Get(ctx, req.NamespacedName, &introducer)
 	if err != nil && errors.IsNotFound(err) {
 		// Remove this object from the map for tracking and subtract this CR's total metric by 1
-		_, exists := chiaintroducers[req.NamespacedName.String()]
+		_, exists := chiaintroducers[req.String()]
 		if exists {
-			delete(chiaintroducers, req.NamespacedName.String())
+			delete(chiaintroducers, req.String())
 			metrics.ChiaIntroducers.Sub(1.0)
 		}
 		return ctrl.Result{}, nil
@@ -68,9 +68,9 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
-	_, exists := chiaintroducers[req.NamespacedName.String()]
+	_, exists := chiaintroducers[req.String()]
 	if !exists {
-		chiaintroducers[req.NamespacedName.String()] = true
+		chiaintroducers[req.String()] = true
 		metrics.ChiaIntroducers.Add(1.0)
 	}
 

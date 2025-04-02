@@ -49,15 +49,15 @@ func assemblePeerService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	if tl.Spec.ChiaConfig.PeerService.Labels != nil {
 		additionalServiceLabels = tl.Spec.ChiaConfig.PeerService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if tl.Spec.ChiaConfig.PeerService.Annotations != nil {
 		additionalServiceAnnotations = tl.Spec.ChiaConfig.PeerService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(tl.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(tl.Spec.Annotations, additionalServiceAnnotations)
 
 	// Handle the Service rollup feature
 	if kube.ShouldMakeService(tl.Spec.ChiaHealthcheckConfig.Service, false) && kube.ShouldRollIntoMainPeerService(tl.Spec.ChiaHealthcheckConfig.Service) {
@@ -101,15 +101,15 @@ func assembleAllService(timelord k8schianetv1.ChiaTimelord) corev1.Service {
 	if timelord.Spec.ChiaConfig.AllService.Labels != nil {
 		additionalServiceLabels = timelord.Spec.ChiaConfig.AllService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(timelord.Kind, timelord.ObjectMeta, timelord.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(timelord.Kind, timelord.ObjectMeta, timelord.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(timelord.Kind, timelord.ObjectMeta, timelord.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(timelord.Kind, timelord.ObjectMeta, timelord.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if timelord.Spec.ChiaConfig.AllService.Annotations != nil {
 		additionalServiceAnnotations = timelord.Spec.ChiaConfig.AllService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(timelord.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(timelord.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -134,15 +134,15 @@ func assembleDaemonService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	if tl.Spec.ChiaConfig.DaemonService.Labels != nil {
 		additionalServiceLabels = tl.Spec.ChiaConfig.DaemonService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if tl.Spec.ChiaConfig.DaemonService.Annotations != nil {
 		additionalServiceAnnotations = tl.Spec.ChiaConfig.DaemonService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(tl.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(tl.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -174,15 +174,15 @@ func assembleRPCService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	if tl.Spec.ChiaConfig.RPCService.Labels != nil {
 		additionalServiceLabels = tl.Spec.ChiaConfig.RPCService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if tl.Spec.ChiaConfig.RPCService.Annotations != nil {
 		additionalServiceAnnotations = tl.Spec.ChiaConfig.RPCService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(tl.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(tl.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -207,15 +207,15 @@ func assembleChiaExporterService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 	if tl.Spec.ChiaExporterConfig.Service.Labels != nil {
 		additionalServiceLabels = tl.Spec.ChiaExporterConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if tl.Spec.ChiaExporterConfig.Service.Annotations != nil {
 		additionalServiceAnnotations = tl.Spec.ChiaExporterConfig.Service.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(tl.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(tl.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -240,15 +240,15 @@ func assembleChiaHealthcheckService(tl k8schianetv1.ChiaTimelord) corev1.Service
 	if tl.Spec.ChiaHealthcheckConfig.Service.Labels != nil {
 		additionalServiceLabels = tl.Spec.ChiaHealthcheckConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if tl.Spec.ChiaHealthcheckConfig.Service.Annotations != nil {
 		additionalServiceAnnotations = tl.Spec.ChiaHealthcheckConfig.Service.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(tl.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(tl.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -294,8 +294,8 @@ func assembleDeployment(ctx context.Context, tl k8schianetv1.ChiaTimelord, netwo
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiatimelordNamePattern, tl.Name),
 			Namespace:   tl.Namespace,
-			Labels:      kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
-			Annotations: tl.Spec.AdditionalMetadata.Annotations,
+			Labels:      kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels),
+			Annotations: tl.Spec.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -303,8 +303,8 @@ func assembleDeployment(ctx context.Context, tl k8schianetv1.ChiaTimelord, netwo
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.AdditionalMetadata.Labels),
-					Annotations: tl.Spec.AdditionalMetadata.Annotations,
+					Labels:      kube.GetCommonLabels(tl.Kind, tl.ObjectMeta, tl.Spec.Labels),
+					Annotations: tl.Spec.Annotations,
 				},
 				Spec: corev1.PodSpec{
 					Affinity:                  tl.Spec.Affinity,

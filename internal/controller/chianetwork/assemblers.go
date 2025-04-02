@@ -35,7 +35,7 @@ func assembleConfigMapData(network k8schianetv1.ChiaNetwork) (map[string]string,
 	if network.Spec.NetworkName != nil && *network.Spec.NetworkName != "" {
 		data["network"] = *network.Spec.NetworkName
 	} else {
-		data["network"] = network.ObjectMeta.Name
+		data["network"] = network.Name
 	}
 
 	// network_port env var

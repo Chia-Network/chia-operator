@@ -55,9 +55,9 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	err := r.Get(ctx, req.NamespacedName, &crawler)
 	if err != nil && errors.IsNotFound(err) {
 		// Remove this object from the map for tracking and subtract this CR's total metric by 1
-		_, exists := chiacrawlers[req.NamespacedName.String()]
+		_, exists := chiacrawlers[req.String()]
 		if exists {
-			delete(chiacrawlers, req.NamespacedName.String())
+			delete(chiacrawlers, req.String())
 			metrics.ChiaCrawlers.Sub(1.0)
 		}
 		return ctrl.Result{}, nil
@@ -68,9 +68,9 @@ func (r *ChiaCrawlerReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
-	_, exists := chiacrawlers[req.NamespacedName.String()]
+	_, exists := chiacrawlers[req.String()]
 	if !exists {
-		chiacrawlers[req.NamespacedName.String()] = true
+		chiacrawlers[req.String()] = true
 		metrics.ChiaCrawlers.Add(1.0)
 	}
 

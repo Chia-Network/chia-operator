@@ -49,15 +49,15 @@ func assemblePeerService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	if wallet.Spec.ChiaConfig.PeerService.Labels != nil {
 		additionalServiceLabels = wallet.Spec.ChiaConfig.PeerService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if wallet.Spec.ChiaConfig.PeerService.Annotations != nil {
 		additionalServiceAnnotations = wallet.Spec.ChiaConfig.PeerService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(wallet.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(wallet.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -96,15 +96,15 @@ func assembleAllService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	if wallet.Spec.ChiaConfig.AllService.Labels != nil {
 		additionalServiceLabels = wallet.Spec.ChiaConfig.AllService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if wallet.Spec.ChiaConfig.AllService.Annotations != nil {
 		additionalServiceAnnotations = wallet.Spec.ChiaConfig.AllService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(wallet.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(wallet.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -129,15 +129,15 @@ func assembleDaemonService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	if wallet.Spec.ChiaConfig.DaemonService.Labels != nil {
 		additionalServiceLabels = wallet.Spec.ChiaConfig.DaemonService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if wallet.Spec.ChiaConfig.DaemonService.Annotations != nil {
 		additionalServiceAnnotations = wallet.Spec.ChiaConfig.DaemonService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(wallet.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(wallet.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -169,15 +169,15 @@ func assembleRPCService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 	if wallet.Spec.ChiaConfig.RPCService.Labels != nil {
 		additionalServiceLabels = wallet.Spec.ChiaConfig.RPCService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if wallet.Spec.ChiaConfig.RPCService.Annotations != nil {
 		additionalServiceAnnotations = wallet.Spec.ChiaConfig.RPCService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(wallet.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(wallet.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -202,15 +202,15 @@ func assembleChiaExporterService(wallet k8schianetv1.ChiaWallet) corev1.Service 
 	if wallet.Spec.ChiaExporterConfig.Service.Labels != nil {
 		additionalServiceLabels = wallet.Spec.ChiaExporterConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if wallet.Spec.ChiaExporterConfig.Service.Annotations != nil {
 		additionalServiceAnnotations = wallet.Spec.ChiaExporterConfig.Service.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(wallet.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(wallet.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -256,8 +256,8 @@ func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet, net
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiawalletNamePattern, wallet.Name),
 			Namespace:   wallet.Namespace,
-			Labels:      kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
-			Annotations: wallet.Spec.AdditionalMetadata.Annotations,
+			Labels:      kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels),
+			Annotations: wallet.Spec.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -265,8 +265,8 @@ func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet, net
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.AdditionalMetadata.Labels),
-					Annotations: wallet.Spec.AdditionalMetadata.Annotations,
+					Labels:      kube.GetCommonLabels(wallet.Kind, wallet.ObjectMeta, wallet.Spec.Labels),
+					Annotations: wallet.Spec.Annotations,
 				},
 				Spec: corev1.PodSpec{
 					Affinity:                  wallet.Spec.Affinity,

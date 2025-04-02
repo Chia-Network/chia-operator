@@ -55,9 +55,9 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	err := r.Get(ctx, req.NamespacedName, &harvester)
 	if err != nil && errors.IsNotFound(err) {
 		// Remove this object from the map for tracking and subtract this CR's total metric by 1
-		_, exists := chiaharvesters[req.NamespacedName.String()]
+		_, exists := chiaharvesters[req.String()]
 		if exists {
-			delete(chiaharvesters, req.NamespacedName.String())
+			delete(chiaharvesters, req.String())
 			metrics.ChiaHarvesters.Sub(1.0)
 		}
 		return ctrl.Result{}, nil
@@ -68,9 +68,9 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
-	_, exists := chiaharvesters[req.NamespacedName.String()]
+	_, exists := chiaharvesters[req.String()]
 	if !exists {
-		chiaharvesters[req.NamespacedName.String()] = true
+		chiaharvesters[req.String()] = true
 		metrics.ChiaHarvesters.Add(1.0)
 	}
 
