@@ -39,15 +39,15 @@ func AssembleService(datalayer k8schianetv1.ChiaDataLayer) corev1.Service {
 	if datalayer.Spec.FileserverConfig.Service.Labels != nil {
 		additionalServiceLabels = datalayer.Spec.FileserverConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if datalayer.Spec.FileserverConfig.Service.Annotations != nil {
 		additionalServiceAnnotations = datalayer.Spec.FileserverConfig.Service.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(datalayer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(datalayer.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
