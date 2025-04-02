@@ -71,9 +71,9 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	err := r.Get(ctx, req.NamespacedName, &seeder)
 	if err != nil && errors.IsNotFound(err) {
 		// Remove this object from the map for tracking and subtract this CR's total metric by 1
-		_, exists := chiaseeders[req.NamespacedName.String()]
+		_, exists := chiaseeders[req.String()]
 		if exists {
-			delete(chiaseeders, req.NamespacedName.String())
+			delete(chiaseeders, req.String())
 			metrics.ChiaSeeders.Sub(1.0)
 		}
 		return ctrl.Result{}, nil
@@ -84,9 +84,9 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
-	_, exists := chiaseeders[req.NamespacedName.String()]
+	_, exists := chiaseeders[req.String()]
 	if !exists {
-		chiaseeders[req.NamespacedName.String()] = true
+		chiaseeders[req.String()] = true
 		metrics.ChiaSeeders.Add(1.0)
 	}
 

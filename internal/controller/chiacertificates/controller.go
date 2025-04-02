@@ -50,9 +50,9 @@ func (r *ChiaCertificatesReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	err := r.Get(ctx, req.NamespacedName, &cr)
 	if err != nil && errors.IsNotFound(err) {
 		// Remove this object from the map for tracking and subtract this CR's total metric by 1
-		_, exists := chiacertificates[req.NamespacedName.String()]
+		_, exists := chiacertificates[req.String()]
 		if exists {
-			delete(chiacertificates, req.NamespacedName.String())
+			delete(chiacertificates, req.String())
 			metrics.ChiaCertificates.Sub(1.0)
 		}
 		return ctrl.Result{}, nil
@@ -63,9 +63,9 @@ func (r *ChiaCertificatesReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
-	_, exists := chiacertificates[req.NamespacedName.String()]
+	_, exists := chiacertificates[req.String()]
 	if !exists {
-		chiacertificates[req.NamespacedName.String()] = true
+		chiacertificates[req.String()] = true
 		metrics.ChiaCertificates.Add(1.0)
 	}
 

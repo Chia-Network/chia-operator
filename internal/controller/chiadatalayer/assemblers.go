@@ -42,15 +42,15 @@ func assembleDaemonService(datalayer k8schianetv1.ChiaDataLayer) corev1.Service 
 	if datalayer.Spec.ChiaConfig.DaemonService.Labels != nil {
 		additionalServiceLabels = datalayer.Spec.ChiaConfig.DaemonService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if datalayer.Spec.ChiaConfig.DaemonService.Annotations != nil {
 		additionalServiceAnnotations = datalayer.Spec.ChiaConfig.DaemonService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(datalayer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(datalayer.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -88,15 +88,15 @@ func assembleRPCService(datalayer k8schianetv1.ChiaDataLayer) corev1.Service {
 	if datalayer.Spec.ChiaConfig.RPCService.Labels != nil {
 		additionalServiceLabels = datalayer.Spec.ChiaConfig.RPCService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if datalayer.Spec.ChiaConfig.RPCService.Annotations != nil {
 		additionalServiceAnnotations = datalayer.Spec.ChiaConfig.RPCService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(datalayer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(datalayer.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -128,15 +128,15 @@ func assembleDataLayerHTTPService(datalayer k8schianetv1.ChiaDataLayer) corev1.S
 	if datalayer.Spec.DataLayerHTTPConfig.Service.Labels != nil {
 		additionalServiceLabels = datalayer.Spec.DataLayerHTTPConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if datalayer.Spec.DataLayerHTTPConfig.Service.Annotations != nil {
 		additionalServiceAnnotations = datalayer.Spec.DataLayerHTTPConfig.Service.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(datalayer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(datalayer.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -161,15 +161,15 @@ func assembleChiaExporterService(datalayer k8schianetv1.ChiaDataLayer) corev1.Se
 	if datalayer.Spec.ChiaExporterConfig.Service.Labels != nil {
 		additionalServiceLabels = datalayer.Spec.ChiaExporterConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if datalayer.Spec.ChiaExporterConfig.Service.Annotations != nil {
 		additionalServiceAnnotations = datalayer.Spec.ChiaExporterConfig.Service.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(datalayer.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(datalayer.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -250,8 +250,8 @@ func assembleDeployment(ctx context.Context, datalayer k8schianetv1.ChiaDataLaye
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chiadatalayerNamePattern, datalayer.Name),
 			Namespace:   datalayer.Namespace,
-			Labels:      kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels),
-			Annotations: datalayer.Spec.AdditionalMetadata.Annotations,
+			Labels:      kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels),
+			Annotations: datalayer.Spec.Annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -259,8 +259,8 @@ func assembleDeployment(ctx context.Context, datalayer k8schianetv1.ChiaDataLaye
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.AdditionalMetadata.Labels),
-					Annotations: datalayer.Spec.AdditionalMetadata.Annotations,
+					Labels:      kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels),
+					Annotations: datalayer.Spec.Annotations,
 				},
 				Spec: corev1.PodSpec{
 					Affinity:                  datalayer.Spec.Affinity,

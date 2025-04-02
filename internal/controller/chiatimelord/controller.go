@@ -56,9 +56,9 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	err := r.Get(ctx, req.NamespacedName, &timelord)
 	if err != nil && errors.IsNotFound(err) {
 		// Remove this object from the map for tracking and subtract this CR's total metric by 1
-		_, exists := chiatimelords[req.NamespacedName.String()]
+		_, exists := chiatimelords[req.String()]
 		if exists {
-			delete(chiatimelords, req.NamespacedName.String())
+			delete(chiatimelords, req.String())
 			metrics.ChiaTimelords.Sub(1.0)
 		}
 		return ctrl.Result{}, nil
@@ -69,9 +69,9 @@ func (r *ChiaTimelordReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Add this object to the tracking map and increment the gauge by 1, if it wasn't already added
-	_, exists := chiatimelords[req.NamespacedName.String()]
+	_, exists := chiatimelords[req.String()]
 	if !exists {
-		chiatimelords[req.NamespacedName.String()] = true
+		chiatimelords[req.String()] = true
 		metrics.ChiaTimelords.Add(1.0)
 	}
 

@@ -47,15 +47,15 @@ func assemblePeerService(node k8schianetv1.ChiaNode, fullNodePort int32) corev1.
 	if node.Spec.ChiaConfig.PeerService.Labels != nil {
 		additionalServiceLabels = node.Spec.ChiaConfig.PeerService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if node.Spec.ChiaConfig.PeerService.Annotations != nil {
 		additionalServiceAnnotations = node.Spec.ChiaConfig.PeerService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(node.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(node.Spec.Annotations, additionalServiceAnnotations)
 
 	// Handle the Service rollup feature
 	if kube.ShouldMakeService(node.Spec.ChiaHealthcheckConfig.Service, false) && kube.ShouldRollIntoMainPeerService(node.Spec.ChiaHealthcheckConfig.Service) {
@@ -99,15 +99,15 @@ func assembleAllService(node k8schianetv1.ChiaNode, fullNodePort int32) corev1.S
 	if node.Spec.ChiaConfig.AllService.Labels != nil {
 		additionalServiceLabels = node.Spec.ChiaConfig.AllService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if node.Spec.ChiaConfig.AllService.Annotations != nil {
 		additionalServiceAnnotations = node.Spec.ChiaConfig.AllService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(node.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(node.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -132,15 +132,15 @@ func assembleDaemonService(node k8schianetv1.ChiaNode) corev1.Service {
 	if node.Spec.ChiaConfig.DaemonService.Labels != nil {
 		additionalServiceLabels = node.Spec.ChiaConfig.DaemonService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if node.Spec.ChiaConfig.DaemonService.Annotations != nil {
 		additionalServiceAnnotations = node.Spec.ChiaConfig.DaemonService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(node.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(node.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -172,15 +172,15 @@ func assembleRPCService(node k8schianetv1.ChiaNode) corev1.Service {
 	if node.Spec.ChiaConfig.RPCService.Labels != nil {
 		additionalServiceLabels = node.Spec.ChiaConfig.RPCService.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if node.Spec.ChiaConfig.RPCService.Annotations != nil {
 		additionalServiceAnnotations = node.Spec.ChiaConfig.RPCService.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(node.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(node.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -205,15 +205,15 @@ func assembleChiaExporterService(node k8schianetv1.ChiaNode) corev1.Service {
 	if node.Spec.ChiaExporterConfig.Service.Labels != nil {
 		additionalServiceLabels = node.Spec.ChiaExporterConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if node.Spec.ChiaExporterConfig.Service.Annotations != nil {
 		additionalServiceAnnotations = node.Spec.ChiaExporterConfig.Service.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(node.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(node.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -238,15 +238,15 @@ func assembleChiaHealthcheckService(node k8schianetv1.ChiaNode) corev1.Service {
 	if node.Spec.ChiaHealthcheckConfig.Service.Labels != nil {
 		additionalServiceLabels = node.Spec.ChiaHealthcheckConfig.Service.Labels
 	}
-	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels, additionalServiceLabels)
-	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels)
+	inputs.Labels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels)
 
 	// Annotations
 	var additionalServiceAnnotations = make(map[string]string)
 	if node.Spec.ChiaHealthcheckConfig.Service.Annotations != nil {
 		additionalServiceAnnotations = node.Spec.ChiaHealthcheckConfig.Service.Annotations
 	}
-	inputs.Annotations = kube.CombineMaps(node.Spec.AdditionalMetadata.Annotations, additionalServiceAnnotations)
+	inputs.Annotations = kube.CombineMaps(node.Spec.Annotations, additionalServiceAnnotations)
 
 	return kube.AssembleCommonService(inputs)
 }
@@ -256,7 +256,7 @@ func assembleHeadlessPeerService(node k8schianetv1.ChiaNode, fullNodePort int32)
 	srv := assemblePeerService(node, fullNodePort)
 
 	srv.Name = srv.Name + "-headless"
-	srv.Annotations = node.Spec.AdditionalMetadata.Annotations // Overwrites the annotations from the peer Service, since those may contain some related to tools like external-dns
+	srv.Annotations = node.Spec.Annotations // Overwrites the annotations from the peer Service, since those may contain some related to tools like external-dns
 	srv.Spec.Type = corev1.ServiceTypeClusterIP
 	srv.Spec.ClusterIP = "None"
 	srv.Spec.ExternalTrafficPolicy = ""
@@ -269,7 +269,7 @@ func assembleLocalPeerService(node k8schianetv1.ChiaNode, fullNodePort int32) co
 	srv := assemblePeerService(node, fullNodePort)
 
 	srv.Name = srv.Name + "-internal"
-	srv.Annotations = node.Spec.AdditionalMetadata.Annotations // Overwrites the annotations from the peer Service, since those may contain some related to tools like external-dns
+	srv.Annotations = node.Spec.Annotations // Overwrites the annotations from the peer Service, since those may contain some related to tools like external-dns
 	srv.Spec.Type = corev1.ServiceTypeClusterIP
 	local := corev1.ServiceInternalTrafficPolicyLocal
 	srv.Spec.InternalTrafficPolicy = &local
@@ -286,8 +286,8 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf(chianodeNamePattern, node.Name),
 			Namespace:   node.Namespace,
-			Labels:      kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
-			Annotations: node.Spec.AdditionalMetadata.Annotations,
+			Labels:      kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels),
+			Annotations: node.Spec.Annotations,
 		},
 		Spec: appsv1.StatefulSetSpec{
 			Replicas: &node.Spec.Replicas,
@@ -297,8 +297,8 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 			ServiceName: fmt.Sprintf(chianodeNamePattern, node.Name) + "-headless",
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.AdditionalMetadata.Labels),
-					Annotations: node.Spec.AdditionalMetadata.Annotations,
+					Labels:      kube.GetCommonLabels(node.Kind, node.ObjectMeta, node.Spec.Labels),
+					Annotations: node.Spec.Annotations,
 				},
 				Spec: corev1.PodSpec{
 					Affinity:                  node.Spec.Affinity,

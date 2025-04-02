@@ -52,11 +52,11 @@ func TestAssembleCommonService_Minimal(t *testing.T) {
 		},
 	}
 	actual := AssembleCommonService(AssembleCommonServiceInputs{
-		Name:           expected.ObjectMeta.Name,
-		Namespace:      expected.ObjectMeta.Namespace,
-		Labels:         expected.ObjectMeta.Labels,
-		Annotations:    expected.ObjectMeta.Annotations,
-		OwnerReference: expected.ObjectMeta.OwnerReferences,
+		Name:           expected.Name,
+		Namespace:      expected.Namespace,
+		Labels:         expected.Labels,
+		Annotations:    expected.Annotations,
+		OwnerReference: expected.OwnerReferences,
 		Ports:          expected.Spec.Ports,
 		SelectorLabels: expected.Spec.Selector,
 	})
@@ -112,11 +112,11 @@ func TestAssembleCommonService_Full(t *testing.T) {
 		},
 	}
 	actual := AssembleCommonService(AssembleCommonServiceInputs{
-		Name:                  expected.ObjectMeta.Name,
-		Namespace:             expected.ObjectMeta.Namespace,
-		Labels:                expected.ObjectMeta.Labels,
-		Annotations:           expected.ObjectMeta.Annotations,
-		OwnerReference:        expected.ObjectMeta.OwnerReferences,
+		Name:                  expected.Name,
+		Namespace:             expected.Namespace,
+		Labels:                expected.Labels,
+		Annotations:           expected.Annotations,
+		OwnerReference:        expected.OwnerReferences,
 		Ports:                 expected.Spec.Ports,
 		SelectorLabels:        expected.Spec.Selector,
 		ServiceType:           &expected.Spec.Type,
