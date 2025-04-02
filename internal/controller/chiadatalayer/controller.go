@@ -12,6 +12,7 @@ import (
 	"time"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
+	"github.com/chia-network/chia-operator/internal/controller/chiadatalayer/fileserver"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"github.com/chia-network/chia-operator/internal/metrics"
 	appsv1 "k8s.io/api/apps/v1"
@@ -108,13 +109,13 @@ func (r *ChiaDataLayerReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Assemble HTTP Service
-	httpSrv := assembleDataLayerHTTPService(datalayer)
+	httpSrv := fileserver.AssembleService(datalayer)
 	if err := controllerutil.SetControllerReference(&datalayer, &httpSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to assemble datalayer HTTP Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("encountered error assembling HTTP Service: %v", err)
 	}
 	// Reconcile HTTP Service
-	res, err = kube.ReconcileService(ctx, r.Client, datalayer.Spec.DataLayerHTTPConfig.Service, httpSrv, true)
+	res, err = kube.ReconcileService(ctx, r.Client, datalayer.Spec.FileserverConfig.Service, httpSrv, true)
 	if err != nil {
 		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to reconcile datalayer HTTP Service -- Check operator logs.")
 		return res, err

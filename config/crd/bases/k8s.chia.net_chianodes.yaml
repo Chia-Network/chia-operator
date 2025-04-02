@@ -1274,7 +1274,9 @@ spec:
                       No port should be specified, it's taken from the value of the NetworkPort setting.
                     type: string
                   livenessProbe:
-                    description: Periodic probe of container liveness.
+                    description: LivenessProbe used to determine if a container is
+                      running properly and will restart the container if the probe
+                      fails
                     properties:
                       exec:
                         description: Exec specifies a command to execute in the container.
@@ -1508,7 +1510,9 @@ spec:
                         type: string
                     type: object
                   readinessProbe:
-                    description: Periodic probe of container service readiness.
+                    description: ReadinessProbe used to indicate when a container
+                      is ready to accept traffic and prevent traffic from being sent
+                      to pods that aren't ready.
                     properties:
                       exec:
                         description: Exec specifies a command to execute in the container.
@@ -1659,8 +1663,8 @@ spec:
                         type: integer
                     type: object
                   resources:
-                    description: Resources defines the compute resources for the Chia
-                      container
+                    description: Resources defines the compute resources (limits/requests)
+                      for the chia container.
                     properties:
                       claims:
                         description: |-
@@ -1993,8 +1997,9 @@ spec:
                       already in the chia image.)
                     type: string
                   startupProbe:
-                    description: StartupProbe indicates that the Pod has successfully
-                      initialized.
+                    description: StartupProbe used to give applications time to initialize
+                      fully before liveness and readiness probes begin checking, preventing
+                      premature restarts of slow-starting containers.
                     properties:
                       exec:
                         description: Exec specifies a command to execute in the container.

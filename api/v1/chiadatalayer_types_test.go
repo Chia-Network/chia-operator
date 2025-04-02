@@ -49,7 +49,7 @@ spec:
     trustedCIDRs:
       - "192.168.0.0/16"
       - "10.0.0.0/8"
-  dataLayerHTTP:
+  fileserver:
     enabled: true
     service:
       enabled: true
@@ -127,7 +127,7 @@ spec:
 					Enabled: testTrue,
 				},
 			},
-			DataLayerHTTPConfig: ChiaDataLayerHTTPSpecChia{
+			FileserverConfig: FileserverConfig{
 				Enabled: &testTrue,
 				Service: Service{
 					Enabled: &testTrue,
