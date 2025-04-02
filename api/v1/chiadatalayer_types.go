@@ -51,45 +51,56 @@ type ChiaDataLayerSpecChia struct {
 // FileserverConfig defines the desired state of an optional fileserver sidecar
 // data_layer_http is the default fileserver but can be configured to use nginx or any other webserver application
 type FileserverConfig struct {
-	// Enabled defines whether a fileserver container should run as a sidecar to the chia container
+	// Enabled defines whether a fileserver container should run as a sidecar to the chia container.
+	// Disabled by default.
 	// +optional
 	Enabled *bool `json:"enabled,omitempty"`
 
-	// Image defines the image to use for the chia component containers
+	// Image defines the image (registry/name:tag) to use for the sidecar container.
+	// Defaults to the official chia image.
 	// +optional
 	Image *string `json:"image,omitempty"`
 
-	// ServerFileMountpath defines the mount path for the server files volume in the container
-	// The volume will be mounted as a read-only volume
+	// ServerFileMountpath defines the mount path for the server files volume in the container.
+	// The volume will be mounted as a read-only volume.
+	// Defaults to "/datalayer/server".
+	// +optional
 	ServerFileMountpath *string `json:"serverFileMountpath,omitempty"`
 
-	// Service defines settings for the Service optionally installed with any fileserver resource.
-	// This Service will default to being enabled with a ClusterIP Service type if fileserver is enabled.
+	// ContainerPort defines the port of the http server in the container
+	// Defaults to 8575.
+	// NOTE: If you use a custom image for the fileserver make sure you set this to the port that the fileserver binds to in the container.
 	// +optional
-	Service *Service `json:"service,omitempty"`
+	ContainerPort *int `json:"containerPort,omitempty"`
+
+	// Service defines settings for the Service optionally installed with any fileserver resource.
+	// Defaults to being enabled with a ClusterIP Service type if fileserver is enabled.
+	// +optional
+	Service Service `json:"service,omitempty"`
 
 	// AdditionalEnv contain a list of additional environment variables to be supplied to the chia container.
-	// These variables will be placed at the end of the environment variable list in the resulting container, this means they overwrite variables of the same name created by the operator in the container env.
+	// These variables will be placed at the end of the environment variable list in the resulting container,
+	// this means they overwrite variables of the same name created by the operator in the container env.
 	// +optional
 	AdditionalEnv *[]corev1.EnvVar `json:"additionalEnv,omitempty"`
 
-	// Periodic probe of container liveness.
+	// LivenessProbe used to determine if a container is running properly and will restart the container if the probe fails
 	// +optional
 	LivenessProbe *corev1.Probe `json:"livenessProbe,omitempty"`
 
-	// Periodic probe of container service readiness.
+	// ReadinessProbe used to indicate when a container is ready to accept traffic and prevent traffic from being sent to pods that aren't ready.
 	// +optional
 	ReadinessProbe *corev1.Probe `json:"readinessProbe,omitempty"`
 
-	// StartupProbe indicates that the Pod has successfully initialized.
+	// StartupProbe used to give applications time to initialize fully before liveness and readiness probes begin checking, preventing premature restarts of slow-starting containers.
 	// +optional
 	StartupProbe *corev1.Probe `json:"startupProbe,omitempty"`
 
-	// Resources defines the compute resources for the Chia container
+	// Resources defines the compute resources (limits/requests) for the fileserver container.
 	// +optional
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
-	// SecurityContext defines the security context for the chia container
+	// SecurityContext defines the security context for the fileserver container.
 	// +optional
 	SecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
 }

@@ -152,19 +152,19 @@ type CommonSpecChia struct {
 	// +optional
 	AdditionalEnv *[]corev1.EnvVar `json:"additionalEnv,omitempty"`
 
-	// Periodic probe of container liveness.
+	// LivenessProbe used to determine if a container is running properly and will restart the container if the probe fails
 	// +optional
 	LivenessProbe *corev1.Probe `json:"livenessProbe,omitempty"`
 
-	// Periodic probe of container service readiness.
+	// ReadinessProbe used to indicate when a container is ready to accept traffic and prevent traffic from being sent to pods that aren't ready.
 	// +optional
 	ReadinessProbe *corev1.Probe `json:"readinessProbe,omitempty"`
 
-	// StartupProbe indicates that the Pod has successfully initialized.
+	// StartupProbe used to give applications time to initialize fully before liveness and readiness probes begin checking, preventing premature restarts of slow-starting containers.
 	// +optional
 	StartupProbe *corev1.Probe `json:"startupProbe,omitempty"`
 
-	// Resources defines the compute resources for the Chia container
+	// Resources defines the compute resources (limits/requests) for the chia container.
 	// +optional
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
