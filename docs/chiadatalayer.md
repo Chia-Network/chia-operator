@@ -40,6 +40,18 @@ type: Opaque
 
 Replace the text value for `key.txt` with your mnemonic, and then reference it in your ChiaDataLayer resource in the way shown above.
 
+## Trusted Peers
+
+You can specify trusted CIDRs for your DataLayer server using the `trustedCIDRs` field:
+
+```yaml
+spec:
+  chia:
+    trustedCIDRs:
+      - "192.168.1.0/24"
+      - "10.0.0.0/8"
+```
+
 ## Fileserver Configuration
 
 The ChiaDataLayer can optionally run a fileserver sidecar container to serve the data_layer server files. This is disabled by default but can be enabled with the following configuration:
@@ -59,6 +71,45 @@ spec:
       enabled: true
       type: ClusterIP
       externalTrafficPolicy: Local
+```
+
+### Common Fileserver Configurations
+
+#### Default data_layer_http
+
+```yaml
+apiVersion: k8s.chia.net/v1
+kind: ChiaDataLayer
+metadata:
+  name: my-datalayer
+spec:
+  chia:
+    caSecretName: "chiaca-secret"
+    secretKey:
+      name: "chiakey-secret"
+      key: "key.txt"
+  fileserver:
+    enabled: true
+```
+
+#### nginx
+
+```yaml
+apiVersion: k8s.chia.net/v1
+kind: ChiaDataLayer
+metadata:
+  name: my-datalayer
+spec:
+  chia:
+    caSecretName: "chiaca-secret"
+    secretKey:
+      name: "chiakey-secret"
+      key: "key.txt"
+  fileserver:
+    enabled: true
+    image: nginx:latest
+    serverFileMountpath: /usr/share/nginx/html # defines the mount path for the server files volume in the container
+    containerPort: 80 # defines the port of the http server in the container
 ```
 
 ### Additional Environment Variables
@@ -142,18 +193,6 @@ spec:
       capabilities:
         drop:
           - ALL
-```
-
-## Trusted Peers
-
-You can specify trusted CIDRs for your DataLayer server using the `trustedCIDRs` field:
-
-```yaml
-spec:
-  chia:
-    trustedCIDRs:
-      - "192.168.1.0/24"
-      - "10.0.0.0/8"
 ```
 
 ## More Info

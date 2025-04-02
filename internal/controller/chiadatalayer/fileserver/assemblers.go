@@ -19,7 +19,7 @@ func AssembleService(datalayer k8schianetv1.ChiaDataLayer) corev1.Service {
 		Namespace: datalayer.Namespace,
 		Ports: []corev1.ServicePort{
 			{
-				Port:       consts.DataLayerHTTPPort,
+				Port:       80,
 				TargetPort: intstr.FromString("http"),
 				Protocol:   "TCP",
 				Name:       "http",
@@ -55,7 +55,7 @@ func AssembleService(datalayer k8schianetv1.ChiaDataLayer) corev1.Service {
 // AssembleContainer creates and configures a Kubernetes container for the fileserver based on the provided spec.
 func AssembleContainer(datalayer k8schianetv1.ChiaDataLayer) corev1.Container {
 	container := corev1.Container{
-		Name:            "datalayer-http",
+		Name:            "fileserver",
 		Image:           fmt.Sprintf("%s:%s", consts.DefaultChiaImageName, consts.DefaultChiaImageTag),
 		ImagePullPolicy: datalayer.Spec.ImagePullPolicy,
 	}
@@ -120,7 +120,24 @@ func AssembleContainer(datalayer k8schianetv1.ChiaDataLayer) corev1.Container {
 		}
 	} else {
 		// Using default chia image
-		container.Env = getChiaContainerEnv(mountPath)
+		container.Env = []corev1.EnvVar{
+			{
+				Name:  "service",
+				Value: "data_layer_http",
+			},
+			{
+				Name:  "keys",
+				Value: "none",
+			},
+			{
+				Name:  "chia.data_layer.server_files_location",
+				Value: mountPath,
+			},
+			{
+				Name:  "chia.daemon_port",
+				Value: "55401", // Avoids port conflict with the main chia container
+			},
+		}
 		if datalayer.Spec.FileserverConfig.AdditionalEnv != nil {
 			container.Env = append(container.Env, *datalayer.Spec.FileserverConfig.AdditionalEnv...)
 		}

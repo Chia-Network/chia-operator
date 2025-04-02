@@ -109,18 +109,16 @@ func (r *ChiaDataLayerReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Assemble HTTP Service
-	if fileserver.ShouldMakeFileserverService(datalayer.Spec.FileserverConfig) {
-		httpSrv := fileserver.AssembleService(datalayer)
-		if err := controllerutil.SetControllerReference(&datalayer, &httpSrv, r.Scheme); err != nil {
-			r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to assemble datalayer HTTP Service -- Check operator logs.")
-			return ctrl.Result{}, fmt.Errorf("encountered error assembling HTTP Service: %v", err)
-		}
-		// Reconcile HTTP Service
-		res, err = kube.ReconcileService(ctx, r.Client, datalayer.Spec.FileserverConfig.Service, httpSrv, true)
-		if err != nil {
-			r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to reconcile datalayer HTTP Service -- Check operator logs.")
-			return res, err
-		}
+	httpSrv := fileserver.AssembleService(datalayer)
+	if err := controllerutil.SetControllerReference(&datalayer, &httpSrv, r.Scheme); err != nil {
+		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to assemble datalayer HTTP Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("encountered error assembling HTTP Service: %v", err)
+	}
+	// Reconcile HTTP Service
+	res, err = kube.ReconcileService(ctx, r.Client, datalayer.Spec.FileserverConfig.Service, httpSrv, true)
+	if err != nil {
+		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to reconcile datalayer HTTP Service -- Check operator logs.")
+		return res, err
 	}
 
 	// Assemble Chia-Exporter Service

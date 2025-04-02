@@ -263,7 +263,7 @@ func assembleDeployment(ctx context.Context, datalayer k8schianetv1.ChiaDataLaye
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(datalayer))
 	}
 
-	if fileserver.ShouldAddFileserverContainer(datalayer.Spec.FileserverConfig) {
+	if datalayer.Spec.FileserverConfig.Enabled != nil && *datalayer.Spec.FileserverConfig.Enabled {
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, fileserver.AssembleContainer(datalayer))
 	}
 
