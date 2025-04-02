@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	appsv1 "k8s.io/api/apps/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/yaml"
@@ -55,6 +56,25 @@ spec:
       enabled: true
       labels:
         key: value
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      host: datalayer.example.com
+      tls:
+        - hosts:
+            - datalayer.example.com
+          secretName: datalayer-tls
+      rules:
+        - host: datalayer.example.com
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: chiadatalayer-sample-fileserver
+                    port:
+                      number: 8575
   chiaExporter:
     enabled: true
     service:
@@ -71,6 +91,8 @@ spec:
 		introducerAddress           = "introducer.svc.cluster.local"
 		dnsIntroducerAddress        = "dns-introducer.svc.cluster.local"
 		caSecret                    = "chiaca-secret"
+		ingressClassName            = "nginx"
+		host                        = "datalayer.example.com"
 		strategy                    = appsv1.DeploymentStrategy{
 			Type: appsv1.RollingUpdateDeploymentStrategyType,
 			RollingUpdate: &appsv1.RollingUpdateDeployment{
@@ -82,6 +104,35 @@ spec:
 	expectCIDRs := []string{
 		"192.168.0.0/16",
 		"10.0.0.0/8",
+	}
+	expectTLS := []networkingv1.IngressTLS{
+		{
+			Hosts:      []string{"datalayer.example.com"},
+			SecretName: "datalayer-tls",
+		},
+	}
+	expectRules := []networkingv1.IngressRule{
+		{
+			Host: "datalayer.example.com",
+			IngressRuleValue: networkingv1.IngressRuleValue{
+				HTTP: &networkingv1.HTTPIngressRuleValue{
+					Paths: []networkingv1.HTTPIngressPath{
+						{
+							Path:     "/",
+							PathType: &[]networkingv1.PathType{networkingv1.PathTypePrefix}[0],
+							Backend: networkingv1.IngressBackend{
+								Service: &networkingv1.IngressServiceBackend{
+									Name: "chiadatalayer-sample-fileserver",
+									Port: networkingv1.ServiceBackendPort{
+										Number: 8575,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	expect := ChiaDataLayer{
 		TypeMeta: metav1.TypeMeta{
@@ -136,6 +187,13 @@ spec:
 							"key": "value",
 						},
 					},
+				},
+				Ingress: IngressConfig{
+					Enabled:          &testTrue,
+					IngressClassName: &ingressClassName,
+					Host:             &host,
+					TLS:              &expectTLS,
+					Rules:            &expectRules,
 				},
 			},
 		},

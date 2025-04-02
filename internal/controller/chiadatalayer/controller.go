@@ -17,6 +17,7 @@ import (
 	"github.com/chia-network/chia-operator/internal/metrics"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -46,6 +47,7 @@ var chiadatalayers = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaDataLayerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -108,7 +110,7 @@ func (r *ChiaDataLayerReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return res, err
 	}
 
-	// Assemble HTTP Service
+	// Assemble HTTP Service if enabled
 	httpSrv := fileserver.AssembleService(datalayer)
 	if err := controllerutil.SetControllerReference(&datalayer, &httpSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to assemble datalayer HTTP Service -- Check operator logs.")
@@ -118,6 +120,19 @@ func (r *ChiaDataLayerReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	res, err = kube.ReconcileService(ctx, r.Client, datalayer.Spec.FileserverConfig.Service, httpSrv, true)
 	if err != nil {
 		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to reconcile datalayer HTTP Service -- Check operator logs.")
+		return res, err
+	}
+
+	// Assemble and reconcile Ingress if enabled
+	ingress := fileserver.AssembleIngress(datalayer)
+	if err := controllerutil.SetControllerReference(&datalayer, &ingress, r.Scheme); err != nil {
+		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to assemble datalayer Ingress -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("encountered error assembling Ingress: %v", err)
+	}
+	// Reconcile Ingress
+	res, err = kube.ReconcileIngress(ctx, r.Client, datalayer.Spec.FileserverConfig.Ingress, ingress)
+	if err != nil {
+		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to reconcile datalayer Ingress -- Check operator logs.")
 		return res, err
 	}
 
@@ -210,6 +225,7 @@ func (r *ChiaDataLayerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&k8schianetv1.ChiaDataLayer{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
+		Owns(&networkingv1.Ingress{}).
 		Watches(
 			&corev1.ConfigMap{},
 			handler.EnqueueRequestsFromMapFunc(r.handleChiaNetworks),

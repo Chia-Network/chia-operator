@@ -7,7 +7,10 @@ import (
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 )
 
 const chiadatalayerfileserverNamePattern = "%s-datalayer-http"
@@ -144,4 +147,68 @@ func AssembleContainer(datalayer k8schianetv1.ChiaDataLayer) corev1.Container {
 	}
 
 	return container
+}
+
+// AssembleIngress assembles the fileserver Ingress resource for a ChiaDataLayer CR
+func AssembleIngress(datalayer k8schianetv1.ChiaDataLayer) networkingv1.Ingress {
+	ingress := networkingv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf(chiadatalayerfileserverNamePattern, datalayer.Name),
+			Namespace: datalayer.Namespace,
+		},
+		Spec: networkingv1.IngressSpec{
+			IngressClassName: datalayer.Spec.FileserverConfig.Ingress.IngressClassName,
+		},
+	}
+
+	// Set labels
+	var additionalIngressLabels = make(map[string]string)
+	if datalayer.Spec.FileserverConfig.Ingress.Labels != nil {
+		additionalIngressLabels = datalayer.Spec.FileserverConfig.Ingress.Labels
+	}
+	ingress.Labels = kube.GetCommonLabels(datalayer.Kind, datalayer.ObjectMeta, datalayer.Spec.Labels, additionalIngressLabels)
+
+	// Set annotations
+	var additionalIngressAnnotations = make(map[string]string)
+	if datalayer.Spec.FileserverConfig.Ingress.Annotations != nil {
+		additionalIngressAnnotations = datalayer.Spec.FileserverConfig.Ingress.Annotations
+	}
+	ingress.Annotations = kube.CombineMaps(datalayer.Spec.Annotations, additionalIngressAnnotations)
+
+	// Set TLS if configured
+	if datalayer.Spec.FileserverConfig.Ingress.TLS != nil {
+		ingress.Spec.TLS = *datalayer.Spec.FileserverConfig.Ingress.TLS
+	}
+
+	// Set rules if configured
+	if datalayer.Spec.FileserverConfig.Ingress.Rules != nil {
+		ingress.Spec.Rules = *datalayer.Spec.FileserverConfig.Ingress.Rules
+	} else if datalayer.Spec.FileserverConfig.Ingress.Host != nil {
+		// Default rule if host is specified but no rules
+		ingress.Spec.Rules = []networkingv1.IngressRule{
+			{
+				Host: *datalayer.Spec.FileserverConfig.Ingress.Host,
+				IngressRuleValue: networkingv1.IngressRuleValue{
+					HTTP: &networkingv1.HTTPIngressRuleValue{
+						Paths: []networkingv1.HTTPIngressPath{
+							{
+								Path:     "/",
+								PathType: ptr.To(networkingv1.PathTypePrefix),
+								Backend: networkingv1.IngressBackend{
+									Service: &networkingv1.IngressServiceBackend{
+										Name: fmt.Sprintf(chiadatalayerfileserverNamePattern, datalayer.Name),
+										Port: networkingv1.ServiceBackendPort{
+											Number: 80,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+
+	return ingress
 }

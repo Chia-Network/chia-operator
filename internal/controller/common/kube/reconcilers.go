@@ -20,6 +20,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -329,6 +330,60 @@ func ReconcileConfigMap(ctx context.Context, c client.Client, desired corev1.Con
 					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 				}
 				return ctrl.Result{}, fmt.Errorf("error updating ConfigMap \"%s\": %v", desired.Name, err)
+			}
+		}
+	}
+
+	return ctrl.Result{}, nil
+}
+
+// ReconcileIngress uses the controller-runtime client to determine if the Ingress resource needs to be created or updated
+func ReconcileIngress(ctx context.Context, c client.Client, ingress k8schianetv1.IngressConfig, desired networkingv1.Ingress) (reconcile.Result, error) {
+	klog := log.FromContext(ctx).WithValues("Ingress.Namespace", desired.Namespace, "Ingress.Name", desired.Name)
+
+	ensureIngressExists := false
+	if ingress.Enabled != nil {
+		ensureIngressExists = *ingress.Enabled
+	}
+
+	// Get existing Ingress
+	var current networkingv1.Ingress
+	err := c.Get(ctx, types.NamespacedName{
+		Name:      desired.Name,
+		Namespace: desired.Namespace,
+	}, &current)
+	if err != nil && errors.IsNotFound(err) {
+		// Ingress not found - create if it should exist, or return here if it shouldn't
+		if ensureIngressExists {
+			klog.Info("Creating new Ingress")
+			if err := c.Create(ctx, &desired); err != nil {
+				return ctrl.Result{}, fmt.Errorf("error creating Ingress \"%s\": %v", desired.Name, err)
+			}
+		} else {
+			return ctrl.Result{}, nil
+		}
+	} else if err != nil {
+		// Getting Ingress failed, but it wasn't because it doesn't exist, can't do anything
+		return ctrl.Result{}, fmt.Errorf("error getting existing Ingress \"%s\": %v", desired.Name, err)
+	} else {
+		// Ingress exists, so we need to update it if there are any changes, or delete if it was disabled
+		if ensureIngressExists {
+			desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
+			if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
+				current.Labels = desired.Labels
+				current.Annotations = desiredAnnotations
+				current.Spec = desired.Spec
+				if err := c.Update(ctx, &current); err != nil {
+					if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+						return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+					}
+					return ctrl.Result{}, fmt.Errorf("error updating Ingress \"%s\": %v", desired.Name, err)
+				}
+			}
+		} else {
+			klog.Info("Deleting Ingress because it was disabled")
+			if err := c.Delete(ctx, &current); err != nil {
+				return ctrl.Result{}, fmt.Errorf("error deleting Ingress \"%s\": %v", desired.Name, err)
 			}
 		}
 	}
