@@ -110,7 +110,7 @@ func (r *ChiaDataLayerReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return res, err
 	}
 
-	// Assemble HTTP Service if enabled
+	// Assemble HTTP Service
 	httpSrv := fileserver.AssembleService(datalayer)
 	if err := controllerutil.SetControllerReference(&datalayer, &httpSrv, r.Scheme); err != nil {
 		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to assemble datalayer HTTP Service -- Check operator logs.")
@@ -123,13 +123,13 @@ func (r *ChiaDataLayerReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return res, err
 	}
 
-	// Assemble and reconcile Ingress if enabled
+	// Assemble fileserver Ingress
 	ingress := fileserver.AssembleIngress(datalayer)
 	if err := controllerutil.SetControllerReference(&datalayer, &ingress, r.Scheme); err != nil {
 		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to assemble datalayer Ingress -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("encountered error assembling Ingress: %v", err)
 	}
-	// Reconcile Ingress
+	// Reconcile fileserver Ingress
 	res, err = kube.ReconcileIngress(ctx, r.Client, datalayer.Spec.FileserverConfig.Ingress, ingress)
 	if err != nil {
 		r.Recorder.Event(&datalayer, corev1.EventTypeWarning, "Failed", "Failed to reconcile datalayer Ingress -- Check operator logs.")
