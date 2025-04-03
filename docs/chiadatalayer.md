@@ -195,6 +195,31 @@ spec:
           - ALL
 ```
 
+### Ingress Configuration
+
+You can configure an Ingress resource for the fileserver:
+
+```yaml
+spec:
+  fileserver:
+    enabled: true
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      host: datalayer.example.com
+      # Add custom labels and annotations to the Ingress
+      labels:
+        environment: production
+      annotations:
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+      tls:
+        - hosts:
+            - datalayer.example.com
+          secretName: datalayer-tls
+```
+
 ## More Info
 
 This page contains documentation specific to this resource. Please see the rest of the documentation for information on more available configurations.

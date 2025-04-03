@@ -7,6 +7,7 @@ package v1
 import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -78,6 +79,11 @@ type FileserverConfig struct {
 	// +optional
 	Service Service `json:"service,omitempty"`
 
+	// Ingress defines settings for the Ingress optionally installed with any fileserver resource.
+	// Defaults to being disabled.
+	// +optional
+	Ingress IngressConfig `json:"ingress,omitempty"`
+
 	// AdditionalEnv contain a list of additional environment variables to be supplied to the chia container.
 	// These variables will be placed at the end of the environment variable list in the resulting container,
 	// this means they overwrite variables of the same name created by the operator in the container env.
@@ -103,6 +109,31 @@ type FileserverConfig struct {
 	// SecurityContext defines the security context for the fileserver container.
 	// +optional
 	SecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
+}
+
+// IngressConfig defines the configuration for a Kubernetes Ingress resource
+type IngressConfig struct {
+	AdditionalMetadata `json:",inline"`
+
+	// Enabled defines whether an Ingress should be created for the fileserver
+	// +optional
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// IngressClassName defines the IngressClass to use for this Ingress
+	// +optional
+	IngressClassName *string `json:"ingressClassName,omitempty"`
+
+	// Host defines the hostname for the Ingress
+	// +optional
+	Host *string `json:"host,omitempty"`
+
+	// TLS defines TLS configuration for the Ingress
+	// +optional
+	TLS *[]networkingv1.IngressTLS `json:"tls,omitempty"`
+
+	// Rules defines the routing rules for the Ingress
+	// +optional
+	Rules *[]networkingv1.IngressRule `json:"rules,omitempty"`
 }
 
 // ChiaDataLayerStatus defines the observed state of ChiaDataLayer
