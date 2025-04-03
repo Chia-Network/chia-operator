@@ -218,17 +218,6 @@ spec:
         - hosts:
             - datalayer.example.com
           secretName: datalayer-tls
-      rules:
-        - host: datalayer.example.com
-          http:
-            paths:
-              - path: /
-                pathType: Prefix
-                backend:
-                  service:
-                    name: chiadatalayer-sample-fileserver
-                    port:
-                      number: 8575
 ```
 
 ## More Info
