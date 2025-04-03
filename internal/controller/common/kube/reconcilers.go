@@ -368,10 +368,9 @@ func ReconcileIngress(ctx context.Context, c client.Client, ingress k8schianetv1
 	} else {
 		// Ingress exists, so we need to update it if there are any changes, or delete if it was disabled
 		if ensureIngressExists {
-			desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
-			if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
+			if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desired.Annotations) {
 				current.Labels = desired.Labels
-				current.Annotations = desiredAnnotations
+				current.Annotations = desired.Annotations
 				current.Spec = desired.Spec
 				if err := c.Update(ctx, &current); err != nil {
 					if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
