@@ -3,6 +3,7 @@
 This documentation is meant to be applicable generally to all resources the operator manages.
 
 ## Table of Contents
+
 - [Chia Configuration](#chia-configuration)
   - [Network Selection](#selecting-a-network)
   - [Install from Specific Ref](#install-chia-from-a-specific-ref)
