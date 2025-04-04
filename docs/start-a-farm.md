@@ -1,14 +1,8 @@
-## Getting Started
-
-### Install the operator
-
-[See the installation documentation.](quickstart.md)
-
-### Start a farm
+# Start a farm
 
 This guide installs everything in the default namespace, but you can of course install them in any namespace. These are also all fairly minimal examples with just enough config to be helpful. Other options are supported.
 
-#### SSL CA
+## SSL CA
 
 First thing you'll need is a CA Secret. Chia components all communicate with each other over TLS with signed certificates all using the same certificate authority. This presents a problem in k8s, because each chia-docker container will try to generate their own CAs if none are declared, and all your components will refuse to communicate with each other. This operator contains a ChiaCA CRD that will generate a new CA and set it as a kubernetes Secret for you, or you can make your own Secret with a pre-existing ssl/ca directory. In this guide, we'll show the ChiaCA method first, and then the pre-made Secret second.
 
@@ -25,9 +19,9 @@ spec:
 
 The `spec.secret` key specifies the name of the k8s Secret that will be created. The Secret will be created in the same namespace that the ChiaCA CR was created in. Apply this with `kubectl apply -f ca.yaml`
 
-You can also specify a CA Secret without using the ChiaCA custom resource helper. [See the chiaca documentation.](chiaca.md)
+You can also specify a CA Secret without using the ChiaCA custom resource helper. [See the chiaca documentation.](chiaca.md#manually-create-a-ca-secret)
 
-#### full_node
+## full_node
 
 Next we need a full_node. Create a file named `node.yaml`:
 
@@ -61,7 +55,7 @@ storage:
 
 Finally, apply your ChiaNode with: `kubectl apply -f node.yaml`
 
-#### farmer
+## farmer
 
 Now we can create a farmer that talks to our full_node. Create a file named `farmer.yaml`:
 
@@ -86,7 +80,7 @@ We also have a `secretKey` in the chia config spec. That defines a k8s Secret in
 
 Finally, apply this ChiaFarmer with `kubectl apply -f farmer.yaml`
 
-#### harvester
+## harvester
 
 Now we can create a harvester that talks to our farmer. Create a file named `harvester.yaml`:
 
@@ -111,7 +105,7 @@ spec:
 
 The config here is very similar to the other components we already made, but we're specifying the farmerAddress, which tells the harvester where to look for the farmer. The farmer port is inferred. And in the storage config, we're specifying two plot directories that are mounted to a particular host. And we're pinning this harvester pod to that node using a nodeSelector with a label that exists on that particular node.
 
-#### wallet
+## wallet
 
 Now we can create a wallet that talks to our full_node. Create a file named `wallet.yaml`:
 
