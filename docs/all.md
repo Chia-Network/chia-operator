@@ -2,6 +2,23 @@
 
 This documentation is meant to be applicable generally to all resources the operator manages.
 
+## Table of Contents
+- [Chia Configuration](#chia-configuration)
+  - [Network Selection](#selecting-a-network)
+  - [Install from Specific Ref](#install-chia-from-a-specific-ref)
+- [Requests and Limits](#chia-container-resource-requests-and-limits)
+- [Environment Variables](#chia-container-additional-environment-variables)
+- [Pod Affinity](#pod-affinity)
+- [Topology Spread Constraints](#topology-spread-constraints)
+- [Pod Security Contexts](#pod-security-contexts)
+- [Container Security Contexts](#container-security-contexts)
+- [Node Selectors](#node-selectors)
+- [Update Strategies](#update-strategy)
+- [Health Checks](#configure-readiness-liveness-and-startup-probes)
+- [Image Pull Secret](#specify-image-pull-secrets)
+- [Image Pull Policy](#specify-image-pull-policy)
+- [Service Account](#specify-a-service-account)
+
 ## Chia configuration
 
 Some of Chia's configuration can be changed from within the CR.
