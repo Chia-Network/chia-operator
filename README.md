@@ -2,7 +2,7 @@
 
 A Kubernetes operator for managing all of your Chia services in your favorite container orchestrator!
 
-Easily run Chia components in Kubernetes by applying simple manifests. A whole farm can be run with each component isolated in its own pod, with a chia-exporter sidecar for remote monitoring, and chia-healthcheck for intelligent chia healthchecking (for supported chia services.)
+Easily run Chia components in Kubernetes by applying simple manifests. A whole farm can be run with each component isolated in its own pod, with a chia-exporter sidecar for remote monitoring, and chia-healthcheck for intelligent healthchecking (for supported chia services.)
 
 ## Quickstart
 
@@ -39,7 +39,7 @@ The operator should be running in your cluster now and ready to go! Get to insta
 
 For more information on specific configurations:
 
-* [Generic options for all chia-operator resources](docs/all.md)
+* [Generic options for chia resources](docs/all.md)
 * [chia-exporter configuration](docs/chia-exporter.md)
 * [chia-healthcheck configuration](docs/chia-healthcheck.md)
 * [Services and networking](docs/services-networking.md)
