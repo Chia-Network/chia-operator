@@ -10,10 +10,6 @@ import (
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 )
 
-func stringPtr(s string) *string {
-	return &s
-}
-
 func TestGetChiaVolumeMounts(t *testing.T) {
 	volumeMounts := getChiaVolumeMounts()
 
