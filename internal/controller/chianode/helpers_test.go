@@ -12,13 +12,10 @@ import (
 )
 
 func TestGetChiaVolumeMounts(t *testing.T) {
-	// Call the function
 	volumeMounts := getChiaVolumeMounts()
 
-	// Assert the results
 	assert.Len(t, volumeMounts, 2, "Expected 2 volume mounts")
 
-	// Check each volume mount
 	expectedVolumeMounts := []struct {
 		name      string
 		mountPath string
@@ -34,7 +31,6 @@ func TestGetChiaVolumeMounts(t *testing.T) {
 }
 
 func TestGetChiaRootVolume(t *testing.T) {
-	// Test cases
 	testCases := []struct {
 		name           string
 		storage        *k8schianetv1.StorageConfig
@@ -115,10 +111,8 @@ func TestGetChiaRootVolume(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Call the function
 			volume, pvc := getChiaRootVolume(tc.storage)
 
-			// Assert the results
 			if tc.expectedVolume != nil {
 				assert.NotNil(t, volume, "Volume should not be nil")
 				assert.Equal(t, tc.expectedVolume.Name, volume.Name, "Volume name should match")
@@ -263,14 +257,12 @@ func TestGetChiaVolumesAndTemplates(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			volumes, volumeTemplates := getChiaVolumesAndTemplates(tc.node)
 
-			// Check volumes
 			assert.Equal(t, len(tc.expectedVolumes), len(volumes), "Number of volumes should match")
 			for i, expectedVolume := range tc.expectedVolumes {
 				assert.Equal(t, expectedVolume.Name, volumes[i].Name, "Volume name should match")
 				assert.Equal(t, expectedVolume.VolumeSource, volumes[i].VolumeSource, "Volume source should match")
 			}
 
-			// Check volume templates
 			if tc.expectedVolumeTemplates == nil {
 				assert.Empty(t, volumeTemplates, "Volume templates should be empty")
 			} else {

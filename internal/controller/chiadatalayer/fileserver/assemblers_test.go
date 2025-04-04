@@ -104,10 +104,8 @@ func TestAssembleService(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Call the function
 			service := AssembleService(tc.datalayer)
 
-			// Assert the results
 			assert.Equal(t, tc.expectedService.name, service.Name, "Service name should match")
 			assert.Equal(t, tc.expectedService.namespace, service.Namespace, "Service namespace should match")
 			assert.Equal(t, tc.expectedService.ports, service.Spec.Ports, "Service ports should match")
@@ -208,10 +206,9 @@ func TestAssembleContainer(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Call the function
+
 			container := AssembleContainer(tc.datalayer)
 
-			// Assert the results
 			assert.Equal(t, tc.expectedContainer.name, container.Name, "Container name should match")
 			assert.Equal(t, tc.expectedContainer.image, container.Image, "Container image should match")
 			assert.Equal(t, tc.expectedContainer.imagePullPolicy, container.ImagePullPolicy, "Image pull policy should match")
@@ -221,7 +218,7 @@ func TestAssembleContainer(t *testing.T) {
 }
 
 func TestAssembleIngress(t *testing.T) {
-	// Test cases
+
 	testCases := []struct {
 		name            string
 		datalayer       k8schianetv1.ChiaDataLayer
@@ -284,10 +281,8 @@ func TestAssembleIngress(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Call the function
 			ingress := AssembleIngress(tc.datalayer)
 
-			// Assert the results
 			assert.Equal(t, tc.expectedIngress.name, ingress.Name, "Ingress name should match")
 			assert.Equal(t, tc.expectedIngress.namespace, ingress.Namespace, "Ingress namespace should match")
 

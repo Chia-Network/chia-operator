@@ -98,7 +98,65 @@ func TestGetChiaVolumes(t *testing.T) {
 		want      []corev1.Volume
 	}{
 		{
-			name: "With PVC Storage and Plots",
+			name: "With Generated ChiaRoot Storage and Specified Plots",
+			harvester: k8schianetv1.ChiaHarvester{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: k8schianetv1.ChiaHarvesterSpec{
+					ChiaConfig: k8schianetv1.ChiaHarvesterSpecChia{
+						CASecretName: "test-ca-secret",
+					},
+					CommonSpec: k8schianetv1.CommonSpec{
+						Storage: &k8schianetv1.StorageConfig{
+							ChiaRoot: &k8schianetv1.ChiaRootConfig{
+								PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
+									GenerateVolumeClaims: true,
+									StorageClass:         "standard",
+									ResourceRequest:      "10Gi",
+									AccessModes:          []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+								},
+							},
+							Plots: &k8schianetv1.PlotsConfig{
+								PersistentVolumeClaim: []*k8schianetv1.PersistentVolumeClaimConfig{
+									{
+										ClaimName: "plot-pvc-1",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []corev1.Volume{
+				{
+					Name: "secret-ca",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: "test-ca-secret",
+						},
+					},
+				},
+				{
+					Name: "chiaroot",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "test-harvester",
+						},
+					},
+				},
+				{
+					Name: "pvc-plots-0",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "plot-pvc-1",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "With Specified ChiaRoot Storage and Plots",
 			harvester: k8schianetv1.ChiaHarvester{
 				Spec: k8schianetv1.ChiaHarvesterSpec{
 					ChiaConfig: k8schianetv1.ChiaHarvesterSpecChia{

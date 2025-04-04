@@ -98,10 +98,8 @@ func TestConstructCertMap_NilCertificate(t *testing.T) {
 		PrivateCrawler: nil, // This should cause an error
 	}
 
-	// Call the function
 	certMap, err := constructCertMap(allCerts)
 
-	// Assert the results
 	assert.Error(t, err)
 	assert.Nil(t, certMap)
 	assert.Contains(t, err.Error(), "key pair nil")

@@ -35,7 +35,7 @@ func TestGetChiaVolumes(t *testing.T) {
 		expectedVolumes []corev1.Volume
 	}{
 		{
-			name: "With PVC Storage",
+			name: "With Generated ChiaRoot Storage",
 			timelord: k8schianetv1.ChiaTimelord{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
@@ -72,6 +72,46 @@ func TestGetChiaVolumes(t *testing.T) {
 					VolumeSource: corev1.VolumeSource{
 						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 							ClaimName: "test-timelord",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "With Specified ChiaRoot Storage",
+			timelord: k8schianetv1.ChiaTimelord{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: k8schianetv1.ChiaTimelordSpec{
+					ChiaConfig: k8schianetv1.ChiaTimelordSpecChia{
+						CASecretName: "test-ca-secret",
+					},
+					CommonSpec: k8schianetv1.CommonSpec{
+						Storage: &k8schianetv1.StorageConfig{
+							ChiaRoot: &k8schianetv1.ChiaRootConfig{
+								PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
+									ClaimName: "specified-chiaroot",
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedVolumes: []corev1.Volume{
+				{
+					Name: "secret-ca",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: "test-ca-secret",
+						},
+					},
+				},
+				{
+					Name: "chiaroot",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "specified-chiaroot",
 						},
 					},
 				},

@@ -17,7 +17,6 @@ func stringPtr(s string) *string {
 func TestGetChiaVolumeMounts(t *testing.T) {
 	volumeMounts := getChiaVolumeMounts()
 
-	// Assert the results
 	assert.Len(t, volumeMounts, 3, "Expected 3 volume mounts")
 
 	// Check each volume mount
@@ -43,7 +42,7 @@ func TestGetChiaVolumes(t *testing.T) {
 		expectedVolumes []corev1.Volume
 	}{
 		{
-			name: "With PVC Storage",
+			name: "With Generated ChiaRoot",
 			farmer: k8schianetv1.ChiaFarmer{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
@@ -92,6 +91,58 @@ func TestGetChiaVolumes(t *testing.T) {
 					VolumeSource: corev1.VolumeSource{
 						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 							ClaimName: "test-farmer",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "With Specified ChiaRoot Storage",
+			farmer: k8schianetv1.ChiaFarmer{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: k8schianetv1.ChiaFarmerSpec{
+					ChiaConfig: k8schianetv1.ChiaFarmerSpecChia{
+						CASecretName: "test-ca-secret",
+						SecretKey: k8schianetv1.ChiaSecretKey{
+							Name: "test-key-secret",
+							Key:  "test-key",
+						},
+					},
+					CommonSpec: k8schianetv1.CommonSpec{
+						Storage: &k8schianetv1.StorageConfig{
+							ChiaRoot: &k8schianetv1.ChiaRootConfig{
+								PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
+									ClaimName: "specified-chiaroot",
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedVolumes: []corev1.Volume{
+				{
+					Name: "secret-ca",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: "test-ca-secret",
+						},
+					},
+				},
+				{
+					Name: "key",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: "test-key-secret",
+						},
+					},
+				},
+				{
+					Name: "chiaroot",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "specified-chiaroot",
 						},
 					},
 				},
@@ -190,7 +241,6 @@ func TestGetChiaVolumes(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			volumes := getChiaVolumes(tc.farmer)
 
-			// Check volumes
 			assert.Equal(t, len(tc.expectedVolumes), len(volumes), "Number of volumes should match")
 			for i, expectedVolume := range tc.expectedVolumes {
 				assert.Equal(t, expectedVolume.Name, volumes[i].Name, "Volume name should match")

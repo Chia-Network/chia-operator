@@ -8,10 +8,8 @@ import (
 )
 
 func TestGetChiaPorts(t *testing.T) {
-	// Call the function
 	ports := getChiaPorts()
 
-	// Assert the results
 	assert.Len(t, ports, 3, "Expected 3 ports")
 
 	// Check each port
@@ -33,13 +31,10 @@ func TestGetChiaPorts(t *testing.T) {
 }
 
 func TestGetChiaVolumeMounts(t *testing.T) {
-	// Call the function
 	volumeMounts := getChiaVolumeMounts()
 
-	// Assert the results
 	assert.Len(t, volumeMounts, 3, "Expected 3 volume mounts")
 
-	// Check each volume mount
 	expectedVolumeMounts := []struct {
 		name      string
 		mountPath string

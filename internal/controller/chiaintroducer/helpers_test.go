@@ -11,7 +11,6 @@ import (
 )
 
 func TestGetChiaVolumeMounts(t *testing.T) {
-	// Test cases
 	testCases := []struct {
 		name           string
 		introducer     k8schianetv1.ChiaIntroducer
@@ -65,10 +64,9 @@ func TestGetChiaVolumeMounts(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Call the function
+
 			volumeMounts := getChiaVolumeMounts(tc.introducer)
 
-			// Assert the results
 			assert.Len(t, volumeMounts, len(tc.expectedMounts), "Expected %d volume mounts", len(tc.expectedMounts))
 
 			// Check each volume mount
@@ -81,7 +79,6 @@ func TestGetChiaVolumeMounts(t *testing.T) {
 }
 
 func TestGetChiaVolumes(t *testing.T) {
-	// Test cases
 	testCases := []struct {
 		name            string
 		introducer      k8schianetv1.ChiaIntroducer
@@ -91,7 +88,54 @@ func TestGetChiaVolumes(t *testing.T) {
 		}
 	}{
 		{
-			name: "With CA Secret and Storage",
+			name: "With CA Secret and Generated PVC",
+			introducer: k8schianetv1.ChiaIntroducer{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test",
+					Namespace: "test",
+				},
+				Spec: k8schianetv1.ChiaIntroducerSpec{
+					CommonSpec: k8schianetv1.CommonSpec{
+						Storage: &k8schianetv1.StorageConfig{
+							ChiaRoot: &k8schianetv1.ChiaRootConfig{
+								PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
+									GenerateVolumeClaims: true,
+									StorageClass:         "standard",
+									ResourceRequest:      "10Gi",
+									AccessModes:          []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+								},
+							},
+						},
+					},
+					ChiaConfig: k8schianetv1.ChiaIntroducerSpecChia{
+						CASecretName: stringPtr("test-ca-secret"),
+					},
+				},
+			},
+			expectedVolumes: []struct {
+				name         string
+				volumeSource corev1.VolumeSource
+			}{
+				{
+					name: "secret-ca",
+					volumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: "test-ca-secret",
+						},
+					},
+				},
+				{
+					name: "chiaroot",
+					volumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "test-introducer",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "With CA Secret and Specified PVC",
 			introducer: k8schianetv1.ChiaIntroducer{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-introducer",
@@ -163,13 +207,10 @@ func TestGetChiaVolumes(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Call the function
 			volumes := getChiaVolumes(tc.introducer)
 
-			// Assert the results
 			assert.Len(t, volumes, len(tc.expectedVolumes), "Expected %d volumes", len(tc.expectedVolumes))
 
-			// Check each volume
 			for i, expected := range tc.expectedVolumes {
 				assert.Equal(t, expected.name, volumes[i].Name, "Volume name should match")
 				assert.Equal(t, expected.volumeSource, volumes[i].VolumeSource, "Volume source should match")

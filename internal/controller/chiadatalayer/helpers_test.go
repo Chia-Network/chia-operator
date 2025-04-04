@@ -41,7 +41,7 @@ func TestGetChiaVolumes(t *testing.T) {
 		}
 	}{
 		{
-			name: "With CA Secret and Storage",
+			name: "With CA Secret and Generated PVC Storage",
 			datalayer: k8schianetv1.ChiaDataLayer{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
@@ -115,6 +115,67 @@ func TestGetChiaVolumes(t *testing.T) {
 			},
 		},
 		{
+			name: "With Specified PVC Storage",
+			datalayer: k8schianetv1.ChiaDataLayer{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-datalayer",
+					Namespace: "test-namespace",
+				},
+				Spec: k8schianetv1.ChiaDataLayerSpec{
+					ChiaConfig: k8schianetv1.ChiaDataLayerSpecChia{
+						CASecretName: nil,
+						SecretKey: k8schianetv1.ChiaSecretKey{
+							Name: "test-key-secret",
+							Key:  "test-key",
+						},
+					},
+					CommonSpec: k8schianetv1.CommonSpec{
+						Storage: &k8schianetv1.StorageConfig{
+							ChiaRoot: &k8schianetv1.ChiaRootConfig{
+								PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
+									ClaimName: "specified-chiaroot",
+								},
+							},
+							DataLayerServerFiles: &k8schianetv1.DataLayerServerFilesConfig{
+								PersistentVolumeClaim: &k8schianetv1.PersistentVolumeClaimConfig{
+									ClaimName: "specified-server",
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedVolumes: []struct {
+				name         string
+				volumeSource corev1.VolumeSource
+			}{
+				{
+					name: "key",
+					volumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: "test-key-secret",
+						},
+					},
+				},
+				{
+					name: "chiaroot",
+					volumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "specified-chiaroot",
+						},
+					},
+				},
+				{
+					name: "server",
+					volumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "specified-server",
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "Without CA Secret and Storage",
 			datalayer: k8schianetv1.ChiaDataLayer{
 				ObjectMeta: metav1.ObjectMeta{
@@ -161,13 +222,9 @@ func TestGetChiaVolumes(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Call the function
 			volumes := getChiaVolumes(tc.datalayer)
 
-			// Assert the results
 			assert.Len(t, volumes, len(tc.expectedVolumes), "Expected %d volumes", len(tc.expectedVolumes))
-
-			// Check each volume
 			for i, expected := range tc.expectedVolumes {
 				assert.Equal(t, expected.name, volumes[i].Name, "Volume name should match")
 				assert.Equal(t, expected.volumeSource, volumes[i].VolumeSource, "Volume source should match")
@@ -177,7 +234,6 @@ func TestGetChiaVolumes(t *testing.T) {
 }
 
 func TestGetChiaVolumeMounts(t *testing.T) {
-	// Test cases
 	testCases := []struct {
 		name           string
 		datalayer      k8schianetv1.ChiaDataLayer
@@ -246,10 +302,9 @@ func TestGetChiaVolumeMounts(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Call the function
+
 			volumeMounts := getChiaVolumeMounts(tc.datalayer)
 
-			// Assert the results
 			assert.Len(t, volumeMounts, len(tc.expectedMounts), "Expected %d volume mounts", len(tc.expectedMounts))
 
 			// Check each volume mount
@@ -262,7 +317,7 @@ func TestGetChiaVolumeMounts(t *testing.T) {
 }
 
 func TestGetExistingChiaDatalayerServerVolume(t *testing.T) {
-	// Test cases
+
 	testCases := []struct {
 		name           string
 		storage        *k8schianetv1.StorageConfig
@@ -345,10 +400,8 @@ func TestGetExistingChiaDatalayerServerVolume(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Call the function
 			volume := getExistingChiaDatalayerServerVolume(tc.storage)
 
-			// Assert the results
 			assert.Equal(t, tc.expectedVolume.name, volume.Name, "Volume name should match")
 			assert.Equal(t, tc.expectedVolume.volumeSource, volume.VolumeSource, "Volume source should match")
 		})
