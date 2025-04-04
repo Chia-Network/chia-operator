@@ -1,173 +1,46 @@
 # chia-operator
 
-Kubernetes operator for managing Chia components in kubernetes. Currently supported components:
+A Kubernetes operator for managing all of your Chia services in your favorite container orchestrator!
 
-- full_nodes
-- farmers
-- harvesters
-- wallets
-- timelords
-- introducers
-- seeders
-- crawlers
-- data_layer
+Easily run Chia components in Kubernetes by applying simple manifests. A whole farm can be run with each component isolated in its own pod, with a chia-exporter sidecar for remote monitoring, and chia-healthcheck for intelligent healthchecking (for supported chia services.)
 
-Easily run Chia components in Kubernetes by applying simple manifests. A whole farm can be ran with each component isolated in its own pod, with a chia-exporter sidecar to scrape Prometheus metrics.
+## Quickstart
 
-ChiaCA is an additional CRD that generates a certificate authority for Chia components and places it in a kubernetes Secret as a convenience. Alternatively, users can pre-generate their own CA Secret with data keys for: `chia_ca.crt`, `chia_ca.key`, `private_ca.crt`, and `private_ca.key`.
+### Install
 
-## Getting Started
+Install the latest version of chia-operator:
 
-### Install the operator
-
-[See the installation documentation.](docs/install.md)
-
-### Start a farm
-
-This guide installs everything in the default namespace, but you can of course install them in any namespace. These are also all fairly minimal examples with just enough config to be helpful. Other options are supported.
-
-[See the documentation for more information for configuring each of your chia resources.](docs)
-
-#### SSL CA
-
-First thing you'll need is a CA Secret. Chia components all communicate with each other over TLS with signed certificates all using the same certificate authority. This presents a problem in k8s, because each chia-docker container will try to generate their own CAs if none are declared, and all your components will refuse to communicate with each other. This operator contains a ChiaCA CRD that will generate a new CA and set it as a kubernetes Secret for you, or you can make your own Secret with a pre-existing ssl/ca directory. In this guide, we'll show the ChiaCA method first, and then the pre-made Secret second.
-
-Create a file named `ca.yaml`:
-
-```yaml
-apiVersion: k8s.chia.net/v1
-kind: ChiaCA
-metadata:
-  name: mainnet-ca
-spec:
-  secret: mainnet-ca
+```bash
+kubectl apply --server-side -f https://github.com/Chia-Network/chia-operator/releases/latest/download/crd.yaml
+kubectl apply -f https://github.com/Chia-Network/chia-operator/releases/latest/download/manager.yaml
 ```
 
-The `spec.secret` key specifies the name of the k8s Secret that will be created. The Secret will be created in the same namespace that the ChiaCA CR was created in. Apply this with `kubectl apply -f ca.yaml`
+The operator Deployment will be installed in the `chia-operator-system` namespace.
 
-You can also specify a CA Secret without using the ChiaCA custom resource helper. [See the chiaca documentation.](docs/chiaca.md)
+### Prometheus metrics (Optional)
 
-#### full_node
+If you have the Prometheus Operator installed in your cluster and would like to use the bundled ServiceMonitor to scrape chia-operator metrics:
 
-Next we need a full_node. Create a file named `node.yaml`:
-
-```yaml
-apiVersion: k8s.chia.net/v1
-kind: ChiaNode
-metadata:
-  name: mainnet
-spec:
-  replicas: 1
-  chia:
-    caSecretName: mainnet-ca
-    timezone: "UTC"
-  storage:
-    chiaRoot:
-      hostPathVolume:
-        path: "/home/user/.chia/mainnetk8s"
-  nodeSelector:
-    kubernetes.io/hostname: "node-with-hostpath"
+```bash
+kubectl apply -f https://github.com/Chia-Network/chia-operator/releases/latest/download/monitor.yaml
 ```
 
-As you can see, we used a hostPath volume for CHIA_ROOT. We also specified a nodeSelector for the full_node pod that will be brought up in this Statefulset, this is because a hostPath won't move over to other nodes in the cluster if it gets scheduled elsewhere. You can configure a persistent volume claim instead. ChiaNode objects create StatefulSets which allow each pod to generate their very own PersistentVolumeClaim with this as your storage config:
+The ServiceMonitor will be installed in the `chia-operator-system` namespace.
 
-```yaml
-storage:
-  chiaRoot:
-    persistentVolumeClaim:
-      storageClass: ""
-      resourceRequest: "300Gi"
-```
+### Install Chia Services
 
-Finally, apply your ChiaNode with: `kubectl apply -f node.yaml`
+The operator should be running in your cluster now and ready to go! Get to installing some Chia resources. If you're a farmer, see the [Start a Farm](docs/start-a-farm.md) guide, or view these individually:
 
-#### farmer
+* [ChiaCA](docs/chiaca.md) (required so your chia services can all talk to each other!)
+* [Node](docs/chianode.md)
+* [Farmer](docs/chiafarmer.md)
+* [Harvester](docs/chiaharvester.md)
+* [Wallet](docs/chiawallet.md)
 
-Now we can create a farmer that talks to our full_node. Create a file named `farmer.yaml`:
+For more information on specific configurations:
 
-```yaml
-apiVersion: k8s.chia.net/v1
-kind: ChiaFarmer
-metadata:
-  name: mainnet
-spec:
-  chia:
-    caSecretName: mainnet-ca
-    timezone: "UTC"
-    fullNodePeer: "mainnet-node.default.svc.cluster.local:8444"
-    secretKey:
-      name: "chiakey"
-      key: "key.txt"
-```
-
-A couple of things going on here. First, we configured the fullNodePeer address, which we'll use kubernetes internal DNS names for services, targeting port 8444 on the `mainnet-node` service, in the `default` namespace, using the default cluster domain `cluster.local`. If your cluster uses a non-default domain name, switch it to that. Also switch `default` to whatever namespace your ChiaNode is deployed to.
-
-We also have a `secretKey` in the chia config spec. That defines a k8s Secret in the same namespace as this ChiaFarmer, named `chiakey` which contains one data key `key.txt` which contains your Chia mnemonic.
-
-Finally, apply this ChiaFarmer with `kubectl apply -f farmer.yaml`
-
-#### harvester
-
-Now we can create a harvester that talks to our farmer. Create a file named `harvester.yaml`:
-
-```yaml
-apiVersion: k8s.chia.net/v1
-kind: ChiaHarvester
-metadata:
-  name: mainnet
-spec:
-  chia:
-    caSecretName: mainnet-ca
-    timezone: "UTC"
-    farmerAddress: "mainnet-farmer.default.svc.cluster.local"
-  storage:
-    plots:
-      hostPathVolume:
-        - path: "/mnt/plot1"
-        - path: "/mnt/plot2"
-  nodeSelector:
-    kubernetes.io/hostname: "node-with-hostpaths"
-```
-
-The config here is very similar to the other components we already made, but we're specifying the farmerAddress, which tells the harvester where to look for the farmer. The farmer port is inferred. And in the storage config, we're specifying two plot directories that are mounted to a particular host. And we're pinning this harvester pod to that node using a nodeSelector with a label that exists on that particular node.
-
-#### wallet
-
-Now we can create a wallet that talks to our full_node. Create a file named `wallet.yaml`:
-
-```yaml
-apiVersion: k8s.chia.net/v1
-kind: ChiaWallet
-metadata:
-  name: mainnet
-spec:
-  chia:
-    caSecretName: mainnet-ca
-    timezone: "UTC"
-    fullNodePeer: "mainnet-node.default.svc.cluster.local:8444"
-    secretKey:
-      name: "chiakey"
-      key: "key.txt"
-```
-
-The config here is very similar to the farmer we already made since it also requires your mnemonic key and a full_node peer.
-
-Finally, apply this ChiaWallet with `kubectl apply -f wallet.yaml`
-
-## License
-
-Copyright 2023.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-```markdown
-http://www.apache.org/licenses/LICENSE-2.0
-```
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+* [Generic options for chia resources](docs/all.md)
+* [chia-exporter configuration](docs/chia-exporter.md)
+* [chia-healthcheck configuration](docs/chia-healthcheck.md)
+* [Services and networking](docs/services-networking.md)
+* [Storage](docs/storage.md)
