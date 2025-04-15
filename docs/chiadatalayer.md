@@ -54,7 +54,7 @@ spec:
 
 ## Server File Storage
 
-With chia-operator, data_layer server files are located in a volume mounted to the `/datalayer/server` directory in the chia container. By default, that server files volume will be mounted to the same `/datalayer/server` path for the fileserver container but can be changed in this container for use with non-default webserver applications like nginx. 
+With chia-operator, data_layer server files are located in a volume mounted to the `/datalayer/server` directory in the chia container. By default, that server files volume will be mounted to the same `/datalayer/server` path for the fileserver container but can be changed in this container for use with non-default webserver applications like nginx.
 
 By default, this directory will be an emptyDir volume, which doesn't persist on Pod restarts. Most of the time you will probably actually want to define a persistent volume or hostpath for persistence. Within the yaml for a ChiaDatalayer deployment, you can have a persistent volume generated for your server files:
 
