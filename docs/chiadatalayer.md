@@ -106,7 +106,7 @@ spec:
   fileserver:
     enabled: true
     # Optional: defaults to the official chia image using data_layer_http. 
-    # But a custom image for the fileserver image can be specified here.
+    # But a custom image for the fileserver can be specified here.
     image: "custom/fileserver:tag"
     # Optional custom mount path for server files
     # This is the mount path in the fileserver container only. 
