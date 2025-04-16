@@ -161,6 +161,7 @@ spec:
 ```
 
 #### nginx
+
 When using the standard Nginx container `nginx:latest`, the example shown here will work if copied exactly as written. Only change these values if you customized Nginx conf files outside of this operator.
 
 ```yaml
