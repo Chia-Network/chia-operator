@@ -36,6 +36,7 @@ The operator should be running in your cluster now and ready to go! Get to insta
 * [Farmer](docs/chiafarmer.md)
 * [Harvester](docs/chiaharvester.md)
 * [Wallet](docs/chiawallet.md)
+* [DataLayer](docs/chiadatalayer.md)
 
 For more information on specific configurations:
 
