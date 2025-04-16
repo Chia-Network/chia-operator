@@ -1,5 +1,17 @@
 # ChiaDataLayer
 
+- [Mnemonic Secret](#secret-key)
+- [Trusted Peers](#trusted-peers)
+- [Storage for Server Files](#server-file-storage)
+- [Fileserver Configuration](#fileserver-configuration)
+    - [Common Fileserver Configurations](#common-fileserver-configurations)
+    - [Ingress](#ingress-configuration)
+    - [Environment Variables](#additional-environment-variables)
+    - [Healthchecks](#container-health-checks)
+    - [Resource Limits/Requests](#resource-requirements)
+    - [Security Contexts](#security-context)
+- [More info](#more-info)
+
 Specifying a ChiaDataLayer will create a Kubernetes Deployment and Services for a Chia DataLayer server that connects to a local [full_node](chianode.md). It also requires a specified [Chia certificate authority](chiaca.md).
 
 It is also expected you have a pre-existing Chia key to import, likely one that you generated locally in a Chia GUI installation.
@@ -120,6 +132,8 @@ spec:
       type: ClusterIP
       externalTrafficPolicy: Local
 ```
+
+NOTE: Besides running a fileserver alongside the ChiaDataLayer deployment as a sidecar, you may also optionally wish to manage your own highly available webserver deployments external to chia-operator. To do so, just ensure the ChiaDataLayer builtin fileserver is disabled, and deploy your web server application of choice while mounting the server files volume. If doing a highly available fileserver deployment, you may want to ensure that the server files volume uses a `ReadWriteMany` access mode. See the [kubernetes documentation on Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) to find the correct PVC configuration for your intended web server setup. 
 
 ### Common Fileserver Configurations
 
