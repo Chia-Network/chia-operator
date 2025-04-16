@@ -143,6 +143,8 @@ NOTE: Besides running a fileserver alongside the ChiaDataLayer deployment as a s
 
 ### Common Fileserver Configurations
 
+These examples are intended to be copied exactly and provide working configurations.  The `metadata` may need to be updated for your configuration, but the other fields are unlikely to need to change for most applications.
+
 #### Default data_layer_http
 
 ```yaml
@@ -161,8 +163,6 @@ spec:
 ```
 
 #### nginx
-
-When using the standard Nginx container `nginx:latest`, the example shown here will work if copied exactly as written. Only change these values if you customized Nginx conf files outside of this operator.
 
 ```yaml
 apiVersion: k8s.chia.net/v1
