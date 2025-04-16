@@ -1,16 +1,16 @@
 # ChiaDataLayer
 
-- [Mnemonic Secret](#secret-key)
-- [Trusted Peers](#trusted-peers)
-- [Storage for Server Files](#server-file-storage)
-- [Fileserver Configuration](#fileserver-configuration)
-    - [Common Fileserver Configurations](#common-fileserver-configurations)
-    - [Ingress](#ingress-configuration)
-    - [Environment Variables](#additional-environment-variables)
-    - [Healthchecks](#container-health-checks)
-    - [Resource Limits/Requests](#resource-requirements)
-    - [Security Contexts](#security-context)
-- [More info](#more-info)
+* [Mnemonic Secret](#secret-key)
+* [Trusted Peers](#trusted-peers)
+* [Storage for Server Files](#server-file-storage)
+* [Fileserver Configuration](#fileserver-configuration)
+  * [Common Fileserver Configurations](#common-fileserver-configurations)
+  * [Environment Variables](#additional-environment-variables)
+  * [Healthchecks](#container-health-checks)
+  * [Resource Limits/Requests](#resource-requirements)
+  * [Security Contexts](#security-context)
+  * [Ingress](#ingress-configuration)
+* [More info](#more-info)
 
 Specifying a ChiaDataLayer will create a Kubernetes Deployment and Services for a Chia DataLayer server that connects to a local [full_node](chianode.md). It also requires a specified [Chia certificate authority](chiaca.md).
 
@@ -133,7 +133,7 @@ spec:
       externalTrafficPolicy: Local
 ```
 
-NOTE: Besides running a fileserver alongside the ChiaDataLayer deployment as a sidecar, you may also optionally wish to manage your own highly available webserver deployments external to chia-operator. To do so, just ensure the ChiaDataLayer builtin fileserver is disabled, and deploy your web server application of choice while mounting the server files volume. If doing a highly available fileserver deployment, you may want to ensure that the server files volume uses a `ReadWriteMany` access mode. See the [kubernetes documentation on Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) to find the correct PVC configuration for your intended web server setup. 
+NOTE: Besides running a fileserver alongside the ChiaDataLayer deployment as a sidecar, you may also optionally wish to manage your own highly available webserver deployments external to chia-operator. To do so, just ensure the ChiaDataLayer builtin fileserver is disabled, and deploy your web server application of choice while mounting the server files volume. If doing a highly available fileserver deployment, you may want to ensure that the server files volume uses a `ReadWriteMany` access mode. See the [kubernetes documentation on Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) to find the correct PVC configuration for your intended web server setup.
 
 ### Common Fileserver Configurations
 
@@ -172,31 +172,6 @@ spec:
     image: nginx:latest
     serverFileMountpath: /usr/share/nginx/html # defines the mount path for the server files volume in the container
     containerPort: 80 # defines the port of the http server in the container
-```
-
-### Ingress Configuration
-
-You can configure an Ingress resource for the fileserver:
-
-```yaml
-spec:
-  fileserver:
-    enabled: true
-    ingress:
-      enabled: true
-      ingressClassName: nginx
-      host: datalayer.example.com
-      # Add custom labels and annotations to the Ingress
-      labels:
-        environment: production
-      annotations:
-        nginx.ingress.kubernetes.io/ssl-redirect: "true"
-        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-        nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-      tls:
-        - hosts:
-            - datalayer.example.com
-          secretName: datalayer-tls
 ```
 
 ### Additional Environment Variables
@@ -280,6 +255,31 @@ spec:
       capabilities:
         drop:
           - ALL
+```
+
+### Ingress Configuration
+
+You can configure an Ingress resource for the fileserver:
+
+```yaml
+spec:
+  fileserver:
+    enabled: true
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      host: datalayer.example.com
+      # Add custom labels and annotations to the Ingress
+      labels:
+        environment: production
+      annotations:
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+      tls:
+        - hosts:
+            - datalayer.example.com
+          secretName: datalayer-tls
 ```
 
 ## More Info
