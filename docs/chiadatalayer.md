@@ -136,7 +136,8 @@ spec:
       type: ClusterIP
       externalTrafficPolicy: Local
 ```
- References for service endpoint configuration fields can be found in the [kubernetes docs](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types) and for the [Chia operator specifically](https://github.com/Chia-Network/chia-operator/blob/main/docs/services-networking.md). By default the .dat files will be available at a service endpoint on port 80.
+
+References for service endpoint configuration fields can be found in the [kubernetes docs](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types) and for the [Chia operator specifically](https://github.com/Chia-Network/chia-operator/blob/main/docs/services-networking.md). The .dat files will be available at a service endpoint on port 80.
 
 NOTE: Besides running a fileserver alongside the ChiaDataLayer deployment as a sidecar, you may also optionally wish to manage your own highly available webserver deployments external to chia-operator. To do so, just ensure the ChiaDataLayer builtin fileserver is disabled, and deploy your web server application of choice while mounting the server files volume. If doing a highly available fileserver deployment, you may want to ensure that the server files volume uses a `ReadWriteMany` access mode. See the [kubernetes documentation on Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) to find the correct PVC configuration for your intended web server setup.
 
