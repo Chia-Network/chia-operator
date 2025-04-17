@@ -125,9 +125,9 @@ spec:
     # It will not change the mount path in the chia container.
     # This path is what webserver software would set the webroot to
     serverFileMountpath: "/custom/path"
-    # Optional: custom container port. This port will be
-    # exposed on at a service endpoint on port 80 by default
-    # unless overridden below in the "service" section
+    # Optional: custom fileserver container port. This port defaults
+    # to 8575 (the data_layer_http default port) and should be changed
+    # when using a webserver (like nginx) that binds to a different port
     containerPort: 8080
     # Optional: service configuration. Most people will not need
     # to change this
