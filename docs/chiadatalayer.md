@@ -66,9 +66,9 @@ spec:
 
 ## Server File Storage
 
-With chia-operator, data_layer server files are located in a volume mounted to the `/datalayer/server` directory in the chia container. By default, that server files volume will be mounted to the same `/datalayer/server` path for the fileserver container but can be changed in this container for use with non-default webserver applications like nginx.
+With chia-operator, data_layer server files (the .dat files) are located in a volume mounted to the `/datalayer/server` directory in the chia container. See the [Fileserver Configuration](#fileserver-configuration) section for how to serve these files to the public.
 
-By default, this directory will be an emptyDir volume, which doesn't persist on Pod restarts. Most of the time you will probably actually want to define a persistent volume or hostpath for persistence. Within the yaml for a ChiaDatalayer deployment, you can have a persistent volume generated for your server files:
+By default, this directory will be an emptyDir volume, which doesn't persist on Pod restarts. Most of the time you will want to define a persistent volume or hostpath for persistence. Within the yaml for a ChiaDatalayer deployment, you can have a persistent volume generated for your server files:
 
 ```yaml
 spec:
@@ -105,37 +105,45 @@ spec:
 
 If you use a hostPath volume in a kubernetes cluster with multiple nodes, make sure you have set the proper nodeSelector to ensure the data_layer Pod only runs on the node with that hostPath.
 
-In all three cases, the volume will be automatically mounted in the chia container at `/datalayer/server`. You can change the mount path for the server files in the fileserver container though, see the `Fileserver Configuration` section for information on that.
+In all three cases, the volume will be automatically mounted in the chia container at `/datalayer/server`.
 
 See the [Storage](storage.md) documentation for information on CHIA_ROOT persistence, which is separate from the server files volume.
 
 ## Fileserver Configuration
 
-The ChiaDataLayer can optionally run a fileserver sidecar container to serve the data_layer server files. This is disabled by default but can be enabled with the following configuration:
+The ChiaDataLayer can optionally run a fileserver sidecar container to serve the data_layer server files. This will be needed if you plan to mirror data or publish your own data on DataLayer. This is disabled by default but can be enabled with these fileserver configuration options:
 
 ```yaml
 spec:
   fileserver:
     enabled: true
-    # Optional: defaults to the official chia image using data_layer_http. 
-    # But a custom image for the fileserver can be specified here.
+    # Optional: defaults to the official chia image using data_layer_http,
+    # but a custom image for the fileserver can be specified here.
     image: "custom/fileserver:tag"
-    # Optional custom mount path for server files
-    # This is the mount path in the fileserver container only. 
+    # Optional: custom mount path for server files (.dat files)
+    # This is the mount path in the fileserver container only.
     # It will not change the mount path in the chia container.
+    # This path is what webserver software would set the webroot to
     serverFileMountpath: "/custom/path"
-    # Optional custom container port
+    # Optional: custom fileserver container port. This port defaults
+    # to 8575 (the data_layer_http default port) and should be changed
+    # when using a webserver (like nginx) that binds to a different port
     containerPort: 8080
-    # Optional service configuration
+    # Optional: service configuration. Most people will not need
+    # to change this
     service:
       enabled: true
       type: ClusterIP
       externalTrafficPolicy: Local
 ```
 
+References for service endpoint configuration fields can be found in the [kubernetes docs](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types) and for the [Chia operator specifically](https://github.com/Chia-Network/chia-operator/blob/main/docs/services-networking.md). The .dat files will be available at a service endpoint on port 80.
+
 NOTE: Besides running a fileserver alongside the ChiaDataLayer deployment as a sidecar, you may also optionally wish to manage your own highly available webserver deployments external to chia-operator. To do so, just ensure the ChiaDataLayer builtin fileserver is disabled, and deploy your web server application of choice while mounting the server files volume. If doing a highly available fileserver deployment, you may want to ensure that the server files volume uses a `ReadWriteMany` access mode. See the [kubernetes documentation on Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) to find the correct PVC configuration for your intended web server setup.
 
 ### Common Fileserver Configurations
+
+These examples are intended to be copied exactly and provide working configurations.  The `metadata` may need to be updated for your configuration, but the other fields are unlikely to need to change for most applications.
 
 #### Default data_layer_http
 
@@ -170,7 +178,7 @@ spec:
   fileserver:
     enabled: true
     image: nginx:latest
-    serverFileMountpath: /usr/share/nginx/html # defines the mount path for the server files volume in the container
+    serverFileMountpath: /usr/share/nginx/html # defines the mount path for the server files volume in the container. This root where Nginx will serve files from and should be set as shown here unless using a custom Nginx container
     containerPort: 80 # defines the port of the http server in the container
 ```
 
