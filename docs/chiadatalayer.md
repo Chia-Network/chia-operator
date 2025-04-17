@@ -130,11 +130,11 @@ spec:
     # when using a webserver (like nginx) that binds to a different port
     containerPort: 8080
     # Optional: service configuration. Most people will not need
-    # to change this
+    # to change this, see the Services and Networking doc linked below
+    # to see available options
     service:
       enabled: true
       type: ClusterIP
-      externalTrafficPolicy: Local
 ```
 
 References for service endpoint configuration fields can be found in the [kubernetes docs](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types) and for the [Chia operator specifically](https://github.com/Chia-Network/chia-operator/blob/main/docs/services-networking.md). The .dat files will be available at a service endpoint on port 80.
