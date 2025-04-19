@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"sort"
 	"strconv"
 
@@ -33,12 +34,10 @@ func GetCommonLabels(kind string, meta metav1.ObjectMeta, additionalLabels ...ma
 }
 
 // CombineMaps takes an arbitrary number of maps and combines them to one map[string]string
-func CombineMaps(maps ...map[string]string) map[string]string {
+func CombineMaps(ms ...map[string]string) map[string]string {
 	var keyvalues = make(map[string]string)
-	for _, m := range maps {
-		for k, v := range m {
-			keyvalues[k] = v
-		}
+	for _, m := range ms {
+		maps.Copy(keyvalues, m)
 	}
 
 	return keyvalues
