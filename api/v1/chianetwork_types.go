@@ -49,50 +49,50 @@ type NetworkConstants struct {
 	GenesisPreFarmFarmerPuzzleHash string `json:"GENESIS_PRE_FARM_FARMER_PUZZLE_HASH"`
 
 	// +optional
-	AggSigMeAdditionalData string `json:"AGG_SIG_ME_ADDITIONAL_DATA,omitempty"`
+	AggSigMeAdditionalData *string `json:"AGG_SIG_ME_ADDITIONAL_DATA,omitempty"`
 
 	// TODO this should actually be a uint128 but it's much more difficult to implement a custom uint128 type with controller-tools generating CRDs yamls
 	// +optional
-	DifficultyConstantFactor uint64 `json:"DIFFICULTY_CONSTANT_FACTOR,omitempty"`
+	DifficultyConstantFactor *uint64 `json:"DIFFICULTY_CONSTANT_FACTOR,omitempty"`
 
 	// +optional
-	DifficultyStarting uint64 `json:"DIFFICULTY_STARTING,omitempty"`
+	DifficultyStarting *uint64 `json:"DIFFICULTY_STARTING,omitempty"`
 
 	// +optional
-	EpochBlocks uint32 `json:"EPOCH_BLOCKS,omitempty"`
+	EpochBlocks *uint32 `json:"EPOCH_BLOCKS,omitempty"`
 
 	// +optional
-	MempoolBlockBuffer uint8 `json:"MEMPOOL_BLOCK_BUFFER,omitempty"`
+	MempoolBlockBuffer *uint8 `json:"MEMPOOL_BLOCK_BUFFER,omitempty"`
 
 	// +optional
-	MinPlotSize uint8 `json:"MIN_PLOT_SIZE,omitempty"`
+	MinPlotSize *uint8 `json:"MIN_PLOT_SIZE,omitempty"`
 
 	// +optional
-	NetworkType uint8 `json:"NETWORK_TYPE,omitempty"`
+	NetworkType *uint8 `json:"NETWORK_TYPE,omitempty"`
 
 	// +optional
-	SubSlotItersStarting uint64 `json:"SUB_SLOT_ITERS_STARTING,omitempty"`
+	SubSlotItersStarting *uint64 `json:"SUB_SLOT_ITERS_STARTING,omitempty"`
 
 	// +optional
-	HardForkHeight uint32 `json:"HARD_FORK_HEIGHT,omitempty"`
+	HardForkHeight *uint32 `json:"HARD_FORK_HEIGHT,omitempty"`
 
 	// +optional
-	SoftFork4Height uint32 `json:"SOFT_FORK4_HEIGHT,omitempty"`
+	SoftFork4Height *uint32 `json:"SOFT_FORK4_HEIGHT,omitempty"`
 
 	// +optional
-	SoftFork5Height uint32 `json:"SOFT_FORK5_HEIGHT,omitempty"`
+	SoftFork5Height *uint32 `json:"SOFT_FORK5_HEIGHT,omitempty"`
 
 	// +optional
-	SoftFork6Height uint32 `json:"SOFT_FORK6_HEIGHT,omitempty"`
+	SoftFork6Height *uint32 `json:"SOFT_FORK6_HEIGHT,omitempty"`
 
 	// +optional
-	PlotFilter128Height uint32 `json:"PLOT_FILTER_128_HEIGHT,omitempty"`
+	PlotFilter128Height *uint32 `json:"PLOT_FILTER_128_HEIGHT,omitempty"`
 
 	// +optional
-	PlotFilter64Height uint32 `json:"PLOT_FILTER_64_HEIGHT,omitempty"`
+	PlotFilter64Height *uint32 `json:"PLOT_FILTER_64_HEIGHT,omitempty"`
 
 	// +optional
-	PlotFilter32Height uint32 `json:"PLOT_FILTER_32_HEIGHT,omitempty"`
+	PlotFilter32Height *uint32 `json:"PLOT_FILTER_32_HEIGHT,omitempty"`
 }
 
 // ChiaNetworkStatus defines the observed state of ChiaNetwork
