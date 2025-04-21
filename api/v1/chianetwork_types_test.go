@@ -45,8 +45,9 @@ spec:
 			AddressPrefix:       "txch",
 			DefaultFullNodePort: 58444,
 		}
-		networkConsts = NetworkConstants{
-			MinPlotSize:                    18,
+		minPlotSize   uint8 = 18
+		networkConsts       = NetworkConstants{
+			MinPlotSize:                    &minPlotSize,
 			GenesisChallenge:               "fb00c54298fc1c149afbf4c8996fb2317ae41e4649b934ca495991b7852b841",
 			GenesisPreFarmPoolPuzzleHash:   "asdlsakldlskalskdsasdasdsadsadsadsadsdsadsas",
 			GenesisPreFarmFarmerPuzzleHash: "testestestestestestestesrestestestestestest",
