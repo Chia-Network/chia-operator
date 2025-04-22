@@ -84,6 +84,13 @@ sourceRef: {{ .Values.sourceRef }}
 {{- end -}}
 
 {{/*
+Create the name of the CA secret to use
+*/}}
+{{- define "chia.exporterSecretName" -}}
+{{- printf "%s-exporter" (include "chia.fullname" .) }}
+{{- end }}
+
+{{/*
 Chia Exporter configuration block
 */}}
 {{- define "chia.exporterConfig" -}}
@@ -92,6 +99,9 @@ chiaExporter:
   enabled: {{ .Values.chiaExporter.enabled }}
   {{- if .Values.chiaExporter.image }}
   image: {{ .Values.chiaExporter.image }}
+  {{- end }}
+  {{- if .Values.chiaExporter.additionalConfig }}
+  configSecretName: {{ include "chia.exporterSecretName" . }}
   {{- end }}
   service:
     {{- if .Values.chiaExporter.service.annotations }}
