@@ -81,6 +81,9 @@ selfHostname: {{ .Values.selfHostname }}
 {{- if .Values.sourceRef }}
 sourceRef: {{ .Values.sourceRef }}
 {{- end }}
+{{- if gt (len .Values.additionalEnv) 0 }}
+additionalEnv: {{ toYaml .Values.additionalEnv | nindent 2 }}
+{{- end }}
 {{- end -}}
 
 {{/*

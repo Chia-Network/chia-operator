@@ -4,6 +4,17 @@ timezone: UTC
 logLevel: INFO
 selfHostname: 0.0.0.0
 sourceRef: "" # commit sha of github.com/Chia-Network/chia-blockchain to install from
+# WARNING: This is a dangerous feature for advanced use cases
+additionalEnv: []
+#  # Set normal environment variable key-value
+#  - name: FOO
+#    value: BAR
+#  # Set using valueFrom
+#  - name: HELLO
+#    valueFrom:
+#      configMapKeyRef:
+#        name: my-configmap
+#        key: WORLD
 
 # CA is always enabled, and we'll either (default) create a new CA
 # or if the crt/key fields are all filled in, then a secret will be created directly
