@@ -67,3 +67,38 @@ Create the name of the CA secret to use
 {{- define "chia.caSecretName" -}}
 {{- .Values.ca.secretName | default (printf "%s-ca" (include "chia.fullname" .)) }}
 {{- end }}
+
+{{/*
+Common Chia configuration block
+*/}}
+{{- define "chia.commonConfig" -}}
+{{- if .Values.testnet }}
+testnet: {{ .Values.testnet }}
+{{- end }}
+timezone: {{ .Values.timezone }}
+logLevel: {{ .Values.logLevel }}
+selfHostname: {{ .Values.selfHostname }}
+{{- if .Values.sourceRef }}
+sourceRef: {{ .Values.sourceRef }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Chia Exporter configuration block
+*/}}
+{{- define "chia.exporterConfig" -}}
+{{- if .Values.chiaExporter.enabled }}
+chiaExporter:
+  enabled: {{ .Values.chiaExporter.enabled }}
+  {{- if .Values.chiaExporter.image }}
+  image: {{ .Values.chiaExporter.image }}
+  {{- end }}
+  service:
+    {{- if .Values.chiaExporter.service.annotations }}
+    annotations: {{ toYaml .Values.chiaExporter.service.annotations | nindent 6 }}
+    {{- end }}
+    {{- if .Values.chiaExporter.service.labels }}
+    labels: {{ toYaml .Values.chiaExporter.service.labels | nindent 6 }}
+    {{- end }}
+{{- end }}
+{{- end -}}

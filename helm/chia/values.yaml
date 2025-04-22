@@ -1,3 +1,10 @@
+# Options that will apply to all supported resources
+testnet: false
+timezone: UTC
+logLevel: INFO
+selfHostname: 0.0.0.0
+sourceRef: "" # commit sha of github.com/Chia-Network/chia-blockchain to install from
+
 # CA is always enabled, and we'll either (default) create a new CA
 # or if the crt/key fields are all filled in, then a secret will be created directly
 ca:
@@ -61,8 +68,25 @@ node:
   fullNodePeers: []
 #    - host: "node.default.svc.cluster.local"
 #      port: 8444
-  chiaRoot:
-    persistentVolumeClaim:
-      enabled: false
-      storageClass: ""
-      resourceRequest: "300Gi"
+  storage:
+    chiaRoot:
+      persistentVolumeClaim:
+        enabled: false
+        storageClass: ""
+        resourceRequest: "300Gi"
+
+chiaExporter:
+  enabled: false
+  image: "" # Override the default chia-exporter image
+  service:
+    annotations: {}
+#      hello: world
+    labels: {}
+#      network: mainnet
+#      component: full_node
+  additionalConfig: {} # If this is set, creates a secret and sets the configSecretName option
+#    CHIA_EXPORTER_MAXMIND_COUNTRY_DB_PATH: "/chia-data/country.db"
+#    CHIA_EXPORTER_MAXMIND_ASN_DB_PATH: "/chia-data/asn.db"
+#    CHIA_EXPORTER_MYSQL_HOST: "10.0.0.10"
+#    CHIA_EXPORTER_MYSQL_PASSWORD: "mypassword"
+#    CHIA_EXPORTER_MYSQL_DB_NAME: "mydbname"

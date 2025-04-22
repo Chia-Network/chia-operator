@@ -10,11 +10,13 @@ spec:
     {{- if gt (len .Values.node.fullNodePeers) 0 }}
     fullNodePeers: {{ toYaml .Values.node.fullNodePeers | nindent 6 }}
     {{- end }}
-  {{- if .Values.node.chiaRoot.persistentVolumeClaim.enabled }}
+    {{ include "chia.commonConfig" . | nindent 4 }}
+  {{ include "chia.exporterConfig" . | nindent 2 }}
+  {{- if .Values.node.storage.chiaRoot.persistentVolumeClaim.enabled }}
   storage:
     chiaRoot:
       persistentVolumeClaim:
-        storageClass: "{{ .Values.node.chiaRoot.persistentVolumeClaim.storageClass }}"
-        resourceRequest: "{{ .Values.node.chiaRoot.persistentVolumeClaim.resourceRequest }}"
+        storageClass: "{{ .Values.node.storage.chiaRoot.persistentVolumeClaim.storageClass }}"
+        resourceRequest: "{{ .Values.node.storage.chiaRoot.persistentVolumeClaim.resourceRequest }}"
   {{- end }}
 {{- end }}
