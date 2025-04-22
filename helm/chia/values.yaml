@@ -1,5 +1,6 @@
+# CA is always enabled, and we'll either (default) create a new CA
+# or if the crt/key fields are all filled in, then a secret will be created directly
 ca:
-  enabled: false
   secretName: ""
   # If all 4 of the below fields are provided, a secret will be created instead of the chiaca resource
   chia_ca_crt: |

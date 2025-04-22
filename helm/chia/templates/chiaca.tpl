@@ -1,4 +1,3 @@
-{{- if .Values.ca.enabled -}}
 {{- if or (empty .Values.ca.chia_ca_crt) (empty .Values.ca.chia_ca_key) (empty .Values.ca.private_ca_crt) (empty .Values.ca.private_ca_key) -}}
 apiVersion: k8s.chia.net/v1
 kind: ChiaCA
@@ -21,5 +20,4 @@ stringData:
   private_ca.key: |
     {{ .Values.ca.private_ca_key | nindent 4 }}
 type: Opaque
-{{- end }}
 {{- end }}
