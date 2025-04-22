@@ -57,3 +57,12 @@ ca:
 
 node:
   enabled: false
+  replicas: 1
+  fullNodePeers: []
+#    - host: "node.default.svc.cluster.local"
+#      port: 8444
+  chiaRoot:
+    persistentVolumeClaim:
+      enabled: false
+      storageClass: ""
+      resourceRequest: "300Gi"
