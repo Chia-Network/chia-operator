@@ -112,3 +112,24 @@ chiaExporter:
     {{- end }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Chia Healthcheck configuration block
+*/}}
+{{- define "chia.healthcheckConfig" -}}
+{{- if .Values.chiaHealthcheck }}
+{{- if .Values.chiaHealthcheck.enabled }}
+chiaHealthcheck:
+  enabled: {{ .Values.chiaHealthcheck.enabled }}
+  {{- if .Values.chiaHealthcheck.image }}
+  image: {{ .Values.chiaHealthcheck.image }}
+  {{- end }}
+  {{- if .Values.chiaHealthcheck.dnsHostname }}
+  dnsHostname: {{ .Values.chiaHealthcheck.dnsHostname }}
+  {{- end }}
+  service:
+    enabled: {{ .Values.chiaHealthcheck.service.enabled }}
+    rollIntoPeerService: {{ .Values.chiaHealthcheck.service.rollIntoPeerService }}
+{{- end }}
+{{- end }}
+{{- end -}}

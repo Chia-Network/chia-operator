@@ -12,6 +12,7 @@ spec:
     {{- end }}
     {{ include "chia.commonConfig" . | nindent 4 }}
   {{ include "chia.exporterConfig" . | nindent 2 }}
+  {{ include "chia.healthcheckConfig" . | nindent 2 }}
   {{- if .Values.node.storage.chiaRoot.persistentVolumeClaim.enabled }}
   storage:
     chiaRoot:

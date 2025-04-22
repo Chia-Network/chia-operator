@@ -90,3 +90,11 @@ chiaExporter:
 #    CHIA_EXPORTER_MYSQL_HOST: "10.0.0.10"
 #    CHIA_EXPORTER_MYSQL_PASSWORD: "mypassword"
 #    CHIA_EXPORTER_MYSQL_DB_NAME: "mydbname"
+
+chiaHealthcheck:
+  enabled: false
+  image: ""
+  dnsHostname: ""
+  service:
+    enabled: false
+    rollIntoPeerService: false
