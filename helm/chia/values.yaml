@@ -1,5 +1,6 @@
 ca:
   enabled: false
+  secretName: ""
   # If all 4 of the below fields are provided, a secret will be created instead of the chiaca resource
   chia_ca_crt: |
     -----BEGIN CERTIFICATE-----

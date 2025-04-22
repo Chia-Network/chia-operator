@@ -5,12 +5,12 @@ kind: ChiaCA
 metadata:
   name: {{ include "chia.fullname" . }}
 spec:
-  secret: {{ include "chia.fullname" . }}-ca
+  secret: {{ .Values.ca.secretName | default (printf "%s-ca" (include "chia.fullname" .)) }}
 {{- else }}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ include "chia.fullname" . }}-ca
+  name: {{ .Values.ca.secretName | default (printf "%s-ca" (include "chia.fullname" .)) }}
 stringData:
   chia_ca.crt: |
     {{ .Values.ca.chia_ca_crt | nindent 4 }}
