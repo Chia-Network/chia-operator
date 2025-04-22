@@ -53,3 +53,6 @@ ca:
     -----END PRIVATE KEY-----
   private_ca_crt: ""
   private_ca_key: ""
+
+node:
+  enabled: false
