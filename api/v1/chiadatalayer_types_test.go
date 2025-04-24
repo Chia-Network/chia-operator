@@ -176,7 +176,7 @@ spec:
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{
-					Enabled: testTrue,
+					Enabled: boolPtr(true),
 				},
 			},
 			FileserverConfig: FileserverConfig{

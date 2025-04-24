@@ -34,6 +34,7 @@ spec:
     timezone: "UTC"
     logLevel: "INFO"
     bootstrapPeer: "node.default.svc.cluster.local"
+    bootstrapPeers: ["node.default.svc.cluster.local"]
     minimumHeight: 100
     domainName: seeder.example.com.
     nameserver: example.com.
@@ -84,16 +85,17 @@ spec:
 					Timezone:             &timezone,
 					LogLevel:             &logLevel,
 				},
-				CASecretName:  &caSecret,
-				BootstrapPeer: &bootstrapPeer,
-				MinimumHeight: &minimumHeight,
-				DomainName:    domainName,
-				Nameserver:    nameserver,
-				Rname:         rname,
+				CASecretName:   &caSecret,
+				BootstrapPeer:  &bootstrapPeer,
+				BootstrapPeers: &[]string{bootstrapPeer},
+				MinimumHeight:  &minimumHeight,
+				DomainName:     domainName,
+				Nameserver:     nameserver,
+				Rname:          rname,
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{
-					Enabled: true,
+					Enabled: boolPtr(true),
 				},
 			},
 		},

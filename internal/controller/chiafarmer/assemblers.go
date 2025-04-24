@@ -306,9 +306,8 @@ func assembleDeployment(ctx context.Context, farmer k8schianetv1.ChiaFarmer, net
 		deploy.Spec.Template.Spec.ImagePullSecrets = *farmer.Spec.ImagePullSecrets
 	}
 
-	if farmer.Spec.ChiaExporterConfig.Enabled {
-		chiaExporterContainer := assembleChiaExporterContainer(farmer)
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
+	if kube.ChiaExporterEnabled(farmer.Spec.ChiaExporterConfig) {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(farmer))
 	}
 
 	if farmer.Spec.Strategy != nil {

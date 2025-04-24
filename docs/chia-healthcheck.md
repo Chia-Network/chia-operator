@@ -1,6 +1,6 @@
 # Chia Healthcheck
 
-[Chia Healthcheck](https://github.com/Chia-Network/chia-healthcheck) is an optional component to certain Chia resources installed by this operator. It will run as a sidecar container in the Pod to Chia components if enabled.
+[Chia Healthcheck](https://github.com/Chia-Network/chia-healthcheck) is an optional component to certain Chia resources installed by this operator that can be used as a startup, liveness, and readiness probe.
 
 Supported components:
 
@@ -10,13 +10,24 @@ Supported components:
 
 ## Enable
 
-You can enable the healthcheck sidecar with the following:
+The chia-healthcheck sidecar will be enabled by default for all services that support it. But you can explicitly enable or disable it with the following:
 
 ```yaml
 spec:
   chiaHealthcheck:
     enabled: true
 ```
+
+NOTE: ChiaSeeders require an additional parameter for chia-healthcheck:
+
+```yaml
+spec:
+  chiaHealthcheck:
+    enabled: true
+    dnsHostname: seeder.example.com
+```
+
+The `dnsHostname` setting is only required for seeders. If you enable chia-healthcheck on a ChiaSeeder, but omit this setting, the operator will override the value of `enabled` by disabling chia-healthcheck.
 
 ## Liveness/Readiness/Startup Probes
 

@@ -259,9 +259,8 @@ func assembleDeployment(introducer k8schianetv1.ChiaIntroducer, fullNodePort int
 		deploy.Spec.Template.Spec.ImagePullSecrets = *introducer.Spec.ImagePullSecrets
 	}
 
-	if introducer.Spec.ChiaExporterConfig.Enabled {
-		chiaExporterContainer := assembleChiaExporterContainer(introducer)
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
+	if kube.ChiaExporterEnabled(introducer.Spec.ChiaExporterConfig) {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(introducer))
 	}
 
 	if introducer.Spec.Strategy != nil {

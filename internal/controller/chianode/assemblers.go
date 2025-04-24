@@ -339,11 +339,11 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 		stateful.Spec.Template.Spec.ImagePullSecrets = *node.Spec.ImagePullSecrets
 	}
 
-	if node.Spec.ChiaExporterConfig.Enabled {
+	if kube.ChiaExporterEnabled(node.Spec.ChiaExporterConfig) {
 		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, assembleChiaExporterContainer(node))
 	}
 
-	if node.Spec.ChiaHealthcheckConfig.Enabled {
+	if kube.ChiaHealthcheckEnabled(node.Spec.ChiaHealthcheckConfig) {
 		stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, assembleChiaHealthcheckContainer(node))
 	}
 
@@ -396,7 +396,7 @@ func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode, full
 
 	if node.Spec.ChiaConfig.LivenessProbe != nil {
 		input.LivenessProbe = node.Spec.ChiaConfig.LivenessProbe
-	} else if node.Spec.ChiaHealthcheckConfig.Enabled {
+	} else if kube.ChiaHealthcheckEnabled(node.Spec.ChiaHealthcheckConfig) {
 		input.LivenessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
 			Path: "/full_node",
 		})
@@ -404,7 +404,7 @@ func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode, full
 
 	if node.Spec.ChiaConfig.ReadinessProbe != nil {
 		input.ReadinessProbe = node.Spec.ChiaConfig.ReadinessProbe
-	} else if node.Spec.ChiaHealthcheckConfig.Enabled {
+	} else if kube.ChiaHealthcheckEnabled(node.Spec.ChiaHealthcheckConfig) {
 		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
 			Path: "/full_node/readiness",
 		})
@@ -412,7 +412,7 @@ func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode, full
 
 	if node.Spec.ChiaConfig.StartupProbe != nil {
 		input.StartupProbe = node.Spec.ChiaConfig.StartupProbe
-	} else if node.Spec.ChiaHealthcheckConfig.Enabled {
+	} else if kube.ChiaHealthcheckEnabled(node.Spec.ChiaHealthcheckConfig) {
 		failThresh := int32(30)
 		periodSec := int32(10)
 		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{

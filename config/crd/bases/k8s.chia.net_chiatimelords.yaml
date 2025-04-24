@@ -2178,9 +2178,9 @@ spec:
                       in the chia-exporter container.
                     type: string
                   enabled:
-                    default: true
-                    description: Enabled defines whether a chia-exporter sidecar container
-                      should run with the chia container
+                    description: |-
+                      Enabled defines whether a chia-exporter sidecar container should run with the chia container
+                      Defaults to enabled
                     type: boolean
                   image:
                     description: Image defines the image to use for the chia exporter
@@ -2267,9 +2267,9 @@ spec:
                       Disabled if not provided.
                     type: string
                   enabled:
-                    default: false
-                    description: Enabled defines whether a chia-exporter sidecar container
-                      should run with the chia container
+                    description: |-
+                      Enabled defines whether a chia-exporter sidecar container should run with the chia container
+                      Defaults to enabled on services that support it
                     type: boolean
                   image:
                     description: Image defines the image to use for the chia exporter

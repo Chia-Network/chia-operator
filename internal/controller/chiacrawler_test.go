@@ -52,7 +52,7 @@ var _ = Describe("ChiaCrawler controller", func() {
 					CommonSpec: apiv1.CommonSpec{
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
-							Enabled: true,
+							Enabled: nil,
 						},
 					},
 				},

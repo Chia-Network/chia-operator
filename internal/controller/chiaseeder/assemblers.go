@@ -366,11 +366,11 @@ func assembleDeployment(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, netw
 		deploy.Spec.Template.Spec.ImagePullSecrets = *seeder.Spec.ImagePullSecrets
 	}
 
-	if seeder.Spec.ChiaExporterConfig.Enabled {
+	if kube.ChiaExporterEnabled(seeder.Spec.ChiaExporterConfig) {
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(seeder))
 	}
 
-	if seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
+	if kube.ChiaHealthcheckEnabled(seeder.Spec.ChiaHealthcheckConfig) && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaHealthcheckContainer(seeder))
 	}
 
@@ -415,7 +415,7 @@ func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, n
 
 	if seeder.Spec.ChiaConfig.LivenessProbe != nil {
 		input.LivenessProbe = seeder.Spec.ChiaConfig.LivenessProbe
-	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
+	} else if kube.ChiaHealthcheckEnabled(seeder.Spec.ChiaHealthcheckConfig) && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
 		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
 			Path: "/seeder",
 		})
@@ -423,7 +423,7 @@ func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, n
 
 	if seeder.Spec.ChiaConfig.ReadinessProbe != nil {
 		input.ReadinessProbe = seeder.Spec.ChiaConfig.ReadinessProbe
-	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
+	} else if kube.ChiaHealthcheckEnabled(seeder.Spec.ChiaHealthcheckConfig) && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
 		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
 			Path: "/seeder/readiness",
 		})
@@ -431,7 +431,7 @@ func assembleChiaContainer(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, n
 
 	if seeder.Spec.ChiaConfig.StartupProbe != nil {
 		input.StartupProbe = seeder.Spec.ChiaConfig.StartupProbe
-	} else if seeder.Spec.ChiaHealthcheckConfig.Enabled && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
+	} else if kube.ChiaHealthcheckEnabled(seeder.Spec.ChiaHealthcheckConfig) && seeder.Spec.ChiaHealthcheckConfig.DNSHostname != nil {
 		failThresh := int32(30)
 		periodSec := int32(10)
 		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{

@@ -62,7 +62,7 @@ var _ = Describe("ChiaTimelord controller", func() {
 					CommonSpec: apiv1.CommonSpec{
 						ImagePullPolicy: "Always",
 						ChiaExporterConfig: apiv1.SpecChiaExporter{
-							Enabled: true,
+							Enabled: nil,
 						},
 					},
 				},

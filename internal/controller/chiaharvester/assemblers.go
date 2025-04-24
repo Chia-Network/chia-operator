@@ -305,9 +305,8 @@ func assembleDeployment(harvester k8schianetv1.ChiaHarvester, networkData *map[s
 		deploy.Spec.Template.Spec.ImagePullSecrets = *harvester.Spec.ImagePullSecrets
 	}
 
-	if harvester.Spec.ChiaExporterConfig.Enabled {
-		chiaExporterContainer := assembleChiaExporterContainer(harvester)
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
+	if kube.ChiaExporterEnabled(harvester.Spec.ChiaExporterConfig) {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(harvester))
 	}
 
 	if harvester.Spec.Strategy != nil {

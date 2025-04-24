@@ -12,6 +12,10 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+func boolPtr(b bool) *bool {
+	return &b
+}
+
 func TestUnmarshalChiaCrawler(t *testing.T) {
 	yamlData := []byte(`
 apiVersion: k8s.chia.net/v1
@@ -78,7 +82,7 @@ spec:
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{
-					Enabled: true,
+					Enabled: boolPtr(true),
 				},
 			},
 		},
