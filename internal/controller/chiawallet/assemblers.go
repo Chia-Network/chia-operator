@@ -306,9 +306,8 @@ func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet, net
 		deploy.Spec.Template.Spec.ImagePullSecrets = *wallet.Spec.ImagePullSecrets
 	}
 
-	if wallet.Spec.ChiaExporterConfig.Enabled {
-		chiaExporterContainer := assembleChiaExporterContainer(wallet)
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
+	if kube.ChiaExporterEnabled(wallet.Spec.ChiaExporterConfig) {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(wallet))
 	}
 
 	if wallet.Spec.Strategy != nil {

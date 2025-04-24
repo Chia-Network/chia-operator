@@ -343,12 +343,11 @@ func assembleDeployment(ctx context.Context, tl k8schianetv1.ChiaTimelord, netwo
 		deploy.Spec.Template.Spec.ImagePullSecrets = *tl.Spec.ImagePullSecrets
 	}
 
-	if tl.Spec.ChiaExporterConfig.Enabled {
-		chiaExporterContainer := assembleChiaExporterContainer(tl)
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
+	if kube.ChiaExporterEnabled(tl.Spec.ChiaExporterConfig) {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(tl))
 	}
 
-	if tl.Spec.ChiaHealthcheckConfig.Enabled {
+	if kube.ChiaHealthcheckEnabled(tl.Spec.ChiaHealthcheckConfig) {
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaHealthcheckContainer(tl))
 	}
 
@@ -401,7 +400,7 @@ func assembleChiaContainer(ctx context.Context, tl k8schianetv1.ChiaTimelord, ne
 
 	if tl.Spec.ChiaConfig.LivenessProbe != nil {
 		input.LivenessProbe = tl.Spec.ChiaConfig.LivenessProbe
-	} else if tl.Spec.ChiaHealthcheckConfig.Enabled {
+	} else if kube.ChiaHealthcheckEnabled(tl.Spec.ChiaHealthcheckConfig) {
 		input.LivenessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
 			Path: "/timelord",
 		})
@@ -409,7 +408,7 @@ func assembleChiaContainer(ctx context.Context, tl k8schianetv1.ChiaTimelord, ne
 
 	if tl.Spec.ChiaConfig.ReadinessProbe != nil {
 		input.ReadinessProbe = tl.Spec.ChiaConfig.ReadinessProbe
-	} else if tl.Spec.ChiaHealthcheckConfig.Enabled {
+	} else if kube.ChiaHealthcheckEnabled(tl.Spec.ChiaHealthcheckConfig) {
 		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
 			Path: "/timelord/readiness",
 		})
@@ -417,7 +416,7 @@ func assembleChiaContainer(ctx context.Context, tl k8schianetv1.ChiaTimelord, ne
 
 	if tl.Spec.ChiaConfig.StartupProbe != nil {
 		input.StartupProbe = tl.Spec.ChiaConfig.StartupProbe
-	} else if tl.Spec.ChiaHealthcheckConfig.Enabled {
+	} else if kube.ChiaHealthcheckEnabled(tl.Spec.ChiaHealthcheckConfig) {
 		failThresh := int32(30)
 		periodSec := int32(10)
 		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{

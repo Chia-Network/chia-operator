@@ -176,9 +176,9 @@ type CommonSpecChia struct {
 // SpecChiaExporter defines the desired state of Chia exporter configuration
 type SpecChiaExporter struct {
 	// Enabled defines whether a chia-exporter sidecar container should run with the chia container
-	// +kubebuilder:default=true
+	// Defaults to enabled
 	// +optional
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Image defines the image to use for the chia exporter containers
 	// +optional
@@ -198,9 +198,9 @@ type SpecChiaExporter struct {
 // SpecChiaHealthcheck defines the desired state of Chia healthcheck configuration
 type SpecChiaHealthcheck struct {
 	// Enabled defines whether a chia-exporter sidecar container should run with the chia container
-	// +kubebuilder:default=false
+	// Defaults to enabled on services that support it
 	// +optional
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Image defines the image to use for the chia exporter containers
 	// +optional

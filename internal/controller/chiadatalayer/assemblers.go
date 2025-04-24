@@ -259,7 +259,7 @@ func assembleDeployment(ctx context.Context, datalayer k8schianetv1.ChiaDataLaye
 		deploy.Spec.Template.Spec.ImagePullSecrets = *datalayer.Spec.ImagePullSecrets
 	}
 
-	if datalayer.Spec.ChiaExporterConfig.Enabled {
+	if kube.ChiaExporterEnabled(datalayer.Spec.ChiaExporterConfig) {
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(datalayer))
 	}
 

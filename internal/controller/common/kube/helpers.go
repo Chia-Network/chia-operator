@@ -354,3 +354,21 @@ func MarshalFullNodePeers(peers []k8schianetv1.Peer) ([]byte, error) {
 	}
 	return data, nil
 }
+
+// ChiaHealthcheckEnabled returns true if chia-healthcheck was enabled (defaults to enabled)
+func ChiaHealthcheckEnabled(in k8schianetv1.SpecChiaHealthcheck) bool {
+	// Defaults true if no chia-healthcheck config block specified
+	if in.Enabled == nil {
+		return true
+	}
+	return *in.Enabled
+}
+
+// ChiaExporterEnabled returns true if chia-exporter was enabled (defaults to enabled)
+func ChiaExporterEnabled(in k8schianetv1.SpecChiaExporter) bool {
+	// Defaults true if no chia-exporter config block specified
+	if in.Enabled == nil {
+		return true
+	}
+	return *in.Enabled
+}

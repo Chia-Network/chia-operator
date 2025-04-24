@@ -347,3 +347,47 @@ func TestGetExtraContainers(t *testing.T) {
 	})
 	require.Equal(t, expected, actual)
 }
+
+func TestChiaHealthcheckEnabled(t *testing.T) {
+	// True case - default true
+	actual := ChiaHealthcheckEnabled(k8schianetv1.SpecChiaHealthcheck{
+		Enabled: nil,
+	})
+	require.Equal(t, true, actual, "expected healthcheck enabled, defaulted to true")
+
+	// True case - set to true
+	enabled := true
+	actual = ChiaHealthcheckEnabled(k8schianetv1.SpecChiaHealthcheck{
+		Enabled: &enabled,
+	})
+	require.Equal(t, true, actual, "expected healthcheck enabled, set to true")
+
+	// False case - set to false
+	disabled := false
+	actual = ChiaHealthcheckEnabled(k8schianetv1.SpecChiaHealthcheck{
+		Enabled: &disabled,
+	})
+	require.Equal(t, false, actual, "expected healthcheck disabled, set to false")
+}
+
+func TestChiaExporterEnabled(t *testing.T) {
+	// True case - default true
+	actual := ChiaExporterEnabled(k8schianetv1.SpecChiaExporter{
+		Enabled: nil,
+	})
+	require.Equal(t, true, actual, "expected exporter enabled, defaulted to true")
+
+	// True case - set to true
+	enabled := true
+	actual = ChiaExporterEnabled(k8schianetv1.SpecChiaExporter{
+		Enabled: &enabled,
+	})
+	require.Equal(t, true, actual, "expected exporter enabled, set to true")
+
+	// False case - set to false
+	disabled := false
+	actual = ChiaExporterEnabled(k8schianetv1.SpecChiaExporter{
+		Enabled: &disabled,
+	})
+	require.Equal(t, false, actual, "expected exporter disabled, set to false")
+}

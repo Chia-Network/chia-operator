@@ -305,9 +305,8 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler, fullNodePort int32, ne
 		deploy.Spec.Template.Spec.ImagePullSecrets = *crawler.Spec.ImagePullSecrets
 	}
 
-	if crawler.Spec.ChiaExporterConfig.Enabled {
-		chiaExporterContainer := assembleChiaExporterContainer(crawler)
-		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, chiaExporterContainer)
+	if kube.ChiaExporterEnabled(crawler.Spec.ChiaExporterConfig) {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(crawler))
 	}
 
 	if crawler.Spec.Strategy != nil {

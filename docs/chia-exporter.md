@@ -4,7 +4,7 @@
 
 ## Enable/Disable
 
-If any options in the `spec.chiaExporter` section of the configuration is specified, the chia-exporter sidecar will be enabled by default. But you can explicitly enable or disable it with the following:
+The chia-exporter sidecar will be enabled by default. But you can explicitly enable or disable it with the following:
 
 ```yaml
 spec:

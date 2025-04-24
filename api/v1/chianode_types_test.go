@@ -94,7 +94,7 @@ spec:
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{
-					Enabled: true,
+					Enabled: boolPtr(true),
 				},
 			},
 		},
