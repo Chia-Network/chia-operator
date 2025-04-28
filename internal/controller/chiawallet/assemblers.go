@@ -328,7 +328,7 @@ func assembleChiaContainer(ctx context.Context, wallet k8schianetv1.ChiaWallet, 
 		Image:           wallet.Spec.ChiaConfig.Image,
 		ImagePullPolicy: wallet.Spec.ImagePullPolicy,
 		Ports:           getChiaPorts(),
-		VolumeMounts:    getChiaVolumeMounts(),
+		VolumeMounts:    getChiaVolumeMounts(wallet),
 	}
 
 	env, err := getChiaEnv(ctx, wallet, networkData)

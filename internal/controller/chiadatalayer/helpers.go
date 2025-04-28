@@ -157,6 +157,19 @@ func getChiaEnv(ctx context.Context, datalayer k8schianetv1.ChiaDataLayer, netwo
 		}
 	}
 
+	if datalayer.Spec.ChiaConfig.XCHSpamAmount != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "xch_spam_amount",
+			Value: fmt.Sprintf("%d", *datalayer.Spec.ChiaConfig.XCHSpamAmount),
+		})
+	} else {
+		// Default setting in chia config. Set back to chia's default in case this was previously set and unset
+		env = append(env, corev1.EnvVar{
+			Name:  "xch_spam_amount",
+			Value: "1000000",
+		})
+	}
+
 	// Add common env
 	commonEnv, err := kube.GetCommonChiaEnv(datalayer.Spec.ChiaConfig.CommonSpecChia, networkData)
 	if err != nil {

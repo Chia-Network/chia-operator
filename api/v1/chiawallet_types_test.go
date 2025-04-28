@@ -36,6 +36,7 @@ spec:
     fullNodePeers: 
       - host: "node.default.svc.cluster.local"
         port: 58444
+    xchSpamAmount: 0
     secretKey:
       name: "chiakey-secret"
       key: "key.txt"
@@ -56,6 +57,8 @@ spec:
 		networkPort          uint16 = 8080
 		introducerAddress           = "introducer.svc.cluster.local"
 		dnsIntroducerAddress        = "dns-introducer.svc.cluster.local"
+		caSecretName                = "chiaca-secret"
+		xchSpamAmount        uint64 = 0
 	)
 	expectCIDRs := []string{
 		"192.168.0.0/16",
@@ -86,7 +89,7 @@ spec:
 					IntroducerAddress:    &introducerAddress,
 					DNSIntroducerAddress: &dnsIntroducerAddress,
 				},
-				CASecretName: "chiaca-secret",
+				CASecretName: &caSecretName,
 				FullNodePeers: &[]Peer{
 					{
 						Host: "node.default.svc.cluster.local",
@@ -97,7 +100,8 @@ spec:
 					Name: "chiakey-secret",
 					Key:  "key.txt",
 				},
-				TrustedCIDRs: &expectCIDRs,
+				TrustedCIDRs:  &expectCIDRs,
+				XCHSpamAmount: &xchSpamAmount,
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{

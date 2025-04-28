@@ -19,8 +19,9 @@ import (
 
 var _ = Describe("ChiaWallet controller", func() {
 	var (
-		timeout  = time.Second * 10
-		interval = time.Millisecond * 250
+		timeout      = time.Second * 10
+		interval     = time.Millisecond * 250
+		caSecretName = "test-secret"
 	)
 
 	Context("When creating ChiaWallet", func() {
@@ -38,7 +39,7 @@ var _ = Describe("ChiaWallet controller", func() {
 				},
 				Spec: apiv1.ChiaWalletSpec{
 					ChiaConfig: apiv1.ChiaWalletSpecChia{
-						CASecretName: "test-secret",
+						CASecretName: &caSecretName,
 						FullNodePeers: &[]apiv1.Peer{
 							{
 								Host: "node.default.svc.cluster.local",
@@ -55,7 +56,7 @@ var _ = Describe("ChiaWallet controller", func() {
 			expect := &apiv1.ChiaWallet{
 				Spec: apiv1.ChiaWalletSpec{
 					ChiaConfig: apiv1.ChiaWalletSpecChia{
-						CASecretName: "test-secret",
+						CASecretName: &caSecretName,
 						FullNodePeers: &[]apiv1.Peer{
 							{
 								Host: "node.default.svc.cluster.local",

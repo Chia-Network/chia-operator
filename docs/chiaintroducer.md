@@ -14,6 +14,18 @@ metadata:
 spec:
 ```
 
+## Certificate Authority
+
+If you have your own Certificate Authority to pass to initialize chia from:
+
+```yaml
+spec:
+  chia:
+    caSecretName: chiaca-secret
+```
+
+[See the chiaca documentation](chiaca.md#manually-create-a-ca-secret) for information on creating a certificate authority Secret for chia.
+
 ## More Info
 
 This page contains documentation specific to this resource. Please see the rest of the documentation for information on more available configurations.

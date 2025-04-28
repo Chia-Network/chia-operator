@@ -2187,8 +2187,12 @@ spec:
                     items:
                       type: string
                     type: array
+                  xchSpamAmount:
+                    description: XCHSpamAmount any standard TX under xch_spam_amount
+                      is filtered
+                    format: int64
+                    type: integer
                 required:
-                - caSecretName
                 - secretKey
                 type: object
               chiaExporter:
