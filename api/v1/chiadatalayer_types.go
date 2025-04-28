@@ -47,6 +47,10 @@ type ChiaDataLayerSpecChia struct {
 	// See: https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them
 	// +optional
 	TrustedCIDRs *[]string `json:"trustedCIDRs,omitempty"`
+
+	// XCHSpamAmount any standard TX under xch_spam_amount is filtered
+	// +optional
+	XCHSpamAmount *uint64 `json:"xchSpamAmount,omitempty"`
 }
 
 // FileserverConfig defines the desired state of an optional fileserver sidecar

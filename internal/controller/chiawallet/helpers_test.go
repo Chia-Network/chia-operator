@@ -35,22 +35,77 @@ func TestGetChiaPorts(t *testing.T) {
 }
 
 func TestGetChiaVolumeMounts(t *testing.T) {
-	volumeMounts := getChiaVolumeMounts()
-
-	assert.Len(t, volumeMounts, 3, "Expected 3 volume mounts")
-
-	expectedVolumeMounts := []struct {
-		name      string
-		mountPath string
+	testCases := []struct {
+		name           string
+		wallet         k8schianetv1.ChiaWallet
+		expectedMounts []corev1.VolumeMount
 	}{
-		{"secret-ca", "/chia-ca"},
-		{"key", "/key"},
-		{"chiaroot", "/chia-data"},
+		{
+			name: "With CA Secret",
+			wallet: k8schianetv1.ChiaWallet{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-wallet",
+				},
+				Spec: k8schianetv1.ChiaWalletSpec{
+					ChiaConfig: k8schianetv1.ChiaWalletSpecChia{
+						CASecretName: stringPtr("test-ca-secret"),
+					},
+				},
+			},
+			expectedMounts: []corev1.VolumeMount{
+				{
+					Name:      "secret-ca",
+					MountPath: "/chia-ca",
+				},
+				{
+					Name:      "key",
+					MountPath: "/key",
+				},
+				{
+					Name:      "chiaroot",
+					MountPath: "/chia-data",
+				},
+			},
+		},
+		{
+			name: "Without CA Secret",
+			wallet: k8schianetv1.ChiaWallet{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-wallet",
+					Namespace: "test-namespace",
+				},
+				Spec: k8schianetv1.ChiaWalletSpec{
+					ChiaConfig: k8schianetv1.ChiaWalletSpecChia{
+						CASecretName: nil,
+					},
+				},
+			},
+			expectedMounts: []corev1.VolumeMount{
+				{
+					Name:      "key",
+					MountPath: "/key",
+				},
+				{
+					Name:      "chiaroot",
+					MountPath: "/chia-data",
+				},
+			},
+		},
 	}
 
-	for i, expected := range expectedVolumeMounts {
-		assert.Equal(t, expected.name, volumeMounts[i].Name, "Volume mount name should match")
-		assert.Equal(t, expected.mountPath, volumeMounts[i].MountPath, "Mount path should match")
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			volumeMounts := getChiaVolumeMounts(tc.wallet)
+
+			assert.Len(t, volumeMounts, len(tc.expectedMounts), "Expected %d volume mounts", len(tc.expectedMounts))
+
+			// Check each volume mount
+			for i, expected := range tc.expectedMounts {
+				assert.Equal(t, expected.Name, volumeMounts[i].Name, "Volume mount name should match")
+				assert.Equal(t, expected.MountPath, volumeMounts[i].MountPath, "Mount path should match")
+			}
+		})
 	}
 }
 
@@ -68,7 +123,7 @@ func TestGetChiaVolumes(t *testing.T) {
 				},
 				Spec: k8schianetv1.ChiaWalletSpec{
 					ChiaConfig: k8schianetv1.ChiaWalletSpecChia{
-						CASecretName: "test-ca-secret",
+						CASecretName: stringPtr("test-ca-secret"),
 						SecretKey: k8schianetv1.ChiaSecretKey{
 							Name: "test-key-secret",
 							Key:  "test-key",
@@ -123,7 +178,7 @@ func TestGetChiaVolumes(t *testing.T) {
 				},
 				Spec: k8schianetv1.ChiaWalletSpec{
 					ChiaConfig: k8schianetv1.ChiaWalletSpecChia{
-						CASecretName: "test-ca-secret",
+						CASecretName: stringPtr("test-ca-secret"),
 						SecretKey: k8schianetv1.ChiaSecretKey{
 							Name: "test-key-secret",
 							Key:  "test-key",
@@ -172,7 +227,7 @@ func TestGetChiaVolumes(t *testing.T) {
 			wallet: k8schianetv1.ChiaWallet{
 				Spec: k8schianetv1.ChiaWalletSpec{
 					ChiaConfig: k8schianetv1.ChiaWalletSpecChia{
-						CASecretName: "test-ca-secret",
+						CASecretName: stringPtr("test-ca-secret"),
 						SecretKey: k8schianetv1.ChiaSecretKey{
 							Name: "test-key-secret",
 							Key:  "test-key",
@@ -221,7 +276,7 @@ func TestGetChiaVolumes(t *testing.T) {
 			wallet: k8schianetv1.ChiaWallet{
 				Spec: k8schianetv1.ChiaWalletSpec{
 					ChiaConfig: k8schianetv1.ChiaWalletSpecChia{
-						CASecretName: "test-ca-secret",
+						CASecretName: stringPtr("test-ca-secret"),
 						SecretKey: k8schianetv1.ChiaSecretKey{
 							Name: "test-key-secret",
 							Key:  "test-key",
@@ -267,4 +322,9 @@ func TestGetChiaVolumes(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Helper function to create a string pointer
+func stringPtr(s string) *string {
+	return &s
 }

@@ -51,6 +51,7 @@ spec:
     trustedCIDRs:
       - "192.168.0.0/16"
       - "10.0.0.0/8"
+    xchSpamAmount: 0
   fileserver:
     enabled: true
     service:
@@ -101,6 +102,7 @@ spec:
 				MaxUnavailable: &intstr.IntOrString{IntVal: 1},
 			},
 		}
+		xchSpamAmount uint64 = 0
 	)
 	expectCIDRs := []string{
 		"192.168.0.0/16",
@@ -172,7 +174,8 @@ spec:
 					Name: "chiakey-secret",
 					Key:  "key.txt",
 				},
-				TrustedCIDRs: &expectCIDRs,
+				TrustedCIDRs:  &expectCIDRs,
+				XCHSpamAmount: &xchSpamAmount,
 			},
 			CommonSpec: CommonSpec{
 				ChiaExporterConfig: SpecChiaExporter{

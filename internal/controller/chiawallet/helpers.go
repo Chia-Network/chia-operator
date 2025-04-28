@@ -43,14 +43,16 @@ func getChiaVolumes(wallet k8schianetv1.ChiaWallet) []corev1.Volume {
 	var v []corev1.Volume
 
 	// secret ca volume
-	v = append(v, corev1.Volume{
-		Name: "secret-ca",
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: wallet.Spec.ChiaConfig.CASecretName,
+	if wallet.Spec.ChiaConfig.CASecretName != nil {
+		v = append(v, corev1.Volume{
+			Name: "secret-ca",
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: *wallet.Spec.ChiaConfig.CASecretName,
+				},
 			},
-		},
-	})
+		})
+	}
 
 	// mnemonic key volume
 	v = append(v, corev1.Volume{
@@ -79,21 +81,30 @@ func getChiaVolumes(wallet k8schianetv1.ChiaWallet) []corev1.Volume {
 	return v
 }
 
-func getChiaVolumeMounts() []corev1.VolumeMount {
-	return []corev1.VolumeMount{
-		{
+func getChiaVolumeMounts(wallet k8schianetv1.ChiaWallet) []corev1.VolumeMount {
+	var v []corev1.VolumeMount
+
+	// secret ca volume
+	if wallet.Spec.ChiaConfig.CASecretName != nil {
+		v = append(v, corev1.VolumeMount{
 			Name:      "secret-ca",
 			MountPath: "/chia-ca",
-		},
-		{
-			Name:      "key",
-			MountPath: "/key",
-		},
-		{
-			Name:      "chiaroot",
-			MountPath: "/chia-data",
-		},
+		})
 	}
+
+	// key volume
+	v = append(v, corev1.VolumeMount{
+		Name:      "key",
+		MountPath: "/key",
+	})
+
+	// CHIA_ROOT volume
+	v = append(v, corev1.VolumeMount{
+		Name:      "chiaroot",
+		MountPath: "/chia-data",
+	})
+
+	return v
 }
 
 // getChiaEnv retrieves the environment variables from the Chia config struct
@@ -142,6 +153,19 @@ func getChiaEnv(ctx context.Context, wallet k8schianetv1.ChiaWallet, networkData
 		env = append(env, corev1.EnvVar{
 			Name:  "full_node_peer",
 			Value: *wallet.Spec.ChiaConfig.FullNodePeer,
+		})
+	}
+
+	if wallet.Spec.ChiaConfig.XCHSpamAmount != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "xch_spam_amount",
+			Value: fmt.Sprintf("%d", *wallet.Spec.ChiaConfig.XCHSpamAmount),
+		})
+	} else {
+		// Default setting in chia config. Set back to chia's default in case this was previously set and unset
+		env = append(env, corev1.EnvVar{
+			Name:  "xch_spam_amount",
+			Value: "1000000",
 		})
 	}
 

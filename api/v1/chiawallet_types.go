@@ -25,11 +25,12 @@ type ChiaWalletSpec struct {
 type ChiaWalletSpecChia struct {
 	CommonSpecChia `json:",inline"`
 
-	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
-	CASecretName string `json:"caSecretName"`
-
 	// SecretKey defines the k8s Secret name and key for a Chia mnemonic
 	SecretKey ChiaSecretKey `json:"secretKey"`
+
+	// CASecretName is the name of the secret that contains the CA crt and key. Not required for seeders.
+	// +optional
+	CASecretName *string `json:"caSecretName,omitempty"`
 
 	// FullNodePeer defines the farmer's full_node peer in host:port format.
 	// In Kubernetes this is likely to be <node service name>.<namespace>.svc.cluster.local:8555
@@ -47,6 +48,10 @@ type ChiaWalletSpecChia struct {
 	// See: https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them
 	// +optional
 	TrustedCIDRs *[]string `json:"trustedCIDRs,omitempty"`
+
+	// XCHSpamAmount any standard TX under xch_spam_amount is filtered
+	// +optional
+	XCHSpamAmount *uint64 `json:"xchSpamAmount,omitempty"`
 }
 
 // ChiaWalletStatus defines the observed state of ChiaWallet

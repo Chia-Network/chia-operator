@@ -118,7 +118,9 @@ spec:
   chia:
     caSecretName: mainnet-ca
     timezone: "UTC"
-    fullNodePeer: "mainnet-node.default.svc.cluster.local:8444"
+    fullNodePeers:
+      - host: "mainnet-node.default.svc.cluster.local"
+        port: 8444
     secretKey:
       name: "chiakey"
       key: "key.txt"

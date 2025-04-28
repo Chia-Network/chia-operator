@@ -13,7 +13,6 @@ metadata:
   name: my-wallet
 spec:
   chia:
-    caSecretName: chiaca-secret # A kubernetes Secret containing certificate authority files
     # A kubernetes Secret named chiakey-secret containing a key.txt file with your mnemonic key
     secretKey:
       name: "chiakey-secret"
@@ -35,6 +34,18 @@ type: Opaque
 ```
 
 Replace the text value for `key.txt` with your mnemonic, and then reference it in your ChiaWallet resource in the way shown above.
+
+## Certificate Authority
+
+If you have your own Certificate Authority to pass to initialize chia from:
+
+```yaml
+spec:
+  chia:
+    caSecretName: chiaca-secret
+```
+
+[See the chiaca documentation](chiaca.md#manually-create-a-ca-secret) for information on creating a certificate authority Secret for chia.
 
 ## Full Node Peers
 
@@ -64,6 +75,18 @@ spec:
 ```
 
 This specifies two trusted CIDRs, where if the IP address of a full_node peer is discovered to be within one of these two CIDR ranges, chia will consider that a trusted peer.
+
+## Filter out XCH Spam
+
+By default, Chia protects your wallet against "dust storms," see [What is the dust filter?](https://docs.chia.net/faq/?_highlight=dust&_highlight=storm#what-is-the-dust-filter) in Chia's documentation. If you have a reason to set something other than the default filter, you can set the xch_spam_amount field like so:
+
+```yaml
+spec:
+  chia:
+    xchSpamAmount: 1000000
+```
+
+This field defaults to `1000000` if unspecified. Any 64bit unsigned integer (0-18446744073709551615) will fit in this field.
 
 ## More Info
 

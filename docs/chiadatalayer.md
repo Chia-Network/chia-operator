@@ -1,8 +1,10 @@
 # ChiaDataLayer
 
 * [Mnemonic Secret](#secret-key)
+* [Certificate Authority](#certificate-authority)
 * [Trusted Peers](#trusted-peers)
 * [Storage for Server Files](#server-file-storage)
+* [Filter out XCH Spam](#filter-out-xch-spam)
 * [Fileserver Configuration](#fileserver-configuration)
   * [Common Fileserver Configurations](#common-fileserver-configurations)
   * [Environment Variables](#additional-environment-variables)
@@ -25,7 +27,6 @@ metadata:
   name: my-datalayer
 spec:
   chia:
-    caSecretName: chiaca-secret # A kubernetes Secret containing certificate authority files
     # A local full_node using kubernetes DNS names
     fullNodePeers:
       - host: "node.default.svc.cluster.local"
@@ -52,6 +53,18 @@ type: Opaque
 
 Replace the text value for `key.txt` with your mnemonic, and then reference it in your ChiaDataLayer resource in the way shown above.
 
+## Certificate Authority
+
+If you have your own Certificate Authority to pass to initialize chia from:
+
+```yaml
+spec:
+  chia:
+    caSecretName: chiaca-secret
+```
+
+[See the chiaca documentation](chiaca.md#manually-create-a-ca-secret) for information on creating a certificate authority Secret for chia.
+
 ## Trusted Peers
 
 You can specify trusted CIDRs for your DataLayer server using the `trustedCIDRs` field:
@@ -63,6 +76,18 @@ spec:
       - "192.168.1.0/24"
       - "10.0.0.0/8"
 ```
+
+## Filter out XCH Spam
+
+By default, Chia protects your wallet against "dust storms," see [What is the dust filter?](https://docs.chia.net/faq/?_highlight=dust&_highlight=storm#what-is-the-dust-filter) in Chia's documentation. If you have a reason to set something other than the default filter, you can set the xch_spam_amount field like so:
+
+```yaml
+spec:
+  chia:
+    xchSpamAmount: 1000000
+```
+
+This field defaults to `1000000` if unspecified. Any 64bit unsigned integer (0-18446744073709551615) will fit in this field.
 
 ## Server File Storage
 
