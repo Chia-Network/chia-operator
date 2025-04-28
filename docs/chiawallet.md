@@ -86,7 +86,7 @@ spec:
     xchSpamAmount: 1000000
 ```
 
-Any 64bit unsigned integer (0-18446744073709551615) will fit in this field.
+This field defaults to `1000000` if unspecified. Any 64bit unsigned integer (0-18446744073709551615) will fit in this field.
 
 ## More Info
 
