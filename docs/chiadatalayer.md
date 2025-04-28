@@ -1,6 +1,7 @@
 # ChiaDataLayer
 
 * [Mnemonic Secret](#secret-key)
+* [Certificate Authority](#certificate-authority)
 * [Trusted Peers](#trusted-peers)
 * [Storage for Server Files](#server-file-storage)
 * [Filter out XCH Spam](#filter-out-xch-spam)
