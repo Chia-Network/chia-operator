@@ -1,0 +1,13 @@
+name: Build Operator on Pull Requests
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    uses: Chia-Network/actions/.github/workflows/docker-build.yaml@main
+    with:
+      push: false
