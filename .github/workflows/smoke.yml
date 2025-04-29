@@ -2,6 +2,9 @@ name: Smoke tests
 
 on: pull_request
 
+permissions:
+  contents: read
+
 jobs:
   smoke-test:
     runs-on: ubuntu-latest
