@@ -1,4 +1,4 @@
-name: Build Operator and CA generator
+name: Build Operator
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
       - main
     tags:
       - '**'
-  pull_request:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 0'

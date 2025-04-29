@@ -4,7 +4,6 @@ on:
   pull_request:
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
@@ -28,6 +27,11 @@ jobs:
       - name: Test
         run: |
           make test
+
+  docker-build:
+    uses: Chia-Network/actions/.github/workflows/docker-build.yaml@main
+    with:
+      push: false
 
   test-controller-gen-ran:
     runs-on: "ubuntu-latest"
