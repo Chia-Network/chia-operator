@@ -3,12 +3,29 @@ package kube
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+// Helper function to create a string pointer
+func stringPtr(s string) *string {
+	return &s
+}
+
+// Helper function to create a bool pointer
+func boolPtr(b bool) *bool {
+	return &b
+}
+
+// Helper function to create a map pointer
+func mapPtr(m map[string]string) *map[string]string {
+	return &m
+}
 
 func TestGetCommonLabels(t *testing.T) {
 	expected := map[string]string{
@@ -390,4 +407,184 @@ func TestChiaExporterEnabled(t *testing.T) {
 		Enabled: &disabled,
 	})
 	require.Equal(t, false, actual, "expected exporter disabled, set to false")
+}
+
+func TestGetCommonChiaEnv(t *testing.T) {
+	testCases := []struct {
+		name        string
+		spec        k8schianetv1.CommonSpecChia
+		networkData *map[string]string
+		expectedEnv []corev1.EnvVar
+	}{
+		{
+			name:        "Basic Common Spec",
+			spec:        k8schianetv1.CommonSpecChia{},
+			networkData: nil,
+			expectedEnv: []corev1.EnvVar{
+				{
+					Name:  "CHIA_ROOT",
+					Value: "/chia-data",
+				},
+				{
+					Name:  "ca",
+					Value: "/chia-ca",
+				},
+				{
+					Name:  "network_port",
+					Value: "8444",
+				},
+				{
+					Name:  "self_hostname",
+					Value: "0.0.0.0",
+				},
+			},
+		},
+		{
+			name: "Full Common Spec",
+			spec: k8schianetv1.CommonSpecChia{
+				DNSIntroducerAddress: stringPtr("test-dns.address"),
+				IntroducerAddress:    stringPtr("test.address"),
+				LogLevel:             stringPtr("DEBUG"),
+				Network:              stringPtr("testnet11"),
+				SourceRef:            stringPtr("main"),
+				SelfHostname:         stringPtr("127.0.0.1"),
+				Testnet:              boolPtr(true),
+				Timezone:             stringPtr("America/Los_Angeles"),
+			},
+			networkData: nil,
+			expectedEnv: []corev1.EnvVar{
+				{
+					Name:  "CHIA_ROOT",
+					Value: "/chia-data",
+				},
+				{
+					Name:  "TZ",
+					Value: "America/Los_Angeles",
+				},
+				{
+					Name:  "ca",
+					Value: "/chia-ca",
+				},
+				{
+					Name:  "dns_introducer_address",
+					Value: "test-dns.address",
+				},
+				{
+					Name:  "introducer_address",
+					Value: "test.address",
+				},
+				{
+					Name:  "log_level",
+					Value: "DEBUG",
+				},
+				{
+					Name:  "network",
+					Value: "testnet11",
+				},
+				{
+					Name:  "network_port",
+					Value: "58444",
+				},
+				{
+					Name:  "self_hostname",
+					Value: "127.0.0.1",
+				},
+				{
+					Name:  "source_ref",
+					Value: "main",
+				},
+				{
+					Name:  "testnet",
+					Value: "true",
+				},
+			},
+		},
+		{
+			name: "Full Common Spec and Network Data",
+			spec: k8schianetv1.CommonSpecChia{
+				DNSIntroducerAddress: stringPtr("test-dns.address"),
+				IntroducerAddress:    stringPtr("test.address"),
+				LogLevel:             stringPtr("DEBUG"),
+				Network:              stringPtr("testnet11"),
+				SourceRef:            stringPtr("main"),
+				SelfHostname:         stringPtr("127.0.0.1"),
+				Testnet:              boolPtr(true),
+				Timezone:             stringPtr("America/Los_Angeles"),
+			},
+			networkData: mapPtr(map[string]string{
+				"chia.network_overrides.config":    `{"testnetwork":{"address_prefix":"txch","default_full_node_port":58445}}`,
+				"chia.network_overrides.constants": `{"testnetwork":{"GENESIS_CHALLENGE":"fcb55f73488f2959f45823cf795b7567061eba768bc985dfaef70aa3af0448cc","GENESIS_PRE_FARM_POOL_PUZZLE_HASH":"66c86d91a50d56d74f8f2884b42d65211d7384f0c48a6701d845b8681d93f2c6","GENESIS_PRE_FARM_FARMER_PUZZLE_HASH":"66c86d91a50d56d74f8f2884b42d65211d7384f0c48a6701d845b8681d93f2c6","AGG_SIG_ME_ADDITIONAL_DATA":"fcb55f73488f2959f45823cf795b7567061eba768bc985dfaef70aa3af0448cc","DIFFICULTY_CONSTANT_FACTOR":10052721566054,"DIFFICULTY_STARTING":30,"EPOCH_BLOCKS":768,"MEMPOOL_BLOCK_BUFFER":10,"MIN_PLOT_SIZE":18,"NETWORK_TYPE":1,"SUB_SLOT_ITERS_STARTING":67108864,"HARD_FORK_HEIGHT":0}}`,
+				"dns_introducer_address":           "dns-introducer-testnetwork.address",
+				"introducer_address":               "introducer-testnetwork.address",
+				"network":                          "testnetwork",
+				"network_port":                     "58445",
+			}),
+			expectedEnv: []corev1.EnvVar{
+				{
+					Name:  "CHIA_ROOT",
+					Value: "/chia-data",
+				},
+				{
+					Name:  "TZ",
+					Value: "America/Los_Angeles",
+				},
+				{
+					Name:  "ca",
+					Value: "/chia-ca",
+				},
+				{
+					Name:  "chia.network_overrides.config",
+					Value: `{"testnetwork":{"address_prefix":"txch","default_full_node_port":58445}}`,
+				},
+				{
+					Name:  "chia.network_overrides.constants",
+					Value: `{"testnetwork":{"GENESIS_CHALLENGE":"fcb55f73488f2959f45823cf795b7567061eba768bc985dfaef70aa3af0448cc","GENESIS_PRE_FARM_POOL_PUZZLE_HASH":"66c86d91a50d56d74f8f2884b42d65211d7384f0c48a6701d845b8681d93f2c6","GENESIS_PRE_FARM_FARMER_PUZZLE_HASH":"66c86d91a50d56d74f8f2884b42d65211d7384f0c48a6701d845b8681d93f2c6","AGG_SIG_ME_ADDITIONAL_DATA":"fcb55f73488f2959f45823cf795b7567061eba768bc985dfaef70aa3af0448cc","DIFFICULTY_CONSTANT_FACTOR":10052721566054,"DIFFICULTY_STARTING":30,"EPOCH_BLOCKS":768,"MEMPOOL_BLOCK_BUFFER":10,"MIN_PLOT_SIZE":18,"NETWORK_TYPE":1,"SUB_SLOT_ITERS_STARTING":67108864,"HARD_FORK_HEIGHT":0}}`,
+				},
+				{
+					Name:  "dns_introducer_address",
+					Value: "dns-introducer-testnetwork.address",
+				},
+				{
+					Name:  "introducer_address",
+					Value: "introducer-testnetwork.address",
+				},
+				{
+					Name:  "log_level",
+					Value: "DEBUG",
+				},
+				{
+					Name:  "network",
+					Value: "testnetwork",
+				},
+				{
+					Name:  "network_port",
+					Value: "58445",
+				},
+				{
+					Name:  "self_hostname",
+					Value: "127.0.0.1",
+				},
+				{
+					Name:  "source_ref",
+					Value: "main",
+				},
+				{
+					Name:  "testnet",
+					Value: "true",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			env, err := GetCommonChiaEnv(tc.spec, tc.networkData)
+			assert.NoError(t, err)
+			assert.Equal(t, len(tc.expectedEnv), len(env), "Number of environment variables should match")
+			for i, expectedEnv := range tc.expectedEnv {
+				assert.Equal(t, expectedEnv.Name, env[i].Name, "Environment variable name should match")
+				assert.Equal(t, expectedEnv.Value, env[i].Value, "Environment variable value should match")
+			}
+		})
+	}
 }
