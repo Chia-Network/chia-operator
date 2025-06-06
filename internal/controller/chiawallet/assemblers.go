@@ -367,12 +367,12 @@ func assembleChiaExporterContainer(wallet k8schianetv1.ChiaWallet) corev1.Contai
 		ImagePullPolicy:  wallet.Spec.ImagePullPolicy,
 	}
 
-	if wallet.Spec.ChiaConfig.SecurityContext != nil {
-		input.SecurityContext = wallet.Spec.ChiaConfig.SecurityContext
+	if wallet.Spec.ChiaExporterConfig.SecurityContext != nil {
+		input.SecurityContext = wallet.Spec.ChiaExporterConfig.SecurityContext
 	}
 
-	if wallet.Spec.ChiaConfig.Resources != nil {
-		input.ResourceRequirements = *wallet.Spec.ChiaConfig.Resources
+	if wallet.Spec.ChiaExporterConfig.Resources != nil {
+		input.ResourceRequirements = *wallet.Spec.ChiaExporterConfig.Resources
 	}
 
 	return kube.AssembleChiaExporterContainer(input)

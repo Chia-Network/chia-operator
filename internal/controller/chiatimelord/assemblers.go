@@ -440,12 +440,12 @@ func assembleChiaExporterContainer(tl k8schianetv1.ChiaTimelord) corev1.Containe
 		ImagePullPolicy:  tl.Spec.ImagePullPolicy,
 	}
 
-	if tl.Spec.ChiaConfig.SecurityContext != nil {
-		input.SecurityContext = tl.Spec.ChiaConfig.SecurityContext
+	if tl.Spec.ChiaExporterConfig.SecurityContext != nil {
+		input.SecurityContext = tl.Spec.ChiaExporterConfig.SecurityContext
 	}
 
-	if tl.Spec.ChiaConfig.Resources != nil {
-		input.ResourceRequirements = *tl.Spec.ChiaConfig.Resources
+	if tl.Spec.ChiaExporterConfig.Resources != nil {
+		input.ResourceRequirements = *tl.Spec.ChiaExporterConfig.Resources
 	}
 
 	return kube.AssembleChiaExporterContainer(input)
@@ -457,12 +457,12 @@ func assembleChiaHealthcheckContainer(tl k8schianetv1.ChiaTimelord) corev1.Conta
 		ImagePullPolicy: tl.Spec.ImagePullPolicy,
 	}
 
-	if tl.Spec.ChiaConfig.SecurityContext != nil {
-		input.SecurityContext = tl.Spec.ChiaConfig.SecurityContext
+	if tl.Spec.ChiaHealthcheckConfig.SecurityContext != nil {
+		input.SecurityContext = tl.Spec.ChiaHealthcheckConfig.SecurityContext
 	}
 
-	if tl.Spec.ChiaConfig.Resources != nil {
-		input.ResourceRequirements = *tl.Spec.ChiaConfig.Resources
+	if tl.Spec.ChiaHealthcheckConfig.Resources != nil {
+		input.ResourceRequirements = *tl.Spec.ChiaHealthcheckConfig.Resources
 	}
 
 	return kube.AssembleChiaHealthcheckContainer(input)

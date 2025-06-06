@@ -324,12 +324,12 @@ func assembleChiaExporterContainer(datalayer k8schianetv1.ChiaDataLayer) corev1.
 		ImagePullPolicy:  datalayer.Spec.ImagePullPolicy,
 	}
 
-	if datalayer.Spec.ChiaConfig.SecurityContext != nil {
-		input.SecurityContext = datalayer.Spec.ChiaConfig.SecurityContext
+	if datalayer.Spec.ChiaExporterConfig.SecurityContext != nil {
+		input.SecurityContext = datalayer.Spec.ChiaExporterConfig.SecurityContext
 	}
 
-	if datalayer.Spec.ChiaConfig.Resources != nil {
-		input.ResourceRequirements = *datalayer.Spec.ChiaConfig.Resources
+	if datalayer.Spec.ChiaExporterConfig.Resources != nil {
+		input.ResourceRequirements = *datalayer.Spec.ChiaExporterConfig.Resources
 	}
 
 	return kube.AssembleChiaExporterContainer(input)
