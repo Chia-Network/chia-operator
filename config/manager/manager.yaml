@@ -59,7 +59,7 @@ spec:
           - "--health-probe-bind-address=:8081"
           - "--metrics-bind-address=0.0.0.0:8080"
           - "--leader-elect"
-        image: ghcr.io/chia-network/chia-operator:latest
+        image: ghcr.io/chia-network/chia-operator:0.15.4
         name: manager
         ports:
         - containerPort: 8081
