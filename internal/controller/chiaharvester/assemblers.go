@@ -382,12 +382,12 @@ func assembleChiaExporterContainer(harvester k8schianetv1.ChiaHarvester) corev1.
 		ImagePullPolicy:  harvester.Spec.ImagePullPolicy,
 	}
 
-	if harvester.Spec.ChiaConfig.SecurityContext != nil {
-		input.SecurityContext = harvester.Spec.ChiaConfig.SecurityContext
+	if harvester.Spec.ChiaExporterConfig.SecurityContext != nil {
+		input.SecurityContext = harvester.Spec.ChiaExporterConfig.SecurityContext
 	}
 
-	if harvester.Spec.ChiaConfig.Resources != nil {
-		input.ResourceRequirements = *harvester.Spec.ChiaConfig.Resources
+	if harvester.Spec.ChiaExporterConfig.Resources != nil {
+		input.ResourceRequirements = *harvester.Spec.ChiaExporterConfig.Resources
 	}
 
 	return kube.AssembleChiaExporterContainer(input)

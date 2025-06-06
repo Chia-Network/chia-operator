@@ -331,12 +331,12 @@ func assembleChiaExporterContainer(introducer k8schianetv1.ChiaIntroducer) corev
 		ImagePullPolicy:  introducer.Spec.ImagePullPolicy,
 	}
 
-	if introducer.Spec.ChiaConfig.SecurityContext != nil {
-		input.SecurityContext = introducer.Spec.ChiaConfig.SecurityContext
+	if introducer.Spec.ChiaExporterConfig.SecurityContext != nil {
+		input.SecurityContext = introducer.Spec.ChiaExporterConfig.SecurityContext
 	}
 
-	if introducer.Spec.ChiaConfig.Resources != nil {
-		input.ResourceRequirements = *introducer.Spec.ChiaConfig.Resources
+	if introducer.Spec.ChiaExporterConfig.Resources != nil {
+		input.ResourceRequirements = *introducer.Spec.ChiaExporterConfig.Resources
 	}
 
 	return kube.AssembleChiaExporterContainer(input)

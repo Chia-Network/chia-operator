@@ -193,6 +193,14 @@ type SpecChiaExporter struct {
 	// ConfigSecretName is the name of an optional Secret that contains the environment variables that will be mounted in the chia-exporter container.
 	// +optional
 	ConfigSecretName *string `json:"configSecretName,omitempty"`
+
+	// Resources defines the compute resources (limits/requests) for the chia container.
+	// +optional
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+
+	// SecurityContext defines the security context for the chia container
+	// +optional
+	SecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
 }
 
 // SpecChiaHealthcheck defines the desired state of Chia healthcheck configuration
@@ -215,6 +223,14 @@ type SpecChiaHealthcheck struct {
 	// This Service will default to being disabled.
 	// +optional
 	Service Service `json:"service,omitempty"`
+
+	// Resources defines the compute resources (limits/requests) for the chia container.
+	// +optional
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+
+	// SecurityContext defines the security context for the chia container
+	// +optional
+	SecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
 }
 
 // ChiaSecretKey defines the name of a kubernetes secret and key in that namespace that contains the Chia mnemonic

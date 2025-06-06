@@ -383,12 +383,12 @@ func assembleChiaExporterContainer(farmer k8schianetv1.ChiaFarmer) corev1.Contai
 		ImagePullPolicy:  farmer.Spec.ImagePullPolicy,
 	}
 
-	if farmer.Spec.ChiaConfig.SecurityContext != nil {
-		input.SecurityContext = farmer.Spec.ChiaConfig.SecurityContext
+	if farmer.Spec.ChiaExporterConfig.SecurityContext != nil {
+		input.SecurityContext = farmer.Spec.ChiaExporterConfig.SecurityContext
 	}
 
-	if farmer.Spec.ChiaConfig.Resources != nil {
-		input.ResourceRequirements = *farmer.Spec.ChiaConfig.Resources
+	if farmer.Spec.ChiaExporterConfig.Resources != nil {
+		input.ResourceRequirements = *farmer.Spec.ChiaExporterConfig.Resources
 	}
 
 	return kube.AssembleChiaExporterContainer(input)
