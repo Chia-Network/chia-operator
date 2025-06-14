@@ -77,12 +77,25 @@ func ReconcileService(ctx context.Context, c client.Client, service k8schianetv1
 	} else {
 		// Service exists, so we need to update it if there are any changes, or delete if it was disabled
 		if ensureServiceExists {
-			// TODO do we need to handle any immutable fields on Services
-			if err := serverSideApply(ctx, c, &desired, "Service", "v1"); err != nil {
+			updated := current
+
+			if !reflect.DeepEqual(current.Annotations, desired.Annotations) {
+				updated.Annotations = desired.Annotations
+			}
+
+			if !reflect.DeepEqual(current.Labels, desired.Labels) {
+				updated.Labels = desired.Labels
+			}
+
+			if !reflect.DeepEqual(current.Spec, desired.Spec) {
+				updated.Spec = desired.Spec
+			}
+
+			if err := serverSideApply(ctx, c, &updated, "Service", "v1"); err != nil {
 				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
 					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 				}
-				return ctrl.Result{}, fmt.Errorf("error updating Service \"%s\": %v", desired.Name, err)
+				return ctrl.Result{}, fmt.Errorf("error updating Service \"%s\": %v", updated.Name, err)
 			}
 		} else {
 			klog.Info("Deleting Service because it was disabled")
