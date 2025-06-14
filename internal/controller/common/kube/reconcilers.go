@@ -154,11 +154,24 @@ func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.De
 		}
 
 		// Deployment exists, so we need to update it if there are any changes.
-		if err := serverSideApply(ctx, c, &desired, "Deployment", "apps/v1"); err != nil {
+		updated := current
+
+		if !reflect.DeepEqual(current.Annotations, desired.Annotations) {
+			updated.Annotations = desired.Annotations
+		}
+
+		if !reflect.DeepEqual(current.Labels, desired.Labels) {
+			updated.Labels = desired.Labels
+		}
+
+		if !reflect.DeepEqual(current.Spec, desired.Spec) {
+			updated.Spec = desired.Spec
+		}
+		if err := serverSideApply(ctx, c, &updated, "Deployment", "apps/v1"); err != nil {
 			if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
 				return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 			}
-			return ctrl.Result{}, fmt.Errorf("error updating Deployment \"%s\": %v", desired.Name, err)
+			return ctrl.Result{}, fmt.Errorf("error updating Deployment \"%s\": %v", updated.Name, err)
 		}
 	}
 
@@ -295,11 +308,11 @@ func ReconcilePersistentVolumeClaim(ctx context.Context, c client.Client, storag
 				updated.Spec.Resources.Requests = desired.Spec.Resources.Requests
 			}
 
-			if err := serverSideApply(ctx, c, &desired, "PersistentVolumeClaim", "v1"); err != nil {
+			if err := serverSideApply(ctx, c, &updated, "PersistentVolumeClaim", "v1"); err != nil {
 				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
 					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 				}
-				return ctrl.Result{}, fmt.Errorf("error updating PersistentVolumeClaim \"%s\": %v", desired.Name, err)
+				return ctrl.Result{}, fmt.Errorf("error updating PersistentVolumeClaim \"%s\": %v", updated.Name, err)
 			}
 		}
 	}
@@ -388,11 +401,11 @@ func ReconcileIngress(ctx context.Context, c client.Client, ingress k8schianetv1
 				updated.Spec = desired.Spec
 			}
 
-			if err := serverSideApply(ctx, c, &desired, "Ingress", "networking.k8s.io/v1"); err != nil {
+			if err := serverSideApply(ctx, c, &updated, "Ingress", "networking.k8s.io/v1"); err != nil {
 				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
 					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 				}
-				return ctrl.Result{}, fmt.Errorf("error updating Ingress \"%s\": %v", desired.Name, err)
+				return ctrl.Result{}, fmt.Errorf("error updating Ingress \"%s\": %v", updated.Name, err)
 			}
 		} else {
 			klog.Info("Deleting Ingress because it was disabled")
