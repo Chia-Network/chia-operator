@@ -29,12 +29,9 @@ const (
 	// ObjectModifiedTryAgainError contains the error text for an error that can happen when multiple reconciliation loops are called for the same object at nearly the same time.
 	// When this happens, we just want to requeue the reconcile after some amount of time to ensure the latest changes were applied to the sub-resources
 	ObjectModifiedTryAgainError = "the object has been modified; please apply your changes to the latest version and try again"
-
-	// FieldManagerName is the name used for server-side apply field ownership
-	FieldManagerName = "chia-operator"
 )
 
-// serverSideApply attempts to apply the desired object using server-side apply.
+// serverSideApply attempts to apply the desired object server-side.
 func serverSideApply(ctx context.Context, c client.Client, desired runtime.Object, kind, apiVersion string) error {
 	u := &unstructured.Unstructured{}
 	objMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(desired)
@@ -46,8 +43,7 @@ func serverSideApply(ctx context.Context, c client.Client, desired runtime.Objec
 	u.SetAPIVersion(apiVersion)
 	u.SetManagedFields(nil)
 
-	// Try server-side apply first
-	err = c.Patch(ctx, u, client.Apply, client.ForceOwnership, client.FieldOwner(FieldManagerName))
+	err = c.Patch(ctx, u, client.Apply, client.ForceOwnership, client.FieldOwner("chia-operator"))
 	if err != nil {
 		return fmt.Errorf("error applying object: %w", err)
 	}
