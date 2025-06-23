@@ -12,15 +12,16 @@ import (
 	"time"
 
 	k8schianetv1 "github.com/chia-network/chia-operator/api/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	networkingv1 "k8s.io/api/networking/v1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -29,6 +30,25 @@ const (
 	// When this happens, we just want to requeue the reconcile after some amount of time to ensure the latest changes were applied to the sub-resources
 	ObjectModifiedTryAgainError = "the object has been modified; please apply your changes to the latest version and try again"
 )
+
+// serverSideApply attempts to apply the desired object server-side.
+func serverSideApply(ctx context.Context, c client.Client, desired runtime.Object, kind, apiVersion string) error {
+	u := &unstructured.Unstructured{}
+	objMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(desired)
+	if err != nil {
+		return fmt.Errorf("error converting object: %w", err)
+	}
+	u.Object = objMap
+	u.SetKind(kind)
+	u.SetAPIVersion(apiVersion)
+	u.SetManagedFields(nil)
+
+	err = c.Patch(ctx, u, client.Apply, client.ForceOwnership, client.FieldOwner("chia-operator"))
+	if err != nil {
+		return fmt.Errorf("error applying object: %w", err)
+	}
+	return nil
+}
 
 // ReconcileService uses the controller-runtime client to determine if the service resource needs to be created or updated
 func ReconcileService(ctx context.Context, c client.Client, service k8schianetv1.Service, desired corev1.Service, defaultEnabled bool) (reconcile.Result, error) {
@@ -45,7 +65,7 @@ func ReconcileService(ctx context.Context, c client.Client, service k8schianetv1
 		// Service not found - create if it should exist, or return here if it shouldn't
 		if ensureServiceExists {
 			klog.Info("Creating new Service")
-			if err := c.Create(ctx, &desired); err != nil {
+			if err := serverSideApply(ctx, c, &desired, "Service", "v1"); err != nil {
 				return ctrl.Result{}, fmt.Errorf("error creating Service \"%s\": %v", desired.Name, err)
 			}
 		} else {
@@ -57,17 +77,25 @@ func ReconcileService(ctx context.Context, c client.Client, service k8schianetv1
 	} else {
 		// Service exists, so we need to update it if there are any changes, or delete if it was disabled
 		if ensureServiceExists {
-			desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
-			if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
-				current.Labels = desired.Labels
-				current.Annotations = desiredAnnotations
-				current.Spec = desired.Spec
-				if err := c.Update(ctx, &current); err != nil {
-					if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
-						return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
-					}
-					return ctrl.Result{}, fmt.Errorf("error updating Service \"%s\": %v", desired.Name, err)
+			updated := current
+
+			if !reflect.DeepEqual(current.Annotations, desired.Annotations) {
+				updated.Annotations = desired.Annotations
+			}
+
+			if !reflect.DeepEqual(current.Labels, desired.Labels) {
+				updated.Labels = desired.Labels
+			}
+
+			if !reflect.DeepEqual(current.Spec, desired.Spec) {
+				updated.Spec = desired.Spec
+			}
+
+			if err := serverSideApply(ctx, c, &updated, "Service", "v1"); err != nil {
+				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 				}
+				return ctrl.Result{}, fmt.Errorf("error updating Service \"%s\": %v", updated.Name, err)
 			}
 		} else {
 			klog.Info("Deleting Service because it was disabled")
@@ -84,7 +112,7 @@ func ReconcileService(ctx context.Context, c client.Client, service k8schianetv1
 func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.Deployment) (reconcile.Result, error) {
 	klog := log.FromContext(ctx).WithValues("Deployment.Namespace", desired.Namespace, "Deployment.Name", desired.Name)
 
-	// Get existing PVC
+	// Get existing Deployment
 	var current appsv1.Deployment
 	err := c.Get(ctx, types.NamespacedName{
 		Name:      desired.Name,
@@ -92,7 +120,7 @@ func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.De
 	}, &current)
 	if err != nil && errors.IsNotFound(err) {
 		klog.Info("Creating new Deployment")
-		if err := c.Create(ctx, &desired); err != nil {
+		if err := serverSideApply(ctx, c, &desired, "Deployment", "apps/v1"); err != nil {
 			return ctrl.Result{}, fmt.Errorf("error creating Deployment \"%s\": %v", desired.Name, err)
 		}
 	} else if err != nil {
@@ -125,21 +153,18 @@ func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.De
 				time.Sleep(2 * time.Second)
 			}
 
-			if err := c.Create(ctx, &desired); err != nil {
-				return ctrl.Result{}, fmt.Errorf("error creating Deployment \"%s\": %v", desired.Name, err)
+			if err := serverSideApply(ctx, c, &desired, "Deployment", "apps/v1"); err != nil {
+				return ctrl.Result{}, fmt.Errorf("error recreating Deployment \"%s\": %v", desired.Name, err)
 			}
 
 			return ctrl.Result{}, nil // Exit reconciler here because we created the desired Deployment
 		}
 
 		// Deployment exists, so we need to update it if there are any changes.
-		// We'll make a copy of the current Deployment to make sure we only change mutable Deployment fields.
-		// Then we will compare the current and updated Deployments, and send an Update request if there was any diff.
 		updated := current
 
-		desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
-		if !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
-			updated.Annotations = desiredAnnotations
+		if !reflect.DeepEqual(current.Annotations, desired.Annotations) {
+			updated.Annotations = desired.Annotations
 		}
 
 		if !reflect.DeepEqual(current.Labels, desired.Labels) {
@@ -149,14 +174,11 @@ func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.De
 		if !reflect.DeepEqual(current.Spec, desired.Spec) {
 			updated.Spec = desired.Spec
 		}
-
-		if !reflect.DeepEqual(current, updated) {
-			if err := c.Update(ctx, &updated); err != nil {
-				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
-					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
-				}
-				return ctrl.Result{}, fmt.Errorf("error updating Deployment \"%s\": %v", updated.Name, err)
+		if err := serverSideApply(ctx, c, &updated, "Deployment", "apps/v1"); err != nil {
+			if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+				return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 			}
+			return ctrl.Result{}, fmt.Errorf("error updating Deployment \"%s\": %v", updated.Name, err)
 		}
 	}
 
@@ -167,7 +189,7 @@ func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.De
 func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.StatefulSet) (reconcile.Result, error) {
 	klog := log.FromContext(ctx).WithValues("StatefulSet.Namespace", desired.Namespace, "StatefulSet.Name", desired.Name)
 
-	// Get existing PVC
+	// Get existing StatefulSet
 	var current appsv1.StatefulSet
 	err := c.Get(ctx, types.NamespacedName{
 		Name:      desired.Name,
@@ -175,7 +197,7 @@ func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.S
 	}, &current)
 	if err != nil && errors.IsNotFound(err) {
 		klog.Info("Creating new StatefulSet")
-		if err := c.Create(ctx, &desired); err != nil {
+		if err := serverSideApply(ctx, c, &desired, "StatefulSet", "apps/v1"); err != nil {
 			return ctrl.Result{}, fmt.Errorf("error creating StatefulSet \"%s\": %v", desired.Name, err)
 		}
 	} else if err != nil {
@@ -208,8 +230,8 @@ func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.S
 				time.Sleep(2 * time.Second)
 			}
 
-			if err := c.Create(ctx, &desired); err != nil {
-				return ctrl.Result{}, fmt.Errorf("error creating StatefulSet \"%s\": %v", desired.Name, err)
+			if err := serverSideApply(ctx, c, &desired, "StatefulSet", "apps/v1"); err != nil {
+				return ctrl.Result{}, fmt.Errorf("error recreating StatefulSet \"%s\": %v", desired.Name, err)
 			}
 
 			return ctrl.Result{}, nil // Exit reconciler here because we created the desired StatefulSet
@@ -220,9 +242,8 @@ func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.S
 		// Then we will compare the current and updated StatefulSets, and send an Update request if there was any diff.
 		updated := current
 
-		desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
-		if !reflect.DeepEqual(current.Annotations, desiredAnnotations) {
-			updated.Annotations = desiredAnnotations
+		if !reflect.DeepEqual(current.Annotations, desired.Annotations) {
+			updated.Annotations = desired.Annotations
 		}
 
 		if !reflect.DeepEqual(current.Labels, desired.Labels) {
@@ -241,13 +262,11 @@ func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.S
 			updated.Spec.Template = desired.Spec.Template
 		}
 
-		if !reflect.DeepEqual(current, updated) {
-			if err := c.Update(ctx, &updated); err != nil {
-				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
-					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
-				}
-				return ctrl.Result{}, fmt.Errorf("error updating StatefulSet \"%s\": %v", desired.Name, err)
+		if err := serverSideApply(ctx, c, &updated, "StatefulSet", "apps/v1"); err != nil {
+			if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+				return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 			}
+			return ctrl.Result{}, fmt.Errorf("error updating StatefulSet \"%s\": %v", updated.Name, err)
 		}
 	}
 
@@ -269,7 +288,7 @@ func ReconcilePersistentVolumeClaim(ctx context.Context, c client.Client, storag
 		// PVC not found - create if it should exist, or return here if it shouldn't
 		if ensurePVCExists {
 			klog.Info("Creating new PersistentVolumeClaim")
-			if err := c.Create(ctx, &desired); err != nil {
+			if err := serverSideApply(ctx, c, &desired, "PersistentVolumeClaim", "v1"); err != nil {
 				return ctrl.Result{}, fmt.Errorf("error creating PersistentVolumeClaim \"%s\": %v", desired.Name, err)
 			}
 		} else {
@@ -282,17 +301,25 @@ func ReconcilePersistentVolumeClaim(ctx context.Context, c client.Client, storag
 		// PVC exists, so we need to update it if GeneratePersistentVolumes is enabled
 		// For safety reasons we never delete PVCs, however, chia-operator users should clean up their own storage if desired
 		if ensurePVCExists {
-			desiredAnnotations := CombineMaps(current.Annotations, desired.Annotations)
-			if !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desiredAnnotations) || !reflect.DeepEqual(current.Spec.Resources.Requests, desired.Spec.Resources.Requests) {
-				current.Labels = desired.Labels
-				current.Annotations = desiredAnnotations
-				current.Spec.Resources.Requests = desired.Spec.Resources.Requests
-				if err := c.Update(ctx, &current); err != nil {
-					if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
-						return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
-					}
-					return ctrl.Result{}, fmt.Errorf("error updating PersistentVolumeClaim \"%s\": %v", desired.Name, err)
+			updated := current
+
+			if !reflect.DeepEqual(current.Annotations, desired.Annotations) {
+				updated.Annotations = desired.Annotations
+			}
+
+			if !reflect.DeepEqual(current.Labels, desired.Labels) {
+				updated.Labels = desired.Labels
+			}
+
+			if !reflect.DeepEqual(current.Spec.Resources.Requests, desired.Spec.Resources.Requests) {
+				updated.Spec.Resources.Requests = desired.Spec.Resources.Requests
+			}
+
+			if err := serverSideApply(ctx, c, &updated, "PersistentVolumeClaim", "v1"); err != nil {
+				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 				}
+				return ctrl.Result{}, fmt.Errorf("error updating PersistentVolumeClaim \"%s\": %v", updated.Name, err)
 			}
 		}
 	}
@@ -313,8 +340,8 @@ func ReconcileConfigMap(ctx context.Context, c client.Client, desired corev1.Con
 	if err != nil && errors.IsNotFound(err) {
 		// ConfigMap not found - create it
 		klog.Info("Creating new ConfigMap")
-		if err := c.Create(ctx, &desired); err != nil {
-			return ctrl.Result{}, fmt.Errorf("error creating ConfigMap \"%s\": %v", desired.Name, err)
+		if err := serverSideApply(ctx, c, &desired, "ConfigMap", "v1"); err != nil {
+			return ctrl.Result{}, fmt.Errorf("error updating ConfigMap \"%s\": %v", desired.Name, err)
 		}
 	} else if err != nil {
 		// Getting ConfigMap failed, but it wasn't because it doesn't exist, can't continue
@@ -324,8 +351,7 @@ func ReconcileConfigMap(ctx context.Context, c client.Client, desired corev1.Con
 
 		if !reflect.DeepEqual(current.Data, desired.Data) {
 			updated.Data = desired.Data
-
-			if err := c.Update(ctx, &updated); err != nil {
+			if err := serverSideApply(ctx, c, &updated, "ConfigMap", "v1"); err != nil {
 				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
 					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 				}
@@ -356,7 +382,7 @@ func ReconcileIngress(ctx context.Context, c client.Client, ingress k8schianetv1
 		// Ingress not found - create if it should exist, or return here if it shouldn't
 		if ensureIngressExists {
 			klog.Info("Creating new Ingress")
-			if err := c.Create(ctx, &desired); err != nil {
+			if err := serverSideApply(ctx, c, &desired, "Ingress", "networking.k8s.io/v1"); err != nil {
 				return ctrl.Result{}, fmt.Errorf("error creating Ingress \"%s\": %v", desired.Name, err)
 			}
 		} else {
@@ -368,16 +394,25 @@ func ReconcileIngress(ctx context.Context, c client.Client, ingress k8schianetv1
 	} else {
 		// Ingress exists, so we need to update it if there are any changes, or delete if it was disabled
 		if ensureIngressExists {
-			if !reflect.DeepEqual(current.Spec, desired.Spec) || !reflect.DeepEqual(current.Labels, desired.Labels) || !reflect.DeepEqual(current.Annotations, desired.Annotations) {
-				current.Labels = desired.Labels
-				current.Annotations = desired.Annotations
-				current.Spec = desired.Spec
-				if err := c.Update(ctx, &current); err != nil {
-					if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
-						return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
-					}
-					return ctrl.Result{}, fmt.Errorf("error updating Ingress \"%s\": %v", desired.Name, err)
+			updated := current
+
+			if !reflect.DeepEqual(current.Annotations, desired.Annotations) {
+				updated.Annotations = desired.Annotations
+			}
+
+			if !reflect.DeepEqual(current.Labels, desired.Labels) {
+				updated.Labels = desired.Labels
+			}
+
+			if !reflect.DeepEqual(current.Spec, desired.Spec) {
+				updated.Spec = desired.Spec
+			}
+
+			if err := serverSideApply(ctx, c, &updated, "Ingress", "networking.k8s.io/v1"); err != nil {
+				if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+					return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
 				}
+				return ctrl.Result{}, fmt.Errorf("error updating Ingress \"%s\": %v", updated.Name, err)
 			}
 		} else {
 			klog.Info("Deleting Ingress because it was disabled")
