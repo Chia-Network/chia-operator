@@ -1961,6 +1961,16 @@ func (in *NetworkConstants) DeepCopyInto(out *NetworkConstants) {
 		*out = new(uint8)
 		**out = **in
 	}
+	if in.MinPlotSizeV1 != nil {
+		in, out := &in.MinPlotSizeV1, &out.MinPlotSizeV1
+		*out = new(uint8)
+		**out = **in
+	}
+	if in.MinPlotSizeV2 != nil {
+		in, out := &in.MinPlotSizeV2, &out.MinPlotSizeV2
+		*out = new(uint8)
+		**out = **in
+	}
 	if in.NetworkType != nil {
 		in, out := &in.NetworkType, &out.NetworkType
 		*out = new(uint8)

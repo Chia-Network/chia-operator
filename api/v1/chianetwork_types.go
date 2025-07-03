@@ -68,6 +68,12 @@ type NetworkConstants struct {
 	MinPlotSize *uint8 `json:"MIN_PLOT_SIZE,omitempty"`
 
 	// +optional
+	MinPlotSizeV1 *uint8 `json:"MIN_PLOT_SIZE_V1,omitempty"`
+
+	// +optional
+	MinPlotSizeV2 *uint8 `json:"MIN_PLOT_SIZE_V2,omitempty"`
+
+	// +optional
 	NetworkType *uint8 `json:"NETWORK_TYPE,omitempty"`
 
 	// +optional

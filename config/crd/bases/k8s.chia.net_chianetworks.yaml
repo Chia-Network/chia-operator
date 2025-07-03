@@ -78,6 +78,10 @@ spec:
                     type: integer
                   MIN_PLOT_SIZE:
                     type: integer
+                  MIN_PLOT_SIZE_V1:
+                    type: integer
+                  MIN_PLOT_SIZE_V2:
+                    type: integer
                   NETWORK_TYPE:
                     type: integer
                   PLOT_FILTER_32_HEIGHT:
