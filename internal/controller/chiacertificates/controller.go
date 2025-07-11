@@ -37,7 +37,7 @@ var chiacertificates = make(map[string]bool)
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacertificates,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacertificates/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacertificates/finalizers,verbs=update
-//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create
+//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;patch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
