@@ -198,7 +198,9 @@ spec:
 
 ## Configure Readiness, Liveness, and Startup probes
 
-By default, if chia-exporter is enabled it comes with its own readiness and liveness probes. But you can configure readiness, liveness, and startup probes for the chia container in your deployed Pods, too:
+By default, if running a service supported by [chia-healthcheck](chia-healthcheck.md), and chia-healthcheck is enabled (it is enabled by default), then some startup, readiness, and liveness probes will be configured for the chia container using endpoints from the chia-healthcheck sidecar.
+
+If chia-healthcheck is not running as a sidecar to the chia container, then no readiness, liveness, or startup probes are configured by default. These can be configured in the chia container's spec though. The following example configures the simple healthcheck script contained in the chia-docker image:
 
 ```yaml
 spec:
@@ -209,14 +211,12 @@ spec:
           - /bin/sh
           - '-c'
           - /usr/local/bin/docker-healthcheck.sh || exit 1
-      initialDelaySeconds: 30
     readinessProbe:
       exec:
         command:
           - /bin/sh
           - '-c'
           - /usr/local/bin/docker-healthcheck.sh || exit 1
-      initialDelaySeconds: 30
     startupProbe:
       exec:
         command:
@@ -224,6 +224,8 @@ spec:
           - '-c'
           - /usr/local/bin/docker-healthcheck.sh || exit 1
 ```
+
+The chia-exporter and chia-healthcheck containers come with their own readiness, liveness, and startup probes which are enabled by default.
 
 ## Specify Image Pull Secrets
 
