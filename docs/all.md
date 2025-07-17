@@ -225,7 +225,7 @@ spec:
           - /usr/local/bin/docker-healthcheck.sh || exit 1
 ```
 
-The chia-exporter container comes with its own readiness/liveness/startup probes by default.
+The chia-exporter and chia-healthcheck containers come with their own readiness, liveness, and startup probes which are enabled by default.
 
 ## Specify Image Pull Secrets
 
