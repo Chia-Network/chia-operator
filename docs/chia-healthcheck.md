@@ -1,6 +1,6 @@
 # Chia Healthcheck
 
-[Chia Healthcheck](https://github.com/Chia-Network/chia-healthcheck) is an optional component to certain Chia resources installed by this operator that can be used as a startup, liveness, and readiness probe.
+[Chia Healthcheck](https://github.com/Chia-Network/chia-healthcheck) is an optional component to certain Chia resources installed by this operator that can be used as a startup, liveness, and readiness probe. Chia-Healthcheck provides more intelligent healthchecking logic to ensure your chia services are healthy.
 
 Supported components:
 
@@ -15,7 +15,7 @@ The chia-healthcheck sidecar will be enabled by default for all services that su
 ```yaml
 spec:
   chiaHealthcheck:
-    enabled: true
+    enabled: false
 ```
 
 NOTE: ChiaSeeders require an additional parameter for chia-healthcheck:
@@ -91,17 +91,11 @@ NOTE: If you had custom labels/annotations for your healthcheck Service, you sho
 
 ## Specify the version of chia-healthcheck
 
-Operator releases tend to pin to the current latest version of chia-healthcheck (at the time the release was published) but if you'd like to manage the version of chia-healthcheck yourself, there's a field to do so:
+Operator releases tend to pin to the current latest version of chia-healthcheck (at the time the release was published.) If you would like to manage the version of chia-healthcheck yourself, you can specify the version of the image to use:
 
 ```yaml
-apiVersion: k8s.chia.net/v1
-kind: ChiaSeeder
-metadata:
-  name: my-seeder
 spec:
   chiaHealthcheck:
     enabled: true
     image: ghcr.io/chia-network/chia-healthcheck:0.2.1
 ```
-
-The example shows a ChiaSeeder (seeder) resource on 0.2.1 of chia, but this field is also available on other resources that support chia-healthcheck.
