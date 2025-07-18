@@ -57,6 +57,7 @@ If you still need help:
 3. Join the [Chia community Discord](https://discord.gg/chia)
 
 When reporting issues, please include:
+
 - Kubernetes version
 - chia-operator version
 - Resource definitions (with sensitive data removed)
