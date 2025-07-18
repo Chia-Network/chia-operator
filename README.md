@@ -29,7 +29,7 @@ The ServiceMonitor will be installed in the `chia-operator-system` namespace.
 
 ### Install Chia Services
 
-The operator should be running in your cluster now and ready to go! Get to installing some Chia resources. If you're a farmer, see the [Start a Farm](docs/start-a-farm.md) guide, or view these individually:
+The operator should be running in your cluster now and ready to go! Take a look at the [documentation](docs/start-a-farm.md) and get to installing some Chia resources. If you're a farmer, see the [Start a Farm](docs/start-a-farm.md) guide, or view these individually:
 
 * [ChiaCA](docs/chiaca.md) (required so your chia services can all talk to each other!)
 * [Node](docs/chianode.md)
@@ -38,6 +38,7 @@ The operator should be running in your cluster now and ready to go! Get to insta
 * [Wallet](docs/chiawallet.md)
 
 Other Chia services are also available:
+* [Crawler](docs/chiacrawler.md)
 * [DataLayer](docs/chiadatalayer.md)
 * [Introducer](docs/chiaintroducer.md)
 * [Seeder](docs/chiaseeder.md)

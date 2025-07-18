@@ -163,7 +163,7 @@ You can pin a Pod to a specific node using labels from that node in a nodeSelect
 
 ```yaml
 spec:
-  nodeSelctor:
+  nodeSelector:
     "kubernetes.io/hostname": "worker1"
 ```
 
