@@ -1,6 +1,16 @@
 # Start a farm
 
+This guide provides a complete walkthrough for setting up a Chia farm using the chia-operator. It covers all the essential components needed for farming Chia.
+
 This guide installs everything in the default namespace, but you can of course install them in any namespace. These are also all fairly minimal examples with just enough config to be helpful. Other options are supported.
+
+## Table of Contents
+
+- [SSL CA](#ssl-ca)
+- [Full Node](#full_node)
+- [Farmer](#farmer)
+- [Harvester](#harvester)
+- [Wallet](#wallet)
 
 ## SSL CA
 
@@ -129,3 +139,23 @@ spec:
 The config here is very similar to the farmer we already made since it also requires your mnemonic key and a full_node peer.
 
 Finally, apply this ChiaWallet with `kubectl apply -f wallet.yaml`
+
+## Next Steps
+
+After deploying all components, you should have a complete Chia farm running in Kubernetes with:
+
+- A Certificate Authority for secure communications
+- A full node syncing with the Chia blockchain
+- A farmer connected to your full node
+- A harvester managing your plots
+- A wallet for managing your XCH
+
+### Additional Configuration
+
+For more advanced configurations, see:
+
+- [Generic options for all chia resources](all.md)
+- [Services and networking](services-networking.md)
+- [Storage](storage.md)
+- [chia-exporter configuration](chia-exporter.md) for Prometheus metrics
+- [chia-healthcheck configuration](chia-healthcheck.md) for health monitoring
