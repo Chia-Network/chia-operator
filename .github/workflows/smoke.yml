@@ -32,8 +32,7 @@ jobs:
 
       - name: Install chia components
         run: |
-          kubectl apply -f ./tests/chiaca.yaml
-          kubectl apply -f ./tests/chianode.yaml
+          kubectl apply -f ./tests/
 
       - name: Wait for ChiaCA Secret
         run: |
@@ -56,6 +55,52 @@ jobs:
             kubectl get pods
             echo "Getting Kubernetes Secrets from the default namespace:"
             kubectl get secrets
+            exit 1
+          fi
+
+      - name: Wait for ChiaCertificate Secret
+        run: |
+          found=0
+          timeout=300
+          endtime=$((SECONDS+timeout))
+          while [ ${SECONDS} -lt ${endtime} ]; do
+            if kubectl get secret chia-certificates &> /dev/null; then
+              echo "ChiaCertificate Secret found"
+              found=1
+              break
+            else
+              echo "Secret not found yet. Waiting..."
+              sleep 5
+            fi
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "Timeout reached waiting for ChiaCertificate Secret to be created."
+            echo "Getting Kubernetes Pods from the default namespace:"
+            kubectl get pods
+            echo "Getting Kubernetes Secrets from the default namespace:"
+            kubectl get secrets
+            exit 1
+          fi
+
+      - name: Wait for ChiaNetwork ConfigMap
+        run: |
+          found=0
+          timeout=300
+          endtime=$((SECONDS+timeout))
+          while [ ${SECONDS} -lt ${endtime} ]; do
+            if kubectl get configmap testnetz &> /dev/null; then
+              echo "ChiaNetwork ConfigMap found"
+              found=1
+              break
+            else
+              echo "ConfigMap not found yet. Waiting..."
+              sleep 5
+            fi
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "Timeout reached waiting for ChiaCertificate ConfigMap to be created."
+            echo "Getting Kubernetes ConfigMaps from the default namespace:"
+            kubectl get configmaps
             exit 1
           fi
 
