@@ -398,7 +398,7 @@ func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode, full
 		input.LivenessProbe = node.Spec.ChiaConfig.LivenessProbe
 	} else if kube.ChiaHealthcheckEnabled(node.Spec.ChiaHealthcheckConfig) {
 		input.LivenessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Path: "/full_node",
+			Path: "/full_node/liveness",
 		})
 	}
 
@@ -416,7 +416,7 @@ func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode, full
 		failThresh := int32(30)
 		periodSec := int32(10)
 		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Path:             "/full_node/readiness",
+			Path:             "/full_node/startup",
 			FailureThreshold: &failThresh,
 			PeriodSeconds:    &periodSec,
 		})
