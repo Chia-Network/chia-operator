@@ -58,13 +58,19 @@ jobs:
             exit 1
           fi
 
+          DATA_KEYS=$(kubectl get secret chiaca-secret -o go-template='{{len .data}}')
+          if [ "$DATA_KEYS" -ne 4 ]; then
+            echo "ChiaCA Secret was found to have $DATA_KEYS data keys, expected 4"
+            exit 1
+          fi
+
       - name: Wait for ChiaCertificate Secret
         run: |
           found=0
           timeout=300
           endtime=$((SECONDS+timeout))
           while [ ${SECONDS} -lt ${endtime} ]; do
-            if kubectl get secret chia-certificates &> /dev/null; then
+            if kubectl get secret chia-certificate-secret &> /dev/null; then
               echo "ChiaCertificate Secret found"
               found=1
               break
@@ -79,6 +85,12 @@ jobs:
             kubectl get pods
             echo "Getting Kubernetes Secrets from the default namespace:"
             kubectl get secrets
+            exit 1
+          fi
+          
+          DATA_KEYS=$(kubectl get secret chia-certificate-secret -o go-template='{{len .data}}')
+          if [ "$DATA_KEYS" -ne 28 ]; then
+            echo "ChiaCertificate Secret was found to have $DATA_KEYS data keys, expected 28"
             exit 1
           fi
 
@@ -101,6 +113,12 @@ jobs:
             echo "Timeout reached waiting for ChiaCertificate ConfigMap to be created."
             echo "Getting Kubernetes ConfigMaps from the default namespace:"
             kubectl get configmaps
+            exit 1
+          fi
+
+          DATA_KEYS=$(kubectl get configmap testnetz -o go-template='{{len .data}}')
+          if [ "$DATA_KEYS" -ne 6 ]; then
+            echo "ChiaNetwork ConfigMap was found to have $DATA_KEYS data keys, expected 6"
             exit 1
           fi
 
