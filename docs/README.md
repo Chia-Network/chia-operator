@@ -45,13 +45,14 @@ This documentation contains comprehensive guides for deploying and managing Chia
 
 - **[Chia Exporter](chia-exporter.md)** - Prometheus metrics collection and monitoring
 - **[Chia Healthcheck](chia-healthcheck.md)** - Health checking and readiness probes
-- **[Troubleshooting](troubleshooting.md)** - Common issues and debugging guide
 
 ## Getting Help
 
-If you're experiencing issues:
+Check out our **[Troubleshooting](troubleshooting.md)** guide for instant help with common issues.
 
-1. Check the [chia-operator GitHub issues](https://github.com/Chia-Network/chia-operator/issues)
+If you still need help:
+
+1. Check the [chia-operator GitHub Issues](https://github.com/Chia-Network/chia-operator/issues)
 2. Review the [Chia documentation](https://docs.chia.net/)
 3. Join the [Chia community Discord](https://discord.gg/chia)
 
