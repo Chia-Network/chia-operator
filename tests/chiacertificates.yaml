@@ -1,0 +1,7 @@
+apiVersion: k8s.chia.net/v1
+kind: ChiaCertificates
+metadata:
+  name: chia-certificates
+spec:
+  caSecretName: chiaca-secret
+  secret: chia-certificate-secret
