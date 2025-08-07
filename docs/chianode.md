@@ -71,6 +71,22 @@ spec:
     kubernetes.io/hostname: "node-with-hostpath"
 ```
 
+## Trusted Peers
+
+You can optionally specify a list of [CIDRs](https://aws.amazon.com/what-is/cidr/) that this ful_node should trust other full_node peers from. View the [Chia documentation on trusted peers](https://docs.chia.net/faq/?_highlight=trust#what-are-trusted-peers-and-how-do-i-add-them) to understand whether you should use this feature or not.
+
+Here's an example ChiaNode that specifies trusted CIDRs:
+
+```yaml
+spec:
+  chia:
+    trustedCIDRs:
+      - "192.168.1.0/24"
+      - "10.0.0/8"
+```
+
+This specifies two trusted CIDRs, where if the IP address of a full_node peer is discovered to be within one of these two CIDR ranges, chia will consider that a trusted peer.
+
 ## More Info
 
 This page contains documentation specific to this resource. Please see the rest of the documentation for information on more available configurations.
