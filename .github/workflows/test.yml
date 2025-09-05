@@ -30,7 +30,7 @@ jobs:
           make test
 
   docker-build:
-    uses: Chia-Network/actions/.github/workflows/docker-build.yaml@docker-build-summary
+    uses: Chia-Network/actions/.github/workflows/docker-build.yaml@639373207ab2d94e2a7dfcdd2d46dce7e9774cb7
     with:
       push: false
 
