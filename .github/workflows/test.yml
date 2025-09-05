@@ -17,7 +17,7 @@ jobs:
         uses: Chia-Network/actions/git-mark-workspace-safe@main
 
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -39,7 +39,7 @@ jobs:
     timeout-minutes: 10
     container: golang:1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check for git diffs
         shell: bash
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout Repository'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v4
@@ -86,7 +86,7 @@ jobs:
         run: apk add git
 
       - name: 'Checkout Repository'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 'Lint Markdown'
         # MD013 lints for long lines, ignoring because GitHub's markdown viewer wraps long lines anyway.
