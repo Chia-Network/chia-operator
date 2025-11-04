@@ -132,6 +132,18 @@ spec:
               - my-app
 ```
 
+## Tolerations
+
+You can also use `Tolerations` to allow scheduling the pod to a node with a matching taint.
+
+```yaml
+spec:
+  tolerations:
+    - key: "key1"
+      operator: "Exists"
+      effect: "NoSchedule"
+```
+
 ## Pod Security Contexts
 
 This sets the securityContext for a pod.

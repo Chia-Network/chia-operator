@@ -275,7 +275,9 @@ func assembleDeployment(ctx context.Context, datalayer k8schianetv1.ChiaDataLaye
 		deploy.Spec.Template.Spec.SecurityContext = datalayer.Spec.PodSecurityContext
 	}
 
-	// TODO add pod tolerations
+	if len(datalayer.Spec.Tolerations) > 0 {
+		deploy.Spec.Template.Spec.Tolerations = datalayer.Spec.Tolerations
+	}
 
 	return deploy, nil
 }

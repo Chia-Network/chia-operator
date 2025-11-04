@@ -382,7 +382,9 @@ func assembleDeployment(seeder k8schianetv1.ChiaSeeder, fullNodePort int32, netw
 		deploy.Spec.Template.Spec.SecurityContext = seeder.Spec.PodSecurityContext
 	}
 
-	// TODO add pod tolerations
+	if len(seeder.Spec.Tolerations) > 0 {
+		deploy.Spec.Template.Spec.Tolerations = seeder.Spec.Tolerations
+	}
 
 	return deploy, nil
 }

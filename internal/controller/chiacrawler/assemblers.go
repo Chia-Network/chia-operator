@@ -317,7 +317,9 @@ func assembleDeployment(crawler k8schianetv1.ChiaCrawler, fullNodePort int32, ne
 		deploy.Spec.Template.Spec.SecurityContext = crawler.Spec.PodSecurityContext
 	}
 
-	// TODO add pod tolerations
+	if len(crawler.Spec.Tolerations) > 0 {
+		deploy.Spec.Template.Spec.Tolerations = crawler.Spec.Tolerations
+	}
 
 	return deploy, nil
 }
