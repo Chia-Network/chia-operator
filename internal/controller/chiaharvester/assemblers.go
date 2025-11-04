@@ -317,7 +317,9 @@ func assembleDeployment(harvester k8schianetv1.ChiaHarvester, networkData *map[s
 		deploy.Spec.Template.Spec.SecurityContext = harvester.Spec.PodSecurityContext
 	}
 
-	// TODO add pod tolerations
+	if len(harvester.Spec.Tolerations) > 0 {
+		deploy.Spec.Template.Spec.Tolerations = harvester.Spec.Tolerations
+	}
 
 	return deploy, nil
 }

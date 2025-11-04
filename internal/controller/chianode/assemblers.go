@@ -355,7 +355,9 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 		stateful.Spec.Template.Spec.SecurityContext = node.Spec.PodSecurityContext
 	}
 
-	// TODO add pod tolerations
+	if len(node.Spec.Tolerations) > 0 {
+		stateful.Spec.Template.Spec.Tolerations = node.Spec.Tolerations
+	}
 
 	return stateful, nil
 }

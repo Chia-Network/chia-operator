@@ -318,7 +318,9 @@ func assembleDeployment(ctx context.Context, farmer k8schianetv1.ChiaFarmer, net
 		deploy.Spec.Template.Spec.SecurityContext = farmer.Spec.PodSecurityContext
 	}
 
-	// TODO add pod tolerations
+	if len(farmer.Spec.Tolerations) > 0 {
+		deploy.Spec.Template.Spec.Tolerations = farmer.Spec.Tolerations
+	}
 
 	return deploy, nil
 }

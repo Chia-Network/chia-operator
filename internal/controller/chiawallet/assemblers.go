@@ -318,7 +318,9 @@ func assembleDeployment(ctx context.Context, wallet k8schianetv1.ChiaWallet, net
 		deploy.Spec.Template.Spec.SecurityContext = wallet.Spec.PodSecurityContext
 	}
 
-	// TODO add pod tolerations
+	if len(wallet.Spec.Tolerations) > 0 {
+		deploy.Spec.Template.Spec.Tolerations = wallet.Spec.Tolerations
+	}
 
 	return deploy, nil
 }

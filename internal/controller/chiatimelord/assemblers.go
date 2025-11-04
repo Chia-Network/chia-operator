@@ -359,7 +359,9 @@ func assembleDeployment(ctx context.Context, tl k8schianetv1.ChiaTimelord, netwo
 		deploy.Spec.Template.Spec.SecurityContext = tl.Spec.PodSecurityContext
 	}
 
-	// TODO add pod tolerations
+	if len(tl.Spec.Tolerations) > 0 {
+		deploy.Spec.Template.Spec.Tolerations = tl.Spec.Tolerations
+	}
 
 	return deploy, nil
 }

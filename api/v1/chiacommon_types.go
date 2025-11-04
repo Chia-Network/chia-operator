@@ -54,6 +54,10 @@ type CommonSpec struct {
 	// TopologySpreadConstraints describes how a group of pods ought to spread across topology domains.
 	// +optional
 	TopologySpreadConstraints []corev1.TopologySpreadConstraint `json:"topologySpreadConstraints,omitempty"`
+
+	// Tolerations allow the pod to be scheduled on nodes with matching taints
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 }
 
 // ExtraContainer allows defining a container spec that will share the kubernetes Pod alongside a Chia container, or run as an init container, along with some additional Pod spec configuration

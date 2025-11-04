@@ -271,7 +271,9 @@ func assembleDeployment(introducer k8schianetv1.ChiaIntroducer, fullNodePort int
 		deploy.Spec.Template.Spec.SecurityContext = introducer.Spec.PodSecurityContext
 	}
 
-	// TODO add pod tolerations
+	if len(introducer.Spec.Tolerations) > 0 {
+		deploy.Spec.Template.Spec.Tolerations = introducer.Spec.Tolerations
+	}
 
 	return deploy, nil
 }
