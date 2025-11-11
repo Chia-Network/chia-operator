@@ -20,6 +20,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set dependency versions
+        run: |
+          echo "CHIA_OPERATOR_VERSION=$RELEASE_TAG" >> $GITHUB_ENV
+
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
