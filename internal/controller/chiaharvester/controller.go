@@ -140,6 +140,20 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)
 	}
 
+	// Assemble Chia-Healthcheck Service
+	healthcheckSrv := assembleChiaHealthcheckService(harvester)
+	if err := controllerutil.SetControllerReference(&harvester, &healthcheckSrv, r.Scheme); err != nil {
+		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester chia-healthcheck Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error assembling chia-healthcheck Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Chia-Healthcheck Service
+	if !kube.ShouldRollIntoMainPeerService(harvester.Spec.ChiaHealthcheckConfig.Service) {
+		res, err = kube.ReconcileService(ctx, r.Client, harvester.Spec.ChiaHealthcheckConfig.Service, healthcheckSrv, false)
+		if err != nil {
+			return res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)
+		}
+	}
+
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if kube.ShouldMakeChiaRootVolumeClaim(harvester.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(harvester)

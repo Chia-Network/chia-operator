@@ -58,6 +58,11 @@ func assemblePeerService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 	}
 	inputs.Annotations = kube.CombineMaps(harvester.Spec.Annotations, additionalServiceAnnotations)
 
+	// Handle the Service rollup feature
+	if kube.ShouldMakeService(harvester.Spec.ChiaHealthcheckConfig.Service, false) && kube.ShouldRollIntoMainPeerService(harvester.Spec.ChiaHealthcheckConfig.Service) {
+		inputs.Ports = append(inputs.Ports, kube.GetChiaHealthcheckServicePorts()...)
+	}
+
 	return kube.AssembleCommonService(inputs)
 }
 
@@ -214,6 +219,39 @@ func assembleChiaExporterService(harvester k8schianetv1.ChiaHarvester) corev1.Se
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleChiaHealthcheckService assembles the chia-healthcheck Service resource for a ChiaHarvester CR
+func assembleChiaHealthcheckService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:      fmt.Sprintf(chiaharvesterNamePattern, harvester.Name) + "-healthcheck",
+		Namespace: harvester.Namespace,
+		Ports:     kube.GetChiaHealthcheckServicePorts(),
+	}
+
+	inputs.ServiceType = harvester.Spec.ChiaHealthcheckConfig.Service.ServiceType
+	inputs.ExternalTrafficPolicy = harvester.Spec.ChiaHealthcheckConfig.Service.ExternalTrafficPolicy
+	inputs.SessionAffinity = harvester.Spec.ChiaHealthcheckConfig.Service.SessionAffinity
+	inputs.SessionAffinityConfig = harvester.Spec.ChiaHealthcheckConfig.Service.SessionAffinityConfig
+	inputs.IPFamilyPolicy = harvester.Spec.ChiaHealthcheckConfig.Service.IPFamilyPolicy
+	inputs.IPFamilies = harvester.Spec.ChiaHealthcheckConfig.Service.IPFamilies
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if harvester.Spec.ChiaHealthcheckConfig.Service.Labels != nil {
+		additionalServiceLabels = harvester.Spec.ChiaHealthcheckConfig.Service.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(harvester.Kind, harvester.ObjectMeta, harvester.Spec.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if harvester.Spec.ChiaHealthcheckConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = harvester.Spec.ChiaHealthcheckConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(harvester.Spec.Annotations, additionalServiceAnnotations)
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleVolumeClaim assembles the PVC resource for a ChiaHarvester CR
 func assembleVolumeClaim(harvester k8schianetv1.ChiaHarvester) (*corev1.PersistentVolumeClaim, error) {
 	if harvester.Spec.Storage == nil || harvester.Spec.Storage.ChiaRoot == nil || harvester.Spec.Storage.ChiaRoot.PersistentVolumeClaim == nil {
@@ -309,6 +347,10 @@ func assembleDeployment(harvester k8schianetv1.ChiaHarvester, networkData *map[s
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(harvester))
 	}
 
+	if kube.ChiaHealthcheckEnabled(harvester.Spec.ChiaHealthcheckConfig) {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaHealthcheckContainer(harvester))
+	}
+
 	if harvester.Spec.Strategy != nil {
 		deploy.Spec.Strategy = *harvester.Spec.Strategy
 	}
@@ -360,14 +402,30 @@ func assembleChiaContainer(harvester k8schianetv1.ChiaHarvester, networkData *ma
 
 	if harvester.Spec.ChiaConfig.LivenessProbe != nil {
 		input.LivenessProbe = harvester.Spec.ChiaConfig.LivenessProbe
+	} else if kube.ChiaHealthcheckEnabled(harvester.Spec.ChiaHealthcheckConfig) {
+		input.LivenessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Path: "/harvester",
+		})
 	}
 
 	if harvester.Spec.ChiaConfig.ReadinessProbe != nil {
 		input.ReadinessProbe = harvester.Spec.ChiaConfig.ReadinessProbe
+	} else if kube.ChiaHealthcheckEnabled(harvester.Spec.ChiaHealthcheckConfig) {
+		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Path: "/harvester",
+		})
 	}
 
 	if harvester.Spec.ChiaConfig.StartupProbe != nil {
 		input.StartupProbe = harvester.Spec.ChiaConfig.StartupProbe
+	} else if kube.ChiaHealthcheckEnabled(harvester.Spec.ChiaHealthcheckConfig) {
+		failThresh := int32(30)
+		periodSec := int32(10)
+		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Path:             "/harvester",
+			FailureThreshold: &failThresh,
+			PeriodSeconds:    &periodSec,
+		})
 	}
 
 	if harvester.Spec.ChiaConfig.Resources != nil {
@@ -393,4 +451,21 @@ func assembleChiaExporterContainer(harvester k8schianetv1.ChiaHarvester) corev1.
 	}
 
 	return kube.AssembleChiaExporterContainer(input)
+}
+
+func assembleChiaHealthcheckContainer(harvester k8schianetv1.ChiaHarvester) corev1.Container {
+	input := kube.AssembleChiaHealthcheckContainerInputs{
+		Image:           harvester.Spec.ChiaHealthcheckConfig.Image,
+		ImagePullPolicy: harvester.Spec.ImagePullPolicy,
+	}
+
+	if harvester.Spec.ChiaHealthcheckConfig.SecurityContext != nil {
+		input.SecurityContext = harvester.Spec.ChiaHealthcheckConfig.SecurityContext
+	}
+
+	if harvester.Spec.ChiaHealthcheckConfig.Resources != nil {
+		input.ResourceRequirements = *harvester.Spec.ChiaHealthcheckConfig.Resources
+	}
+
+	return kube.AssembleChiaHealthcheckContainer(input)
 }

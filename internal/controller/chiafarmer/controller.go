@@ -140,6 +140,20 @@ func (r *ChiaFarmerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
 	}
 
+	// Assemble Chia-Healthcheck Service
+	healthcheckSrv := assembleChiaHealthcheckService(farmer)
+	if err := controllerutil.SetControllerReference(&farmer, &healthcheckSrv, r.Scheme); err != nil {
+		r.Recorder.Event(&farmer, corev1.EventTypeWarning, "Failed", "Failed to assemble farmer chia-healthcheck Service -- Check operator logs.")
+		return ctrl.Result{}, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s encountered error assembling chia-healthcheck Service: %v", req.NamespacedName, err)
+	}
+	// Reconcile Chia-Healthcheck Service
+	if !kube.ShouldRollIntoMainPeerService(farmer.Spec.ChiaHealthcheckConfig.Service) {
+		res, err = kube.ReconcileService(ctx, r.Client, farmer.Spec.ChiaHealthcheckConfig.Service, healthcheckSrv, false)
+		if err != nil {
+			return res, fmt.Errorf("ChiaFarmerReconciler ChiaFarmer=%s %v", req.NamespacedName, err)
+		}
+	}
+
 	// Creates a persistent volume claim if the GenerateVolumeClaims setting was set to true
 	if kube.ShouldMakeChiaRootVolumeClaim(farmer.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(farmer)
