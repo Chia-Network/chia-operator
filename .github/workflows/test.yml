@@ -43,7 +43,7 @@ jobs:
           git diff
 
       - name: Make manifests
-        run: make manifests
+        run: make build # build creates manifests and runs codegen
 
       - name: Check for git diffs
         shell: bash
