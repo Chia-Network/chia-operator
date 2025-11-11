@@ -59,6 +59,11 @@ func assemblePeerService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 	}
 	inputs.Annotations = kube.CombineMaps(farmer.Spec.Annotations, additionalServiceAnnotations)
 
+	// Handle the Service rollup feature
+	if kube.ShouldMakeService(farmer.Spec.ChiaHealthcheckConfig.Service, false) && kube.ShouldRollIntoMainPeerService(farmer.Spec.ChiaHealthcheckConfig.Service) {
+		inputs.Ports = append(inputs.Ports, kube.GetChiaHealthcheckServicePorts()...)
+	}
+
 	return kube.AssembleCommonService(inputs)
 }
 
@@ -215,6 +220,39 @@ func assembleChiaExporterService(farmer k8schianetv1.ChiaFarmer) corev1.Service 
 	return kube.AssembleCommonService(inputs)
 }
 
+// assembleChiaHealthcheckService assembles the chia-healthcheck Service resource for a ChiaFarmer CR
+func assembleChiaHealthcheckService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
+	inputs := kube.AssembleCommonServiceInputs{
+		Name:      fmt.Sprintf(chiafarmerNamePattern, farmer.Name) + "-healthcheck",
+		Namespace: farmer.Namespace,
+		Ports:     kube.GetChiaHealthcheckServicePorts(),
+	}
+
+	inputs.ServiceType = farmer.Spec.ChiaHealthcheckConfig.Service.ServiceType
+	inputs.ExternalTrafficPolicy = farmer.Spec.ChiaHealthcheckConfig.Service.ExternalTrafficPolicy
+	inputs.SessionAffinity = farmer.Spec.ChiaHealthcheckConfig.Service.SessionAffinity
+	inputs.SessionAffinityConfig = farmer.Spec.ChiaHealthcheckConfig.Service.SessionAffinityConfig
+	inputs.IPFamilyPolicy = farmer.Spec.ChiaHealthcheckConfig.Service.IPFamilyPolicy
+	inputs.IPFamilies = farmer.Spec.ChiaHealthcheckConfig.Service.IPFamilies
+
+	// Labels
+	var additionalServiceLabels = make(map[string]string)
+	if farmer.Spec.ChiaHealthcheckConfig.Service.Labels != nil {
+		additionalServiceLabels = farmer.Spec.ChiaHealthcheckConfig.Service.Labels
+	}
+	inputs.Labels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels, additionalServiceLabels)
+	inputs.SelectorLabels = kube.GetCommonLabels(farmer.Kind, farmer.ObjectMeta, farmer.Spec.Labels)
+
+	// Annotations
+	var additionalServiceAnnotations = make(map[string]string)
+	if farmer.Spec.ChiaHealthcheckConfig.Service.Annotations != nil {
+		additionalServiceAnnotations = farmer.Spec.ChiaHealthcheckConfig.Service.Annotations
+	}
+	inputs.Annotations = kube.CombineMaps(farmer.Spec.Annotations, additionalServiceAnnotations)
+
+	return kube.AssembleCommonService(inputs)
+}
+
 // assembleVolumeClaim assembles the PVC resource for a ChiaFarmer CR
 func assembleVolumeClaim(farmer k8schianetv1.ChiaFarmer) (*corev1.PersistentVolumeClaim, error) {
 	if farmer.Spec.Storage == nil || farmer.Spec.Storage.ChiaRoot == nil || farmer.Spec.Storage.ChiaRoot.PersistentVolumeClaim == nil {
@@ -310,6 +348,10 @@ func assembleDeployment(ctx context.Context, farmer k8schianetv1.ChiaFarmer, net
 		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaExporterContainer(farmer))
 	}
 
+	if kube.ChiaHealthcheckEnabled(farmer.Spec.ChiaHealthcheckConfig) {
+		deploy.Spec.Template.Spec.Containers = append(deploy.Spec.Template.Spec.Containers, assembleChiaHealthcheckContainer(farmer))
+	}
+
 	if farmer.Spec.Strategy != nil {
 		deploy.Spec.Strategy = *farmer.Spec.Strategy
 	}
@@ -361,14 +403,30 @@ func assembleChiaContainer(ctx context.Context, farmer k8schianetv1.ChiaFarmer, 
 
 	if farmer.Spec.ChiaConfig.LivenessProbe != nil {
 		input.LivenessProbe = farmer.Spec.ChiaConfig.LivenessProbe
+	} else if kube.ChiaHealthcheckEnabled(farmer.Spec.ChiaHealthcheckConfig) {
+		input.LivenessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Path: "/farmer",
+		})
 	}
 
 	if farmer.Spec.ChiaConfig.ReadinessProbe != nil {
 		input.ReadinessProbe = farmer.Spec.ChiaConfig.ReadinessProbe
+	} else if kube.ChiaHealthcheckEnabled(farmer.Spec.ChiaHealthcheckConfig) {
+		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Path: "/farmer",
+		})
 	}
 
 	if farmer.Spec.ChiaConfig.StartupProbe != nil {
 		input.StartupProbe = farmer.Spec.ChiaConfig.StartupProbe
+	} else if kube.ChiaHealthcheckEnabled(farmer.Spec.ChiaHealthcheckConfig) {
+		failThresh := int32(30)
+		periodSec := int32(10)
+		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
+			Path:             "/farmer",
+			FailureThreshold: &failThresh,
+			PeriodSeconds:    &periodSec,
+		})
 	}
 
 	if farmer.Spec.ChiaConfig.Resources != nil {
@@ -394,4 +452,21 @@ func assembleChiaExporterContainer(farmer k8schianetv1.ChiaFarmer) corev1.Contai
 	}
 
 	return kube.AssembleChiaExporterContainer(input)
+}
+
+func assembleChiaHealthcheckContainer(farmer k8schianetv1.ChiaFarmer) corev1.Container {
+	input := kube.AssembleChiaHealthcheckContainerInputs{
+		Image:           farmer.Spec.ChiaHealthcheckConfig.Image,
+		ImagePullPolicy: farmer.Spec.ImagePullPolicy,
+	}
+
+	if farmer.Spec.ChiaHealthcheckConfig.SecurityContext != nil {
+		input.SecurityContext = farmer.Spec.ChiaHealthcheckConfig.SecurityContext
+	}
+
+	if farmer.Spec.ChiaHealthcheckConfig.Resources != nil {
+		input.ResourceRequirements = *farmer.Spec.ChiaHealthcheckConfig.Resources
+	}
+
+	return kube.AssembleChiaHealthcheckContainer(input)
 }

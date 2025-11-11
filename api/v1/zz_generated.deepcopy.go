@@ -558,6 +558,7 @@ func (in *ChiaFarmerSpec) DeepCopyInto(out *ChiaFarmerSpec) {
 	*out = *in
 	in.CommonSpec.DeepCopyInto(&out.CommonSpec)
 	in.ChiaConfig.DeepCopyInto(&out.ChiaConfig)
+	in.ChiaHealthcheckConfig.DeepCopyInto(&out.ChiaHealthcheckConfig)
 	if in.Strategy != nil {
 		in, out := &in.Strategy, &out.Strategy
 		*out = new(appsv1.DeploymentStrategy)
@@ -685,6 +686,7 @@ func (in *ChiaHarvesterSpec) DeepCopyInto(out *ChiaHarvesterSpec) {
 	*out = *in
 	in.CommonSpec.DeepCopyInto(&out.CommonSpec)
 	in.ChiaConfig.DeepCopyInto(&out.ChiaConfig)
+	in.ChiaHealthcheckConfig.DeepCopyInto(&out.ChiaHealthcheckConfig)
 	if in.Strategy != nil {
 		in, out := &in.Strategy, &out.Strategy
 		*out = new(appsv1.DeploymentStrategy)
