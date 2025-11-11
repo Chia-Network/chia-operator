@@ -3,6 +3,17 @@ IMG ?= controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.30.0
 
+# Optional version overrides for ldflags and yaml manifests
+CHIA_IMAGE_TAG      ?=
+EXPORTER_IMAGE_TAG  ?=
+HEALTHCHECK_IMAGE_TAG ?=
+CHIA_OPERATOR_VERSION ?=
+
+LD_FLAGS := \
+  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts/consts.DefaultChiaImageTag=$(CHIA_IMAGE_TAG)' \
+  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts/consts.DefaultChiaExporterImageTag=$(EXPORTER_IMAGE_TAG)' \
+  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts/consts.DefaultChiaHealthcheckImageTag=$(HEALTHCHECK_IMAGE_TAG)'
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -80,15 +91,16 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 
 .PHONY: build
 build: manifests generate fmt vet ## Build manager binary.
-	go build -o bin/manager cmd/main.go
+	go build -ldflags="$(LD_FLAGS)" -o bin/manager cmd/main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	go run ./cmd/main.go
+	go run -ldflags="$(LD_FLAGS)" ./cmd/main.go
 
 .PHONY: release
 release: manifests kustomize ## Build CRD and Operator manifests with kustomize.
 	mkdir -p release/
+	cd config/manager && $(KUSTOMIZE) edit set image controller=ghcr.io/chia-network/chia-operator:$(CHIA_OPERATOR_VERSION)
 	$(KUSTOMIZE) build config/crd > release/crd.yaml
 	$(KUSTOMIZE) build config/default > release/manager.yaml
 	$(KUSTOMIZE) build config/prometheus > release/monitor.yaml
