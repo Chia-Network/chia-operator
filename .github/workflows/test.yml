@@ -42,8 +42,10 @@ jobs:
           git config --global --add safe.directory /__w/chia-operator/chia-operator
           git diff
 
-      - name: Make manifests
-        run: make build # build creates manifests and runs codegen
+      - name: Make manifests and codegen
+        run: |
+          make manifests
+          make generate
 
       - name: Check for git diffs
         shell: bash
