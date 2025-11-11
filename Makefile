@@ -4,10 +4,10 @@ IMG ?= controller:latest
 ENVTEST_K8S_VERSION = 1.30.0
 
 # Optional version overrides for ldflags and yaml manifests
-CHIA_IMAGE_TAG      ?=
-EXPORTER_IMAGE_TAG  ?=
-HEALTHCHECK_IMAGE_TAG ?=
-CHIA_OPERATOR_VERSION ?=
+CHIA_IMAGE_TAG      ?= latest
+EXPORTER_IMAGE_TAG  ?= latest
+HEALTHCHECK_IMAGE_TAG ?= latest
+CHIA_OPERATOR_VERSION ?= latest
 
 LD_FLAGS := \
   -X 'github.com/chia-network/chia-operator/internal/controller/common/consts.DefaultChiaImageTag=$(CHIA_IMAGE_TAG)' \
@@ -100,7 +100,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 .PHONY: release
 release: manifests kustomize ## Build CRD and Operator manifests with kustomize.
 	mkdir -p release/
-	cd config/manager && $(KUSTOMIZE) edit set image controller=ghcr.io/chia-network/chia-operator:$(CHIA_OPERATOR_VERSION)
+	cd config/manager && $(KUSTOMIZE) edit set image ghcr.io/chia-network/chia-operator=ghcr.io/chia-network/chia-operator:$(CHIA_OPERATOR_VERSION)
 	$(KUSTOMIZE) build config/crd > release/crd.yaml
 	$(KUSTOMIZE) build config/default > release/manager.yaml
 	$(KUSTOMIZE) build config/prometheus > release/monitor.yaml
