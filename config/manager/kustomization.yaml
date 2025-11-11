@@ -3,6 +3,6 @@ resources:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
-- name: controller
-  newName: controller
+- name: ghcr.io/chia-network/chia-operator
+  newName: ghcr.io/chia-network/chia-operator
   newTag: latest

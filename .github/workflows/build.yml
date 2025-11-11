@@ -6,6 +6,7 @@ on:
       - main
     tags:
       - '**'
+  pull_request:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 0'
@@ -17,4 +18,41 @@ permissions:
 
 jobs:
   package:
-    uses: Chia-Network/actions/.github/workflows/docker-build.yaml@main
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set Env
+        uses: Chia-Network/actions/setjobenv@main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set dependency versions
+        run: |
+          set -e
+          CHIA_IMAGE_TAG=$(curl -fsSL https://latest.cmm.io/chia)
+          EXPORTER_IMAGE_TAG=$(curl -fsSL https://latest.cmm.io/chia-exporter)
+          HEALTHCHECK_IMAGE_TAG=$(curl -fsSL https://latest.cmm.io/chia-healthcheck)
+
+          # Verify all variables are set
+          if [ -z "$CHIA_IMAGE_TAG" ] || [ -z "$EXPORTER_IMAGE_TAG" ] || [ -z "$HEALTHCHECK_IMAGE_TAG" ]; then
+            echo "Error: Failed to fetch one or more version tags"
+            echo "CHIA_IMAGE_TAG=$CHIA_IMAGE_TAG"
+            echo "EXPORTER_IMAGE_TAG=$EXPORTER_IMAGE_TAG"
+            echo "HEALTHCHECK_IMAGE_TAG=$HEALTHCHECK_IMAGE_TAG"
+            exit 1
+          fi
+
+          echo "CHIA_IMAGE_TAG=$CHIA_IMAGE_TAG" >> $GITHUB_ENV
+          echo "EXPORTER_IMAGE_TAG=$EXPORTER_IMAGE_TAG" >> $GITHUB_ENV
+          echo "HEALTHCHECK_IMAGE_TAG=$HEALTHCHECK_IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Build Container
+        uses: Chia-Network/actions/docker/build@main
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          build-args: |
+            "CHIA_IMAGE_TAG=${{ env.CHIA_IMAGE_TAG }}"
+            "EXPORTER_IMAGE_TAG=${{ env.EXPORTER_IMAGE_TAG }}"
+            "HEALTHCHECK_IMAGE_TAG=${{ env.HEALTHCHECK_IMAGE_TAG }}"

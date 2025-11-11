@@ -37,7 +37,7 @@ const (
 )
 
 // API default image constants
-const (
+var (
 	// DefaultChiaImageName contains the default image name for the chia-docker image
 	DefaultChiaImageName = "ghcr.io/chia-network/chia"
 
