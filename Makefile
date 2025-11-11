@@ -10,9 +10,9 @@ HEALTHCHECK_IMAGE_TAG ?=
 CHIA_OPERATOR_VERSION ?=
 
 LD_FLAGS := \
-  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts/consts.DefaultChiaImageTag=$(CHIA_IMAGE_TAG)' \
-  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts/consts.DefaultChiaExporterImageTag=$(EXPORTER_IMAGE_TAG)' \
-  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts/consts.DefaultChiaHealthcheckImageTag=$(HEALTHCHECK_IMAGE_TAG)'
+  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts.DefaultChiaImageTag=$(CHIA_IMAGE_TAG)' \
+  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts.DefaultChiaExporterImageTag=$(EXPORTER_IMAGE_TAG)' \
+  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts.DefaultChiaHealthcheckImageTag=$(HEALTHCHECK_IMAGE_TAG)'
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
