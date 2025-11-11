@@ -6,6 +6,7 @@ on:
       - main
     tags:
       - '**'
+  pull_request:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 0'
@@ -50,6 +51,7 @@ jobs:
       - name: Build Container
         uses: Chia-Network/actions/docker/build@main
         with:
+          push: ${{ github.event_name != 'pull_request' }}
           build-args: |
             "CHIA_IMAGE_TAG=${{ env.CHIA_IMAGE_TAG }}"
             "EXPORTER_IMAGE_TAG=${{ env.EXPORTER_IMAGE_TAG }}"
