@@ -220,6 +220,32 @@ func AssembleChiaHealthcheckContainer(input AssembleChiaHealthcheckContainerInpu
 				Protocol:      "TCP",
 			},
 		},
+		LivenessProbe: &corev1.Probe{
+			ProbeHandler: corev1.ProbeHandler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Path: "/healthz",
+					Port: intstr.FromInt32(consts.ChiaHealthcheckPort),
+				},
+			},
+		},
+		ReadinessProbe: &corev1.Probe{
+			ProbeHandler: corev1.ProbeHandler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Path: "/healthz",
+					Port: intstr.FromInt32(consts.ChiaHealthcheckPort),
+				},
+			},
+		},
+		StartupProbe: &corev1.Probe{
+			ProbeHandler: corev1.ProbeHandler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Path: "/healthz",
+					Port: intstr.FromInt32(consts.ChiaHealthcheckPort),
+				},
+			},
+			FailureThreshold: 30,
+			PeriodSeconds:    10,
+		},
 		Resources: input.ResourceRequirements,
 		VolumeMounts: []corev1.VolumeMount{
 			{
