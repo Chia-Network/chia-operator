@@ -24,7 +24,7 @@ COPY api/ api/
 COPY internal/ internal/
 COPY hack/ hack/
 
-RUN make build
+RUN make build-only
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details

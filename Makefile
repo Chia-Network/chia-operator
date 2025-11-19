@@ -89,6 +89,10 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 
 ##@ Build
 
+.PHONY: build-only
+build-only:
+	CGO_ENABLED=0 go build -ldflags="$(LD_FLAGS)" -o bin/manager cmd/main.go
+
 .PHONY: build
 build: manifests generate fmt vet ## Build manager binary.
 	CGO_ENABLED=0 go build -ldflags="$(LD_FLAGS)" -o bin/manager cmd/main.go
