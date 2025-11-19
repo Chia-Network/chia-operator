@@ -6,6 +6,7 @@ This documentation is meant to be applicable generally to all resources the oper
 
 - [Chia Configuration](#chia-configuration)
   - [Network Selection](#selecting-a-network)
+  - [Specify a Chia image](#specify-a-chia-image)
   - [Install from Specific Ref](#install-chia-from-a-specific-ref)
 - [Requests and Limits](#chia-container-resource-requests-and-limits)
 - [Environment Variables](#chia-container-additional-environment-variables)
@@ -45,6 +46,18 @@ spec:
     introducerAddress: "introducer.default.svc.cluster.local" # Sets the introducer address used in the chia config file.
     dnsIntroducerAddress: "dns-introducer.default.svc.cluster.local" # Sets the DNS introducer address used in the chia config file.
 ```
+
+### Specify a Chia image
+
+Operator releases tend to pin to the latest version of chia (at the time the release was published) but if you'd like to manage the version of chia ran yourself, there's a field to do so:
+
+```yaml
+spec:
+  chia:
+    image: ghcr.io/chia-network/chia:2.5.7
+```
+
+Since this is an image field, you can point to any OCI image containing chia, but note that this operator makes heavy use of the [chia-docker](https://github.com/Chia-Network/chia-docker) entrypoint script for setting a lot of the chia configuration, so it should be compatible with that script to ensure your Chia services start up properly. Using an image that isn't at least based on the official chia-docker image will likely result in a broken installation.
 
 ### Install chia from a specific ref
 
