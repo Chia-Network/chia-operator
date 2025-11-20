@@ -94,7 +94,7 @@ You may specify multiple init containers, additional volumes, and toggle the sha
 
 ## Change arbitrary Chia configuration fields
 
-Some pieces of the [Chia configuration file](https://github.com/Chia-Network/chia-blockchain/blob/main/chia/util/initial-config.yaml) do not have first-class settings available in the custom resources that this operator manages. First-class settings are ones that have a dedicated place in the Chia custom resource configuration. It's possible to change any piece of the config via the `additionalEnv` field, however. 
+Some pieces of the [Chia configuration file](https://github.com/Chia-Network/chia-blockchain/blob/main/chia/util/initial-config.yaml) do not have first-class settings available in the custom resources that this operator manages. First-class settings are ones that have a dedicated place in the Chia custom resource configuration. It's possible to change any piece of the config via the `additionalEnv` field, however.
 
 ```yaml
 spec:
@@ -106,6 +106,6 @@ spec:
         value: "False"
 ```
 
-In this example, we disabled UPNP in the full_node config. If you later unset this, you may assume the setting would change back to "True" (the default in the Chia config.) This is not the case, assuming you mount your CHIA_ROOT in a persistent volume. First-class settings supported by chia-operator try to set defaults in the config back for you if you later undefine them. This is not the case for config settings changed through `additionalEnv`. If, for example, you want to re-enable UPNP in the future, you would need to set `chia.full_node.enable_upnp: True`, rather than undefine it. After that change is applied, however, you can undefine it from the custom resource if you would like. 
+In this example, we disabled UPNP in the full_node config. If you later unset this, you may assume the setting would change back to "True" (the default in the Chia config.) This is not the case, assuming you mount your CHIA_ROOT in a persistent volume. First-class settings supported by chia-operator try to set defaults in the config back for you if you later undefine them. This is not the case for config settings changed through `additionalEnv`. If, for example, you want to re-enable UPNP in the future, you would need to set `chia.full_node.enable_upnp: True`, rather than undefine it. After that change is applied, however, you can undefine it from the custom resource if you would like.
 
 You should only use `additionalEnv` to specify Chia config fields that don't have first-class settings support. A setting defined in `additionalEnv` should take precedence over the same first-class setting, but there's no guarantee of this, and you're asking for headaches for no good reason.
