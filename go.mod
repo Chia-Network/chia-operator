@@ -3,7 +3,7 @@ module github.com/chia-network/chia-operator
 go 1.25.0
 
 require (
-	github.com/chia-network/go-chia-libs v1.1.0
+	github.com/chia-network/go-chia-libs v1.2.3
 	github.com/google/go-cmp v0.7.0
 	github.com/onsi/ginkgo/v2 v2.27.3
 	github.com/onsi/gomega v1.38.3
