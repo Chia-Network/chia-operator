@@ -74,15 +74,24 @@ spec:
                   HARD_FORK_HEIGHT:
                     format: int32
                     type: integer
+                  HARD_FORK2_HEIGHT:
+                    format: int32
+                    type: integer
+                  MAX_PLOT_STRENGTH:
+                    type: integer
                   MEMPOOL_BLOCK_BUFFER:
                     type: integer
                   MIN_PLOT_SIZE:
                     type: integer
                   MIN_PLOT_SIZE_V1:
                     type: integer
-                  MIN_PLOT_SIZE_V2:
+                  MIN_PLOT_STRENGTH:
                     type: integer
                   NETWORK_TYPE:
+                    type: integer
+                  NUMBER_ZERO_BITS_PLOT_FILTER_V1:
+                    type: integer
+                  NUMBER_ZERO_BITS_PLOT_FILTER_V2:
                     type: integer
                   PLOT_FILTER_32_HEIGHT:
                     format: int32
@@ -93,6 +102,21 @@ spec:
                   PLOT_FILTER_128_HEIGHT:
                     format: int32
                     type: integer
+                  PLOT_FILTER_V2_FIRST_ADJUSTMENT_HEIGHT:
+                    format: int32
+                    type: integer
+                  PLOT_FILTER_V2_SECOND_ADJUSTMENT_HEIGHT:
+                    format: int32
+                    type: integer
+                  PLOT_FILTER_V2_THIRD_ADJUSTMENT_HEIGHT:
+                    format: int32
+                    type: integer
+                  PLOT_SIZE_V2:
+                    type: integer
+                  PLOT_V1_PHASE_OUT_EPOCH_BITS:
+                    type: integer
+                  QUALITY_PROOF_SCAN_FILTER:
+                    type: integer
                   SOFT_FORK4_HEIGHT:
                     format: int32
                     type: integer
@@ -100,6 +124,9 @@ spec:
                     format: int32
                     type: integer
                   SOFT_FORK6_HEIGHT:
+                    format: int32
+                    type: integer
+                  SOFT_FORK8_HEIGHT:
                     format: int32
                     type: integer
                   SUB_SLOT_ITERS_STARTING:

@@ -1975,8 +1975,8 @@ func (in *NetworkConstants) DeepCopyInto(out *NetworkConstants) {
 		*out = new(uint8)
 		**out = **in
 	}
-	if in.MinPlotSizeV2 != nil {
-		in, out := &in.MinPlotSizeV2, &out.MinPlotSizeV2
+	if in.PlotSizeV2 != nil {
+		in, out := &in.PlotSizeV2, &out.PlotSizeV2
 		*out = new(uint8)
 		**out = **in
 	}
@@ -1990,8 +1990,23 @@ func (in *NetworkConstants) DeepCopyInto(out *NetworkConstants) {
 		*out = new(uint64)
 		**out = **in
 	}
+	if in.NumberZeroBitsPlotFilterV1 != nil {
+		in, out := &in.NumberZeroBitsPlotFilterV1, &out.NumberZeroBitsPlotFilterV1
+		*out = new(uint8)
+		**out = **in
+	}
+	if in.NumberZeroBitsPlotFilterV2 != nil {
+		in, out := &in.NumberZeroBitsPlotFilterV2, &out.NumberZeroBitsPlotFilterV2
+		*out = new(uint8)
+		**out = **in
+	}
 	if in.HardForkHeight != nil {
 		in, out := &in.HardForkHeight, &out.HardForkHeight
+		*out = new(uint32)
+		**out = **in
+	}
+	if in.HardFork2Height != nil {
+		in, out := &in.HardFork2Height, &out.HardFork2Height
 		*out = new(uint32)
 		**out = **in
 	}
@@ -2010,6 +2025,11 @@ func (in *NetworkConstants) DeepCopyInto(out *NetworkConstants) {
 		*out = new(uint32)
 		**out = **in
 	}
+	if in.SoftFork8Height != nil {
+		in, out := &in.SoftFork8Height, &out.SoftFork8Height
+		*out = new(uint32)
+		**out = **in
+	}
 	if in.PlotFilter128Height != nil {
 		in, out := &in.PlotFilter128Height, &out.PlotFilter128Height
 		*out = new(uint32)
@@ -2022,6 +2042,41 @@ func (in *NetworkConstants) DeepCopyInto(out *NetworkConstants) {
 	}
 	if in.PlotFilter32Height != nil {
 		in, out := &in.PlotFilter32Height, &out.PlotFilter32Height
+		*out = new(uint32)
+		**out = **in
+	}
+	if in.PlotV1PhaseOutEpochBits != nil {
+		in, out := &in.PlotV1PhaseOutEpochBits, &out.PlotV1PhaseOutEpochBits
+		*out = new(uint8)
+		**out = **in
+	}
+	if in.MinPlotStrength != nil {
+		in, out := &in.MinPlotStrength, &out.MinPlotStrength
+		*out = new(uint8)
+		**out = **in
+	}
+	if in.MaxPlotStrength != nil {
+		in, out := &in.MaxPlotStrength, &out.MaxPlotStrength
+		*out = new(uint8)
+		**out = **in
+	}
+	if in.QualityProofScanFilter != nil {
+		in, out := &in.QualityProofScanFilter, &out.QualityProofScanFilter
+		*out = new(uint8)
+		**out = **in
+	}
+	if in.PlotFilterV2FirstAdjustmentHeight != nil {
+		in, out := &in.PlotFilterV2FirstAdjustmentHeight, &out.PlotFilterV2FirstAdjustmentHeight
+		*out = new(uint32)
+		**out = **in
+	}
+	if in.PlotFilterV2SecondAdjustmentHeight != nil {
+		in, out := &in.PlotFilterV2SecondAdjustmentHeight, &out.PlotFilterV2SecondAdjustmentHeight
+		*out = new(uint32)
+		**out = **in
+	}
+	if in.PlotFilterV2ThirdAdjustmentHeight != nil {
+		in, out := &in.PlotFilterV2ThirdAdjustmentHeight, &out.PlotFilterV2ThirdAdjustmentHeight
 		*out = new(uint32)
 		**out = **in
 	}

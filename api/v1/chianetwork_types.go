@@ -71,7 +71,7 @@ type NetworkConstants struct {
 	MinPlotSizeV1 *uint8 `json:"MIN_PLOT_SIZE_V1,omitempty"`
 
 	// +optional
-	MinPlotSizeV2 *uint8 `json:"MIN_PLOT_SIZE_V2,omitempty"`
+	PlotSizeV2 *uint8 `json:"PLOT_SIZE_V2,omitempty"`
 
 	// +optional
 	NetworkType *uint8 `json:"NETWORK_TYPE,omitempty"`
@@ -80,7 +80,16 @@ type NetworkConstants struct {
 	SubSlotItersStarting *uint64 `json:"SUB_SLOT_ITERS_STARTING,omitempty"`
 
 	// +optional
+	NumberZeroBitsPlotFilterV1 *uint8 `json:"NUMBER_ZERO_BITS_PLOT_FILTER_V1,omitempty"`
+
+	// +optional
+	NumberZeroBitsPlotFilterV2 *uint8 `json:"NUMBER_ZERO_BITS_PLOT_FILTER_V2,omitempty"`
+
+	// +optional
 	HardForkHeight *uint32 `json:"HARD_FORK_HEIGHT,omitempty"`
+
+	// +optional
+	HardFork2Height *uint32 `json:"HARD_FORK2_HEIGHT,omitempty"`
 
 	// +optional
 	SoftFork4Height *uint32 `json:"SOFT_FORK4_HEIGHT,omitempty"`
@@ -92,6 +101,9 @@ type NetworkConstants struct {
 	SoftFork6Height *uint32 `json:"SOFT_FORK6_HEIGHT,omitempty"`
 
 	// +optional
+	SoftFork8Height *uint32 `json:"SOFT_FORK8_HEIGHT,omitempty"`
+
+	// +optional
 	PlotFilter128Height *uint32 `json:"PLOT_FILTER_128_HEIGHT,omitempty"`
 
 	// +optional
@@ -99,6 +111,27 @@ type NetworkConstants struct {
 
 	// +optional
 	PlotFilter32Height *uint32 `json:"PLOT_FILTER_32_HEIGHT,omitempty"`
+
+	// +optional
+	PlotV1PhaseOutEpochBits *uint8 `json:"PLOT_V1_PHASE_OUT_EPOCH_BITS,omitempty"`
+
+	// +optional
+	MinPlotStrength *uint8 `json:"MIN_PLOT_STRENGTH,omitempty"`
+
+	// +optional
+	MaxPlotStrength *uint8 `json:"MAX_PLOT_STRENGTH,omitempty"`
+
+	// +optional
+	QualityProofScanFilter *uint8 `json:"QUALITY_PROOF_SCAN_FILTER,omitempty"`
+
+	// +optional
+	PlotFilterV2FirstAdjustmentHeight *uint32 `json:"PLOT_FILTER_V2_FIRST_ADJUSTMENT_HEIGHT,omitempty"`
+
+	// +optional
+	PlotFilterV2SecondAdjustmentHeight *uint32 `json:"PLOT_FILTER_V2_SECOND_ADJUSTMENT_HEIGHT,omitempty"`
+
+	// +optional
+	PlotFilterV2ThirdAdjustmentHeight *uint32 `json:"PLOT_FILTER_V2_THIRD_ADJUSTMENT_HEIGHT,omitempty"`
 }
 
 // ChiaNetworkStatus defines the observed state of ChiaNetwork
