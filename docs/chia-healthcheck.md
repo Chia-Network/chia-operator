@@ -38,17 +38,17 @@ spec:
   chia:
     livenessProbe:
       httpGet:
-        path: /full_node
+        path: /full_node/liveness
         port: 9950
         scheme: HTTP
     readinessProbe:
       httpGet:
-        path: /full_node
+        path: /full_node/readiness
         port: 9950
         scheme: HTTP
     startupProbe:
       httpGet:
-        path: /full_node
+        path: /full_node/startup
         port: 9950
         scheme: HTTP
 ```
