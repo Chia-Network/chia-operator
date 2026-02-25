@@ -6,6 +6,7 @@ package kube
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -45,6 +46,13 @@ func serverSideApply(ctx context.Context, c client.Client, desired runtime.Objec
 
 	err = c.Patch(ctx, u, client.Apply, client.ForceOwnership, client.FieldOwner("chia-operator"))
 	if err != nil {
+		klog := log.FromContext(ctx)
+		objJSON, jsonErr := json.MarshalIndent(objMap, "", "  ")
+		if jsonErr != nil {
+			klog.Error(err, "error applying object, and failed to marshal object for logging", "marshalError", jsonErr)
+		} else {
+			klog.Error(err, "error applying object", "object", string(objJSON))
+		}
 		return fmt.Errorf("error applying object: %w", err)
 	}
 	return nil
