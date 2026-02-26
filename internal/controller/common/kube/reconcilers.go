@@ -6,7 +6,6 @@ package kube
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -20,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -46,13 +46,7 @@ func serverSideApply(ctx context.Context, c client.Client, desired runtime.Objec
 
 	err = c.Patch(ctx, u, client.Apply, client.ForceOwnership, client.FieldOwner("chia-operator"))
 	if err != nil {
-		klog := log.FromContext(ctx)
-		objJSON, jsonErr := json.MarshalIndent(objMap, "", "  ")
-		if jsonErr != nil {
-			klog.Error(err, "error applying object, and failed to marshal object for logging", "marshalError", jsonErr)
-		} else {
-			klog.Error(err, "error applying object", "object", string(objJSON))
-		}
+		klog.V(1).Info("object that failed to apply", "applyError", err, "object", objMap)
 		return fmt.Errorf("error applying object: %w", err)
 	}
 	return nil
