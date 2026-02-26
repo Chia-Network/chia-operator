@@ -49,9 +49,9 @@ func serverSideApply(ctx context.Context, c client.Client, desired runtime.Objec
 		klog := log.FromContext(ctx)
 		objJSON, jsonErr := json.MarshalIndent(objMap, "", "  ")
 		if jsonErr != nil {
-			klog.Error(err, "error applying object, and failed to marshal object for logging", "marshalError", jsonErr)
+			klog.V(1).Info("failed to marshal object for debug logging", "applyError", err, "marshalError", jsonErr)
 		} else {
-			klog.Error(err, "error applying object", "object", string(objJSON))
+			klog.V(1).Info("object that failed to apply", "applyError", err, "object", string(objJSON))
 		}
 		return fmt.Errorf("error applying object: %w", err)
 	}
