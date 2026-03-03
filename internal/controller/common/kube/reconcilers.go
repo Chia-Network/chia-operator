@@ -52,6 +52,45 @@ func serverSideApply(ctx context.Context, c client.Client, desired runtime.Objec
 	return nil
 }
 
+// filterStaleContainers returns a container list with only the containers
+// whose name appears in the desired list, and reports whether any were removed.
+func filterStaleContainers(current, desired []corev1.Container) ([]corev1.Container, bool) {
+	desiredNames := make(map[string]struct{}, len(desired))
+	for _, ctr := range desired {
+		desiredNames[ctr.Name] = struct{}{}
+	}
+
+	filtered := make([]corev1.Container, 0, len(current))
+	for _, ctr := range current {
+		if _, ok := desiredNames[ctr.Name]; ok {
+			filtered = append(filtered, ctr)
+		}
+	}
+
+	return filtered, len(filtered) != len(current)
+}
+
+// removeStaleWorkloadContainers patches out containers and init containers from a live
+// workload object that are not present in the desired pod spec. This is necessary because
+// Kubernetes SSA treats containers as an associative list keyed by name and does not remove
+// entries that are simply omitted from the applied configuration.
+func removeStaleWorkloadContainers(ctx context.Context, c client.Client, obj client.Object, currentPodSpec, desiredPodSpec *corev1.PodSpec) error {
+	filteredContainers, staleContainers := filterStaleContainers(currentPodSpec.Containers, desiredPodSpec.Containers)
+	filteredInitContainers, staleInitContainers := filterStaleContainers(currentPodSpec.InitContainers, desiredPodSpec.InitContainers)
+	if !staleContainers && !staleInitContainers {
+		return nil
+	}
+
+	original := obj.DeepCopyObject().(client.Object)
+	if staleContainers {
+		currentPodSpec.Containers = filteredContainers
+	}
+	if staleInitContainers {
+		currentPodSpec.InitContainers = filteredInitContainers
+	}
+	return c.Patch(ctx, obj, client.MergeFrom(original))
+}
+
 // ReconcileService uses the controller-runtime client to determine if the service resource needs to be created or updated
 func ReconcileService(ctx context.Context, c client.Client, service k8schianetv1.Service, desired corev1.Service, defaultEnabled bool) (reconcile.Result, error) {
 	klog := log.FromContext(ctx).WithValues("Service.Namespace", desired.Namespace, "Service.Name", desired.Name)
@@ -162,6 +201,13 @@ func ReconcileDeployment(ctx context.Context, c client.Client, desired appsv1.De
 			return ctrl.Result{}, nil // Exit reconciler here because we created the desired Deployment
 		}
 
+		if err := removeStaleWorkloadContainers(ctx, c, &current, &current.Spec.Template.Spec, &desired.Spec.Template.Spec); err != nil {
+			if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+				return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+			}
+			return ctrl.Result{}, fmt.Errorf("error removing stale containers from Deployment \"%s\": %v", current.Name, err)
+		}
+
 		// Deployment exists, so we need to update it if there are any changes.
 		updated := current
 
@@ -237,6 +283,13 @@ func ReconcileStatefulset(ctx context.Context, c client.Client, desired appsv1.S
 			}
 
 			return ctrl.Result{}, nil // Exit reconciler here because we created the desired StatefulSet
+		}
+
+		if err := removeStaleWorkloadContainers(ctx, c, &current, &current.Spec.Template.Spec, &desired.Spec.Template.Spec); err != nil {
+			if strings.Contains(err.Error(), ObjectModifiedTryAgainError) {
+				return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+			}
+			return ctrl.Result{}, fmt.Errorf("error removing stale containers from StatefulSet \"%s\": %v", current.Name, err)
 		}
 
 		// StatefulSet exists, so we need to update it if there are any changes.
