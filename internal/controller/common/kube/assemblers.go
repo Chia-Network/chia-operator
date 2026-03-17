@@ -79,6 +79,19 @@ type AssembleChiaContainerInputs struct {
 	ResourceRequirements *corev1.ResourceRequirements
 }
 
+// validProbeOrNil returns the probe if it specifies a handler, or nil otherwise.
+// An empty probe ({}) in a CR means "explicitly no probe" but Kubernetes rejects
+// probes without a handler type, so we treat them as nil.
+func validProbeOrNil(p *corev1.Probe) *corev1.Probe {
+	if p == nil {
+		return nil
+	}
+	if p.Exec == nil && p.HTTPGet == nil && p.TCPSocket == nil && p.GRPC == nil {
+		return nil
+	}
+	return p
+}
+
 // AssembleChiaContainer assembles a chia container spec
 func AssembleChiaContainer(input AssembleChiaContainerInputs) corev1.Container {
 	container := corev1.Container{
@@ -88,9 +101,9 @@ func AssembleChiaContainer(input AssembleChiaContainerInputs) corev1.Container {
 		Ports:           input.Ports,
 		VolumeMounts:    input.VolumeMounts,
 		SecurityContext: input.SecurityContext,
-		LivenessProbe:   input.LivenessProbe,
-		ReadinessProbe:  input.ReadinessProbe,
-		StartupProbe:    input.StartupProbe,
+		LivenessProbe:   validProbeOrNil(input.LivenessProbe),
+		ReadinessProbe:  validProbeOrNil(input.ReadinessProbe),
+		StartupProbe:    validProbeOrNil(input.StartupProbe),
 	}
 
 	if input.Image != nil && *input.Image != "" {
