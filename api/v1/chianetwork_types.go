@@ -104,6 +104,9 @@ type NetworkConstants struct {
 	SoftFork8Height *uint32 `json:"SOFT_FORK8_HEIGHT,omitempty"`
 
 	// +optional
+	SoftFork9Height *uint32 `json:"SOFT_FORK9_HEIGHT,omitempty"`
+
+	// +optional
 	PlotFilter128Height *uint32 `json:"PLOT_FILTER_128_HEIGHT,omitempty"`
 
 	// +optional

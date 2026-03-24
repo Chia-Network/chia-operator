@@ -2030,6 +2030,11 @@ func (in *NetworkConstants) DeepCopyInto(out *NetworkConstants) {
 		*out = new(uint32)
 		**out = **in
 	}
+	if in.SoftFork9Height != nil {
+		in, out := &in.SoftFork9Height, &out.SoftFork9Height
+		*out = new(uint32)
+		**out = **in
+	}
 	if in.PlotFilter128Height != nil {
 		in, out := &in.PlotFilter128Height, &out.PlotFilter128Height
 		*out = new(uint32)
