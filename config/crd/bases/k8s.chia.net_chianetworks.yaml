@@ -129,6 +129,9 @@ spec:
                   SOFT_FORK8_HEIGHT:
                     format: int32
                     type: integer
+                  SOFT_FORK9_HEIGHT:
+                    format: int32
+                    type: integer
                   SUB_SLOT_ITERS_STARTING:
                     format: int64
                     type: integer
