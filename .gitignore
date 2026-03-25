@@ -28,3 +28,5 @@ Dockerfile.cross
 /notes
 /test
 /release
+/helm/test-values.yaml
+/helm/old/
