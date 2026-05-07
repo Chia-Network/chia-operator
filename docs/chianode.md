@@ -102,7 +102,7 @@ spec:
     s3Prefix: "s3://chia-blockchain-sqlite-backups/testnet11/"
 ```
 
-The S3 bucket + path specified by `chiaDBPull.s3Prefix` must contain the following files: `blockchain_v2_${NETWORK}.sqlite`, `height-to-hash`, and `sub-epoch-summaries`. If any of those files are missing within the `s3Prefix` the init container will fail and the node won't start.
+The S3 bucket + path specified by `chiaDBPull.s3Prefix` must contain a `blockchain_v2_${NETWORK}.sqlite` file. If one is not found within the `s3Prefix` the init container will fail and the node won't start. The `height-to-hash` and `sub-epoch-summaries` cache files may also optionally be picked up by this init container, the init container won't fail if they're missing, however.
 
 The network variable is only required by chia-db-pull if the target network is a testnet. If the target network is a testnet, the operator derives the network variable the same way the chia container's network variable is derived. In order of precedence the network variable is either pulled from `spec.chiaDBPull.network`, a ChiaNetwork specified in `spec.chia.chiaNetwork`, or `spec.chia.network`. If none are set, no network variable is emitted and chia-db-pull falls back to its own default (mainnet). When using `spec.chia.testnet: true` you must configure one of the methods for setting the network variable so chia-db-pull knows which testnet to pull.
 
