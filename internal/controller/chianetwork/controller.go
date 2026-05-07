@@ -14,7 +14,7 @@ import (
 	"github.com/chia-network/chia-operator/internal/metrics"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -29,7 +29,7 @@ import (
 type ChiaNetworkReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Recorder events.EventRecorder
 }
 
 var chianetworks = make(map[string]bool)
@@ -38,6 +38,8 @@ var chianetworks = make(map[string]bool)
 // +kubebuilder:rbac:groups=k8s.chia.net,resources=chianetworks/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=k8s.chia.net,resources=chianetworks/finalizers,verbs=update
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch
+// +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch;update
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaNetworkReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -71,24 +73,24 @@ func (r *ChiaNetworkReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	// Assemble configmap
 	configmap, err := assembleConfigMap(network)
 	if err != nil {
-		r.Recorder.Event(&network, corev1.EventTypeWarning, "Failed", "Failed to assemble network ConfigMap -- Check operator logs.")
+		r.Recorder.Eventf(&network, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble network ConfigMap -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("encountered error assembling network ConfigMap: %v", err)
 	}
 	if err := controllerutil.SetControllerReference(&network, &configmap, r.Scheme); err != nil {
-		r.Recorder.Event(&network, corev1.EventTypeWarning, "Failed", "Failed to set controller reference on network ConfigMap -- Check operator logs.")
+		r.Recorder.Eventf(&network, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to set controller reference on network ConfigMap -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("encountered error setting controller reference on network ConfigMap: %v", err)
 	}
 
 	// Reconcile configmap
 	res, err := kube.ReconcileConfigMap(ctx, r.Client, configmap)
 	if err != nil {
-		r.Recorder.Event(&network, corev1.EventTypeWarning, "Failed", "Failed to reconcile network ConfigMap -- Check operator logs.")
+		r.Recorder.Eventf(&network, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to reconcile network ConfigMap -- Check operator logs.")
 		return res, fmt.Errorf("encountered error reconciling network ConfigMap: %v", err)
 	}
 
 	if !network.Status.Ready {
-		r.Recorder.Event(&network, corev1.EventTypeNormal, "Created",
-			fmt.Sprintf("Successfully created network ConfigMap in %s/%s", network.Namespace, network.Name))
+		r.Recorder.Eventf(&network, nil, corev1.EventTypeNormal, "Created", "Created",
+			"Successfully created network ConfigMap in %s/%s", network.Namespace, network.Name)
 
 		network.Status.Ready = true
 		err = r.Status().Update(ctx, &network)
