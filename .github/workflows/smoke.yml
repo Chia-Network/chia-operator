@@ -20,7 +20,7 @@ jobs:
           cluster_name: kind # the action defaults to "chart-testing" which causes the load command below to fail
 
       - name: Install kubectl
-        uses: azure/setup-kubectl@v4
+        uses: azure/setup-kubectl@v5
 
       - name: Install chia operator custom resources
         run: |
