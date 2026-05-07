@@ -574,3 +574,118 @@ func TestAssembleChiaHealthcheckProbe_Full(t *testing.T) {
 	})
 	require.Equal(t, expected, *actual)
 }
+
+func TestAssembleChiaDBPullContainer_Minimal(t *testing.T) {
+	expected := corev1.Container{
+		Name:            "chia-db-pull",
+		Image:           "test:latest",
+		ImagePullPolicy: "Always",
+		Env: []corev1.EnvVar{
+			{
+				Name:  "CHIA_ROOT",
+				Value: "/chia-data",
+			},
+			{
+				Name:  "S3_PREFIX",
+				Value: "s3://test/",
+			},
+		},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "chiaroot",
+				MountPath: "/chia-data",
+			},
+		},
+	}
+	actual := AssembleChiaDBPullContainer(AssembleChiaDBPullContainerInputs{
+		Image:           &expected.Image,
+		ImagePullPolicy: expected.ImagePullPolicy,
+		S3Prefix:        "s3://test/",
+	})
+	require.Equal(t, expected, actual)
+}
+
+func TestAssembleChiaDBPullContainer_DefaultImage(t *testing.T) {
+	actual := AssembleChiaDBPullContainer(AssembleChiaDBPullContainerInputs{
+		S3Prefix: "s3://test/",
+	})
+	require.Equal(t, consts.DefaultChiaDBPullImageName+":"+consts.DefaultChiaDBPullImageTag, actual.Image)
+}
+
+func TestAssembleChiaDBPullContainer_Full(t *testing.T) {
+	network := "testnet11"
+	minHeight := int64(123456)
+	credsSecret := "aws-creds"
+	expected := corev1.Container{
+		Name:            "chia-db-pull",
+		Image:           "test:latest",
+		ImagePullPolicy: "Always",
+		Env: []corev1.EnvVar{
+			{
+				Name:  "CHIA_ROOT",
+				Value: "/chia-data",
+			},
+			{
+				Name:  "S3_PREFIX",
+				Value: "s3://test/",
+			},
+			{
+				Name:  "NETWORK",
+				Value: network,
+			},
+			{
+				Name:  "MIN_HEIGHT",
+				Value: "123456",
+			},
+			{
+				Name:  "EXTRA",
+				Value: "yes",
+			},
+		},
+		EnvFrom: []corev1.EnvFromSource{
+			{
+				SecretRef: &corev1.SecretEnvSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: credsSecret,
+					},
+				},
+			},
+		},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "chiaroot",
+				MountPath: "/chia-data",
+			},
+		},
+		SecurityContext: &corev1.SecurityContext{
+			Capabilities: &corev1.Capabilities{
+				Add: []corev1.Capability{
+					"NET_BIND_SERVICE",
+				},
+			},
+		},
+		Resources: corev1.ResourceRequirements{
+			Limits: corev1.ResourceList{
+				"CPU":    resource.MustParse("200m"),
+				"Memory": resource.MustParse("512Mi"),
+			},
+			Requests: corev1.ResourceList{
+				"CPU":    resource.MustParse("100m"),
+				"Memory": resource.MustParse("256Mi"),
+			},
+		},
+	}
+	additional := []corev1.EnvVar{{Name: "EXTRA", Value: "yes"}}
+	actual := AssembleChiaDBPullContainer(AssembleChiaDBPullContainerInputs{
+		Image:                &expected.Image,
+		ImagePullPolicy:      expected.ImagePullPolicy,
+		S3Prefix:             "s3://test/",
+		Network:              &network,
+		MinHeight:            &minHeight,
+		AWSCredentialsSecret: &credsSecret,
+		AdditionalEnv:        &additional,
+		ResourceRequirements: expected.Resources,
+		SecurityContext:      expected.SecurityContext,
+	})
+	require.Equal(t, expected, actual)
+}

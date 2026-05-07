@@ -2,6 +2,7 @@ package kube
 
 import (
 	"fmt"
+	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -310,4 +311,81 @@ func AssembleChiaHealthcheckProbe(input AssembleChiaHealthcheckProbeInputs) *cor
 	}
 
 	return &probe
+}
+
+// AssembleChiaDBPullContainerInputs contains configuration inputs to the AssembleChiaDBPullContainer function
+type AssembleChiaDBPullContainerInputs struct {
+	Image                *string
+	ImagePullPolicy      corev1.PullPolicy
+	S3Prefix             string
+	Network              *string
+	MinHeight            *int64
+	AWSCredentialsSecret *string
+	AdditionalEnv        *[]corev1.EnvVar
+	ResourceRequirements corev1.ResourceRequirements
+	SecurityContext      *corev1.SecurityContext
+}
+
+// AssembleChiaDBPullContainer assembles the chia-db-pull init container spec.
+// The container shares the chiaroot volume with the main chia container so that the downloaded
+// blockchain database lands in CHIA_ROOT before chia starts.
+func AssembleChiaDBPullContainer(input AssembleChiaDBPullContainerInputs) corev1.Container {
+	container := corev1.Container{
+		Name:            "chia-db-pull",
+		SecurityContext: input.SecurityContext,
+		ImagePullPolicy: input.ImagePullPolicy,
+		Env: []corev1.EnvVar{
+			{
+				Name:  "CHIA_ROOT",
+				Value: "/chia-data",
+			},
+			{
+				Name:  "S3_PREFIX",
+				Value: input.S3Prefix,
+			},
+		},
+		Resources: input.ResourceRequirements,
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "chiaroot",
+				MountPath: "/chia-data",
+			},
+		},
+	}
+
+	if input.Image != nil && *input.Image != "" {
+		container.Image = *input.Image
+	} else {
+		container.Image = fmt.Sprintf("%s:%s", consts.DefaultChiaDBPullImageName, consts.DefaultChiaDBPullImageTag)
+	}
+
+	if input.Network != nil && *input.Network != "" {
+		container.Env = append(container.Env, corev1.EnvVar{
+			Name:  "NETWORK",
+			Value: *input.Network,
+		})
+	}
+
+	if input.MinHeight != nil {
+		container.Env = append(container.Env, corev1.EnvVar{
+			Name:  "MIN_HEIGHT",
+			Value: strconv.FormatInt(*input.MinHeight, 10),
+		})
+	}
+
+	if input.AWSCredentialsSecret != nil && *input.AWSCredentialsSecret != "" {
+		container.EnvFrom = append(container.EnvFrom, corev1.EnvFromSource{
+			SecretRef: &corev1.SecretEnvSource{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: *input.AWSCredentialsSecret,
+				},
+			},
+		})
+	}
+
+	if input.AdditionalEnv != nil {
+		container.Env = append(container.Env, *input.AdditionalEnv...)
+	}
+
+	return container
 }

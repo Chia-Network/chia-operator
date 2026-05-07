@@ -74,6 +74,13 @@ func (r *ChiaNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		metrics.ChiaNodes.Add(1.0)
 	}
 
+	// Validate the chia-db-pull init container config before doing any other work.
+	if kube.ChiaDBPullEnabled(node.Spec.ChiaDBPullConfig) && node.Spec.ChiaDBPullConfig.S3Prefix == "" {
+		err := fmt.Errorf("chiaDBPull.enabled is true but chiaDBPull.s3Prefix is empty")
+		r.Recorder.Event(&node, corev1.EventTypeWarning, "Failed", "chiaDBPull is enabled but s3Prefix is not set -- the chia-db-pull init container requires an S3 prefix.")
+		return ctrl.Result{}, fmt.Errorf("ChiaNodeReconciler ChiaNode=%s %v", req.NamespacedName, err)
+	}
+
 	// Check for ChiaNetwork, retrieve matching ConfigMap if specified
 	networkData, err := kube.GetChiaNetworkData(ctx, r.Client, node.Spec.ChiaConfig.CommonSpecChia, node.Namespace)
 	if err != nil {

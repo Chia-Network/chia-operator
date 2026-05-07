@@ -55,6 +55,12 @@ var (
 
 	// DefaultChiaHealthcheckImageTag contains the default tag name for the chia-healthcheck image
 	DefaultChiaHealthcheckImageTag = "latest"
+
+	// DefaultChiaDBPullImageName contains the default image name for the chia-db-pull init container image
+	DefaultChiaDBPullImageName = "ghcr.io/chia-network/chia-db-pull"
+
+	// DefaultChiaDBPullImageTag contains the default tag name for the chia-db-pull init container image
+	DefaultChiaDBPullImageTag = "latest"
 )
 
 const (

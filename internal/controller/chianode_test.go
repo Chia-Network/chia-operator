@@ -13,6 +13,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/ptr"
 
 	apiv1 "github.com/chia-network/chia-operator/api/v1"
 )
@@ -40,6 +41,10 @@ var _ = Describe("ChiaNode controller", func() {
 					ChiaConfig: apiv1.ChiaNodeSpecChia{
 						CASecretName: "test-secret",
 					},
+					ChiaDBPullConfig: apiv1.SpecChiaDBPull{
+						Enabled:  ptr.To(true),
+						S3Prefix: "s3://test/",
+					},
 				},
 			}
 			expect := &apiv1.ChiaNode{
@@ -51,6 +56,10 @@ var _ = Describe("ChiaNode controller", func() {
 					ChiaHealthcheckConfig: apiv1.SpecChiaHealthcheck{
 						Enabled:     nil,
 						DNSHostname: nil,
+					},
+					ChiaDBPullConfig: apiv1.SpecChiaDBPull{
+						Enabled:  ptr.To(true),
+						S3Prefix: "s3://test/",
 					},
 					CommonSpec: apiv1.CommonSpec{
 						ImagePullPolicy: "Always",
