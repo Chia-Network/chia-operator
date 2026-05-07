@@ -2385,8 +2385,12 @@ spec:
                     format: int64
                     type: integer
                   network:
-                    description: Network is the chia network name the database belongs
-                      to. Mapped to the NETWORK env var.
+                    description: |-
+                      Network is the chia network name the database belongs to. Mapped to the NETWORK env var.
+                      If unset, the operator derives the value from the surrounding chia config: it first looks
+                      for a "network" key in the ChiaNetwork ConfigMap referenced by spec.chia.chiaNetwork, then
+                      falls back to spec.chia.network. If neither is set, no NETWORK env var is emitted and
+                      chia-db-pull will use its own default (mainnet).
                     type: string
                   resources:
                     description: Resources defines the compute resources (limits/requests)

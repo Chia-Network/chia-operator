@@ -380,3 +380,20 @@ func ChiaDBPullEnabled(in k8schianetv1.SpecChiaDBPull) bool {
 	}
 	return *in.Enabled
 }
+
+// ResolveChiaNetwork returns the chia network name implied by a CommonSpecChia and optional
+// ChiaNetwork ConfigMap data, in the same priority order the chia container's "network" env var
+// is resolved from: a "network" key in the ChiaNetwork ConfigMap overrides the inline
+// CommonSpecChia.Network field. Returns "" when neither is set (which the caller should treat
+// as "let the consumer use its own default", typically mainnet).
+func ResolveChiaNetwork(commonSpecChia k8schianetv1.CommonSpecChia, networkData *map[string]string) string {
+	if networkData != nil {
+		if v, ok := (*networkData)["network"]; ok && v != "" {
+			return v
+		}
+	}
+	if commonSpecChia.Network != nil && *commonSpecChia.Network != "" {
+		return *commonSpecChia.Network
+	}
+	return ""
+}

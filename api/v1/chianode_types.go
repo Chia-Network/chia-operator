@@ -54,6 +54,10 @@ type SpecChiaDBPull struct {
 	S3Prefix string `json:"s3Prefix,omitempty"`
 
 	// Network is the chia network name the database belongs to. Mapped to the NETWORK env var.
+	// If unset, the operator derives the value from the surrounding chia config: it first looks
+	// for a "network" key in the ChiaNetwork ConfigMap referenced by spec.chia.chiaNetwork, then
+	// falls back to spec.chia.network. If neither is set, no NETWORK env var is emitted and
+	// chia-db-pull will use its own default (mainnet).
 	// +optional
 	Network *string `json:"network,omitempty"`
 

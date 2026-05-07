@@ -330,7 +330,7 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 
 	// Append the first-class chia-db-pull init container last so any user-defined init containers run first.
 	if kube.ChiaDBPullEnabled(node.Spec.ChiaDBPullConfig) {
-		stateful.Spec.Template.Spec.InitContainers = append(stateful.Spec.Template.Spec.InitContainers, assembleChiaDBPullContainer(node))
+		stateful.Spec.Template.Spec.InitContainers = append(stateful.Spec.Template.Spec.InitContainers, assembleChiaDBPullContainer(node, networkData))
 	}
 
 	// Get Sidecar Containers
@@ -471,7 +471,7 @@ func assembleChiaHealthcheckContainer(node k8schianetv1.ChiaNode) corev1.Contain
 	return kube.AssembleChiaHealthcheckContainer(input)
 }
 
-func assembleChiaDBPullContainer(node k8schianetv1.ChiaNode) corev1.Container {
+func assembleChiaDBPullContainer(node k8schianetv1.ChiaNode, networkData *map[string]string) corev1.Container {
 	input := kube.AssembleChiaDBPullContainerInputs{
 		Image:                node.Spec.ChiaDBPullConfig.Image,
 		ImagePullPolicy:      node.Spec.ImagePullPolicy,
@@ -480,6 +480,15 @@ func assembleChiaDBPullContainer(node k8schianetv1.ChiaNode) corev1.Container {
 		MinHeight:            node.Spec.ChiaDBPullConfig.MinHeight,
 		AWSCredentialsSecret: node.Spec.ChiaDBPullConfig.AWSCredentialsSecret,
 		AdditionalEnv:        node.Spec.ChiaDBPullConfig.AdditionalEnv,
+	}
+
+	// If the user didn't explicitly set chiaDBPull.network, derive it from the surrounding chia config
+	// the same way the chia container's "network" env var is derived: a ChiaNetwork ConfigMap
+	// "network" key wins over an inline CommonSpecChia.Network value.
+	if input.Network == nil || *input.Network == "" {
+		if resolved := kube.ResolveChiaNetwork(node.Spec.ChiaConfig.CommonSpecChia, networkData); resolved != "" {
+			input.Network = &resolved
+		}
 	}
 
 	if node.Spec.ChiaDBPullConfig.SecurityContext != nil {

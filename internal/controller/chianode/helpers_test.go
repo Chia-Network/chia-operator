@@ -300,7 +300,7 @@ func TestAssembleChiaDBPullContainer(t *testing.T) {
 		},
 	}
 
-	cont := assembleChiaDBPullContainer(node)
+	cont := assembleChiaDBPullContainer(node, nil)
 
 	assert.Equal(t, "chia-db-pull", cont.Name)
 	assert.Equal(t, corev1.PullIfNotPresent, cont.ImagePullPolicy)
@@ -321,4 +321,69 @@ func TestAssembleChiaDBPullContainer(t *testing.T) {
 	assert.Len(t, cont.VolumeMounts, 1)
 	assert.Equal(t, "chiaroot", cont.VolumeMounts[0].Name)
 	assert.Equal(t, "/chia-data", cont.VolumeMounts[0].MountPath)
+}
+
+func TestAssembleChiaDBPullContainer_DerivesNetwork(t *testing.T) {
+	chiaNet := "testnet11"
+	configmapNet := "testnet-from-cm"
+
+	envByName := func(c corev1.Container) map[string]string {
+		m := map[string]string{}
+		for _, e := range c.Env {
+			m[e.Name] = e.Value
+		}
+		return m
+	}
+
+	t.Run("from CommonSpecChia.Network when chiaDBPull.network unset", func(t *testing.T) {
+		node := k8schianetv1.ChiaNode{
+			Spec: k8schianetv1.ChiaNodeSpec{
+				ChiaConfig: k8schianetv1.ChiaNodeSpecChia{
+					CommonSpecChia: k8schianetv1.CommonSpecChia{Network: &chiaNet},
+				},
+				ChiaDBPullConfig: k8schianetv1.SpecChiaDBPull{S3Prefix: "s3://test/"},
+			},
+		}
+		assert.Equal(t, "testnet11", envByName(assembleChiaDBPullContainer(node, nil))["NETWORK"])
+	})
+
+	t.Run("ChiaNetwork ConfigMap data overrides inline chia.network", func(t *testing.T) {
+		networkData := map[string]string{"network": configmapNet}
+		node := k8schianetv1.ChiaNode{
+			Spec: k8schianetv1.ChiaNodeSpec{
+				ChiaConfig: k8schianetv1.ChiaNodeSpecChia{
+					CommonSpecChia: k8schianetv1.CommonSpecChia{Network: &chiaNet},
+				},
+				ChiaDBPullConfig: k8schianetv1.SpecChiaDBPull{S3Prefix: "s3://test/"},
+			},
+		}
+		assert.Equal(t, configmapNet, envByName(assembleChiaDBPullContainer(node, &networkData))["NETWORK"])
+	})
+
+	t.Run("explicit chiaDBPull.network wins over derivation", func(t *testing.T) {
+		networkData := map[string]string{"network": configmapNet}
+		explicit := "explicit-net"
+		node := k8schianetv1.ChiaNode{
+			Spec: k8schianetv1.ChiaNodeSpec{
+				ChiaConfig: k8schianetv1.ChiaNodeSpecChia{
+					CommonSpecChia: k8schianetv1.CommonSpecChia{Network: &chiaNet},
+				},
+				ChiaDBPullConfig: k8schianetv1.SpecChiaDBPull{
+					S3Prefix: "s3://test/",
+					Network:  &explicit,
+				},
+			},
+		}
+		assert.Equal(t, "explicit-net", envByName(assembleChiaDBPullContainer(node, &networkData))["NETWORK"])
+	})
+
+	t.Run("no NETWORK env when nothing is resolvable", func(t *testing.T) {
+		node := k8schianetv1.ChiaNode{
+			Spec: k8schianetv1.ChiaNodeSpec{
+				ChiaDBPullConfig: k8schianetv1.SpecChiaDBPull{S3Prefix: "s3://test/"},
+			},
+		}
+		_, hasNetwork := envByName(assembleChiaDBPullContainer(node, nil))["NETWORK"]
+		assert.False(t, hasNetwork, "NETWORK env should be omitted when no network is resolvable")
+	})
 }
