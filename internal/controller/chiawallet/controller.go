@@ -18,7 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -31,7 +31,7 @@ import (
 type ChiaWalletReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Recorder events.EventRecorder
 }
 
 var chiawallets = make(map[string]bool)
@@ -44,6 +44,7 @@ var chiawallets = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch;update
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -83,7 +84,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble Peer Service
 	peerSrv := assemblePeerService(wallet)
 	if err := controllerutil.SetControllerReference(&wallet, &peerSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet peer Service -- Check operator logs.")
+		r.Recorder.Eventf(&wallet, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble wallet peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Peer Service
@@ -95,7 +96,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble All Service
 	allSrv := assembleAllService(wallet)
 	if err := controllerutil.SetControllerReference(&wallet, &allSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet all-port Service -- Check operator logs.")
+		r.Recorder.Eventf(&wallet, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble wallet all-port Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile All Service
@@ -107,7 +108,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble Daemon Service
 	daemonSrv := assembleDaemonService(wallet)
 	if err := controllerutil.SetControllerReference(&wallet, &daemonSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet daemon Service -- Check operator logs.")
+		r.Recorder.Eventf(&wallet, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble wallet daemon Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Daemon Service
@@ -119,7 +120,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble RPC Service
 	rpcSrv := assembleRPCService(wallet)
 	if err := controllerutil.SetControllerReference(&wallet, &rpcSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet RPC Service -- Check operator logs.")
+		r.Recorder.Eventf(&wallet, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble wallet RPC Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error assembling RPC Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile RPC Service
@@ -131,7 +132,7 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble Chia-Exporter Service
 	exporterSrv := assembleChiaExporterService(wallet)
 	if err := controllerutil.SetControllerReference(&wallet, &exporterSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet chia-exporter Service -- Check operator logs.")
+		r.Recorder.Eventf(&wallet, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble wallet chia-exporter Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Chia-Exporter Service
@@ -144,14 +145,14 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if kube.ShouldMakeChiaRootVolumeClaim(wallet.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(wallet)
 		if err != nil {
-			r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet PVC -- Check operator logs.")
+			r.Recorder.Eventf(&wallet, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble wallet PVC -- Check operator logs.")
 			return reconcile.Result{}, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s %v", req.NamespacedName, err)
 		}
 
 		if pvc != nil {
 			res, err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, wallet.Spec.Storage, *pvc)
 			if err != nil {
-				r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create wallet PVC -- Check operator logs.")
+				r.Recorder.Eventf(&wallet, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to create wallet PVC -- Check operator logs.")
 				return res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s %v", req.NamespacedName, err)
 			}
 		} else {
@@ -162,22 +163,22 @@ func (r *ChiaWalletReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble Deployment
 	deploy, err := assembleDeployment(ctx, wallet, networkData)
 	if err != nil {
-		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&wallet, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble wallet Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s %v", req.NamespacedName, err)
 	}
 	if err := controllerutil.SetControllerReference(&wallet, &deploy, r.Scheme); err != nil {
-		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to assemble wallet Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&wallet, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble wallet Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s %v", req.NamespacedName, err)
 	}
 	// Reconcile Deployment
 	res, err = kube.ReconcileDeployment(ctx, r.Client, deploy)
 	if err != nil {
-		r.Recorder.Event(&wallet, corev1.EventTypeWarning, "Failed", "Failed to create wallet Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&wallet, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to create wallet Deployment -- Check operator logs.")
 		return res, fmt.Errorf("ChiaWalletReconciler ChiaWallet=%s %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
-	r.Recorder.Event(&wallet, corev1.EventTypeNormal, "Created", "Successfully created ChiaWallet resources.")
+	r.Recorder.Eventf(&wallet, nil, corev1.EventTypeNormal, "Created", "Created", "Successfully created ChiaWallet resources.")
 	wallet.Status.Ready = true
 	err = r.Status().Update(ctx, &wallet)
 	if err != nil {

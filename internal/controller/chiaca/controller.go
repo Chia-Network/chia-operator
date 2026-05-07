@@ -18,7 +18,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -28,7 +28,7 @@ import (
 type ChiaCAReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Recorder events.EventRecorder
 }
 
 var chiacas = make(map[string]bool)
@@ -38,6 +38,7 @@ var chiacas = make(map[string]bool)
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacas/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;patch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch;update
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -99,8 +100,8 @@ func (r *ChiaCAReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	if !ca.Status.Ready {
-		r.Recorder.Event(&ca, corev1.EventTypeNormal, "Created",
-			fmt.Sprintf("Successfully created CA Secret in %s/%s", ca.Namespace, ca.Name))
+		r.Recorder.Eventf(&ca, nil, corev1.EventTypeNormal, "Created", "Created",
+			"Successfully created CA Secret in %s/%s", ca.Namespace, ca.Name)
 
 		ca.Status.Ready = true
 		err = r.Status().Update(ctx, &ca)

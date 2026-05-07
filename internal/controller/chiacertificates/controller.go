@@ -19,7 +19,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -29,7 +29,7 @@ import (
 type ChiaCertificatesReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Recorder events.EventRecorder
 }
 
 var chiacertificates = make(map[string]bool)
@@ -39,6 +39,7 @@ var chiacertificates = make(map[string]bool)
 //+kubebuilder:rbac:groups=k8s.chia.net,resources=chiacertificates/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;patch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch;update
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaCertificatesReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -132,8 +133,8 @@ func (r *ChiaCertificatesReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	if !cr.Status.Ready {
-		r.Recorder.Event(&cr, corev1.EventTypeNormal, "Created",
-			fmt.Sprintf("Successfully created Certificates Secret in %s/%s", cr.Namespace, cr.Name))
+		r.Recorder.Eventf(&cr, nil, corev1.EventTypeNormal, "Created", "Created",
+			"Successfully created Certificates Secret in %s/%s", cr.Namespace, cr.Name)
 
 		cr.Status.Ready = true
 		err = r.Status().Update(ctx, &cr)

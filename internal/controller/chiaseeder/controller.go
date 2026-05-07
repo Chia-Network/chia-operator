@@ -34,7 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -47,7 +47,7 @@ import (
 type ChiaSeederReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Recorder events.EventRecorder
 }
 
 var chiaseeders = make(map[string]bool)
@@ -60,6 +60,7 @@ var chiaseeders = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch;update
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -105,7 +106,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble Peer Service
 	peerSrv := assemblePeerService(seeder, fullNodePort)
 	if err := controllerutil.SetControllerReference(&seeder, &peerSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder peer Service -- Check operator logs.")
+		r.Recorder.Eventf(&seeder, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble seeder peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Peer Service
@@ -117,7 +118,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble All Service
 	allSrv := assembleAllService(seeder, fullNodePort)
 	if err := controllerutil.SetControllerReference(&seeder, &allSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder all-port Service -- Check operator logs.")
+		r.Recorder.Eventf(&seeder, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble seeder all-port Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile All Service
@@ -129,7 +130,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble Daemon Service
 	daemonSrv := assembleDaemonService(seeder)
 	if err := controllerutil.SetControllerReference(&seeder, &daemonSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder daemon Service -- Check operator logs.")
+		r.Recorder.Eventf(&seeder, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble seeder daemon Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Daemon Service
@@ -141,7 +142,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble RPC Service
 	rpcSrv := assembleRPCService(seeder)
 	if err := controllerutil.SetControllerReference(&seeder, &rpcSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder RPC Service -- Check operator logs.")
+		r.Recorder.Eventf(&seeder, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble seeder RPC Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling RPC Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile RPC Service
@@ -153,7 +154,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble Chia-Exporter Service
 	exporterSrv := assembleChiaExporterService(seeder)
 	if err := controllerutil.SetControllerReference(&seeder, &exporterSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder chia-exporter Service -- Check operator logs.")
+		r.Recorder.Eventf(&seeder, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble seeder chia-exporter Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Chia-Exporter Service
@@ -165,7 +166,7 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble Chia-Healthcheck Service
 	healthcheckSrv := assembleChiaHealthcheckService(seeder)
 	if err := controllerutil.SetControllerReference(&seeder, &healthcheckSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder chia-healthcheck Service -- Check operator logs.")
+		r.Recorder.Eventf(&seeder, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble seeder chia-healthcheck Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s encountered error assembling chia-healthcheck Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Chia-Healthcheck Service
@@ -180,14 +181,14 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if kube.ShouldMakeChiaRootVolumeClaim(seeder.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(seeder)
 		if err != nil {
-			r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder PVC -- Check operator logs.")
+			r.Recorder.Eventf(&seeder, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble seeder PVC -- Check operator logs.")
 			return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 		}
 
 		if pvc != nil {
 			res, err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, seeder.Spec.Storage, *pvc)
 			if err != nil {
-				r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder PVC -- Check operator logs.")
+				r.Recorder.Eventf(&seeder, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to create seeder PVC -- Check operator logs.")
 				return res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 			}
 		} else {
@@ -198,22 +199,22 @@ func (r *ChiaSeederReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Assemble Deployment
 	deploy, err := assembleDeployment(seeder, fullNodePort, networkData)
 	if err != nil {
-		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&seeder, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble seeder Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 	if err := controllerutil.SetControllerReference(&seeder, &deploy, r.Scheme); err != nil {
-		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to assemble seeder Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&seeder, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble seeder Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 	// Reconcile Deployment
 	res, err = kube.ReconcileDeployment(ctx, r.Client, deploy)
 	if err != nil {
-		r.Recorder.Event(&seeder, corev1.EventTypeWarning, "Failed", "Failed to create seeder Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&seeder, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to create seeder Deployment -- Check operator logs.")
 		return res, fmt.Errorf("ChiaSeederReconciler ChiaSeeder=%s %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
-	r.Recorder.Event(&seeder, corev1.EventTypeNormal, "Created", "Successfully created ChiaSeeder resources.")
+	r.Recorder.Eventf(&seeder, nil, corev1.EventTypeNormal, "Created", "Created", "Successfully created ChiaSeeder resources.")
 	seeder.Status.Ready = true
 	err = r.Status().Update(ctx, &seeder)
 	if err != nil {
