@@ -86,70 +86,70 @@ var _ = BeforeSuite(func() {
 	err = (&chiaca.ChiaCAReconciler{
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor("chiaca-controller"),
+		Recorder: k8sManager.GetEventRecorder("chiaca-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&chiacrawler.ChiaCrawlerReconciler{
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor("chiacrawler-controller"),
+		Recorder: k8sManager.GetEventRecorder("chiacrawler-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&chiafarmer.ChiaFarmerReconciler{
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor("chiafarmer-controller"),
+		Recorder: k8sManager.GetEventRecorder("chiafarmer-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&chiaharvester.ChiaHarvesterReconciler{
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor("chiaharvester-controller"),
+		Recorder: k8sManager.GetEventRecorder("chiaharvester-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&chiaintroducer.ChiaIntroducerReconciler{
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor("chiaintroducer-controller"),
+		Recorder: k8sManager.GetEventRecorder("chiaintroducer-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&chianode.ChiaNodeReconciler{
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor("chianode-controller"),
+		Recorder: k8sManager.GetEventRecorder("chianode-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&chianetwork.ChiaNetworkReconciler{
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor("chianetwork-controller"),
+		Recorder: k8sManager.GetEventRecorder("chianetwork-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&chiaseeder.ChiaSeederReconciler{
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor("chiaseeder-controller"),
+		Recorder: k8sManager.GetEventRecorder("chiaseeder-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&chiatimelord.ChiaTimelordReconciler{
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor("chiatimelord-controller"),
+		Recorder: k8sManager.GetEventRecorder("chiatimelord-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&chiawallet.ChiaWalletReconciler{
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor("chiawallet-controller"),
+		Recorder: k8sManager.GetEventRecorder("chiawallet-controller"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 

@@ -44,7 +44,7 @@ func serverSideApply(ctx context.Context, c client.Client, desired runtime.Objec
 	u.SetAPIVersion(apiVersion)
 	u.SetManagedFields(nil)
 
-	err = c.Patch(ctx, u, client.Apply, client.ForceOwnership, client.FieldOwner("chia-operator"))
+	err = c.Apply(ctx, client.ApplyConfigurationFromUnstructured(u), client.ForceOwnership, client.FieldOwner("chia-operator"))
 	if err != nil {
 		klog.V(1).Info("object that failed to apply", "applyError", err, "object", objMap)
 		return fmt.Errorf("error applying object: %w", err)

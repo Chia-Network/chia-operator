@@ -18,7 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -31,7 +31,7 @@ import (
 type ChiaIntroducerReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Recorder events.EventRecorder
 }
 
 var chiaintroducers = make(map[string]bool)
@@ -44,6 +44,7 @@ var chiaintroducers = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch;update
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -89,7 +90,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	// Assemble Peer Service
 	peerSrv := assemblePeerService(introducer, fullNodePort)
 	if err := controllerutil.SetControllerReference(&introducer, &peerSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer peer Service -- Check operator logs.")
+		r.Recorder.Eventf(&introducer, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble introducer peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Peer Service
@@ -101,7 +102,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	// Assemble All Service
 	allSrv := assembleAllService(introducer, fullNodePort)
 	if err := controllerutil.SetControllerReference(&introducer, &allSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer all-port Service -- Check operator logs.")
+		r.Recorder.Eventf(&introducer, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble introducer all-port Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile All Service
@@ -113,7 +114,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	// Assemble Daemon Service
 	daemonSrv := assembleDaemonService(introducer)
 	if err := controllerutil.SetControllerReference(&introducer, &daemonSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer daemon Service -- Check operator logs.")
+		r.Recorder.Eventf(&introducer, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble introducer daemon Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Daemon Service
@@ -125,7 +126,7 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	// Assemble Chia-Exporter Service
 	exporterSrv := assembleChiaExporterService(introducer)
 	if err := controllerutil.SetControllerReference(&introducer, &exporterSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer chia-exporter Service -- Check operator logs.")
+		r.Recorder.Eventf(&introducer, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble introducer chia-exporter Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Chia-Exporter Service
@@ -138,14 +139,14 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	if kube.ShouldMakeChiaRootVolumeClaim(introducer.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(introducer)
 		if err != nil {
-			r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer PVC -- Check operator logs.")
+			r.Recorder.Eventf(&introducer, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble introducer PVC -- Check operator logs.")
 			return reconcile.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 		}
 
 		if pvc != nil {
 			res, err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, introducer.Spec.Storage, *pvc)
 			if err != nil {
-				r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer PVC -- Check operator logs.")
+				r.Recorder.Eventf(&introducer, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to create introducer PVC -- Check operator logs.")
 				return res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 			}
 		} else {
@@ -156,22 +157,22 @@ func (r *ChiaIntroducerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	// Assemble Deployment
 	deploy, err := assembleDeployment(introducer, fullNodePort, networkData)
 	if err != nil {
-		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&introducer, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble introducer Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 	}
 	if err := controllerutil.SetControllerReference(&introducer, &deploy, r.Scheme); err != nil {
-		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to assemble introducer Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&introducer, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble introducer Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 	}
 	// Reconcile Deployment
 	res, err = kube.ReconcileDeployment(ctx, r.Client, deploy)
 	if err != nil {
-		r.Recorder.Event(&introducer, corev1.EventTypeWarning, "Failed", "Failed to create introducer Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&introducer, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to create introducer Deployment -- Check operator logs.")
 		return res, fmt.Errorf("ChiaIntroducerReconciler ChiaIntroducer=%s %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
-	r.Recorder.Event(&introducer, corev1.EventTypeNormal, "Created", "Successfully created ChiaIntroducer resources.")
+	r.Recorder.Eventf(&introducer, nil, corev1.EventTypeNormal, "Created", "Created", "Successfully created ChiaIntroducer resources.")
 	introducer.Status.Ready = true
 	err = r.Status().Update(ctx, &introducer)
 	if err != nil {

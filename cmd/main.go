@@ -89,7 +89,7 @@ func main() {
 	if err = (&chianode.ChiaNodeReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chianode-controller"),
+		Recorder: mgr.GetEventRecorder("chianode-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaNode")
 		os.Exit(1)
@@ -97,7 +97,7 @@ func main() {
 	if err = (&chiafarmer.ChiaFarmerReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chiafarmer-controller"),
+		Recorder: mgr.GetEventRecorder("chiafarmer-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaFarmer")
 		os.Exit(1)
@@ -105,7 +105,7 @@ func main() {
 	if err = (&chiaharvester.ChiaHarvesterReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chiaharvester-controller"),
+		Recorder: mgr.GetEventRecorder("chiaharvester-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaHarvester")
 		os.Exit(1)
@@ -113,7 +113,7 @@ func main() {
 	if err = (&chiaca.ChiaCAReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chiaca-controller"),
+		Recorder: mgr.GetEventRecorder("chiaca-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaCA")
 		os.Exit(1)
@@ -121,7 +121,7 @@ func main() {
 	if err = (&chiawallet.ChiaWalletReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chiawallet-controller"),
+		Recorder: mgr.GetEventRecorder("chiawallet-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaWallet")
 		os.Exit(1)
@@ -129,7 +129,7 @@ func main() {
 	if err = (&chiatimelord.ChiaTimelordReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chiatimelord-controller"),
+		Recorder: mgr.GetEventRecorder("chiatimelord-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaTimelord")
 		os.Exit(1)
@@ -137,7 +137,7 @@ func main() {
 	if err = (&chiaseeder.ChiaSeederReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chiaseeder-controller"),
+		Recorder: mgr.GetEventRecorder("chiaseeder-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaSeeder")
 		os.Exit(1)
@@ -145,7 +145,7 @@ func main() {
 	if err = (&chiaintroducer.ChiaIntroducerReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chiaintroducer-controller"),
+		Recorder: mgr.GetEventRecorder("chiaintroducer-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaIntroducer")
 		os.Exit(1)
@@ -153,7 +153,7 @@ func main() {
 	if err = (&chiacrawler.ChiaCrawlerReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chiacrawler-controller"),
+		Recorder: mgr.GetEventRecorder("chiacrawler-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaCrawler")
 		os.Exit(1)
@@ -161,7 +161,7 @@ func main() {
 	if err = (&chianetwork.ChiaNetworkReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chianetwork-controller"),
+		Recorder: mgr.GetEventRecorder("chianetwork-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaNetwork")
 		os.Exit(1)
@@ -169,7 +169,7 @@ func main() {
 	if err = (&chiadatalayer.ChiaDataLayerReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chiadatalayer-controller"),
+		Recorder: mgr.GetEventRecorder("chiadatalayer-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaDataLayer")
 		os.Exit(1)
@@ -177,7 +177,7 @@ func main() {
 	if err = (&chiacertificates.ChiaCertificatesReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("chiacertificates-controller"),
+		Recorder: mgr.GetEventRecorder("chiacertificates-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ChiaCertificates")
 		os.Exit(1)

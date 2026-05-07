@@ -18,7 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -31,7 +31,7 @@ import (
 type ChiaHarvesterReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Recorder events.EventRecorder
 }
 
 var chiaharvesters = make(map[string]bool)
@@ -44,6 +44,7 @@ var chiaharvesters = make(map[string]bool)
 //+kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch;update
 
 // Reconcile is invoked on any event to a controlled Kubernetes resource
 func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -83,7 +84,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	// Assemble Peer Service
 	peerSrv := assemblePeerService(harvester)
 	if err := controllerutil.SetControllerReference(&harvester, &peerSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester peer Service -- Check operator logs.")
+		r.Recorder.Eventf(&harvester, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble harvester peer Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error assembling peer Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Peer Service
@@ -95,7 +96,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	// Assemble All Service
 	allSrv := assembleAllService(harvester)
 	if err := controllerutil.SetControllerReference(&harvester, &allSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester all-port Service -- Check operator logs.")
+		r.Recorder.Eventf(&harvester, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble harvester all-port Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error assembling all-port Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile All Service
@@ -107,7 +108,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	// Assemble Daemon Service
 	daemonSrv := assembleDaemonService(harvester)
 	if err := controllerutil.SetControllerReference(&harvester, &daemonSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester daemon Service -- Check operator logs.")
+		r.Recorder.Eventf(&harvester, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble harvester daemon Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error assembling daemon Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Daemon Service
@@ -119,7 +120,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	// Assemble RPC Service
 	rpcSrv := assembleRPCService(harvester)
 	if err := controllerutil.SetControllerReference(&harvester, &rpcSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester RPC Service -- Check operator logs.")
+		r.Recorder.Eventf(&harvester, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble harvester RPC Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error assembling RPC Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile RPC Service
@@ -131,7 +132,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	// Assemble Chia-Exporter Service
 	exporterSrv := assembleChiaExporterService(harvester)
 	if err := controllerutil.SetControllerReference(&harvester, &exporterSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester chia-exporter Service -- Check operator logs.")
+		r.Recorder.Eventf(&harvester, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble harvester chia-exporter Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error assembling chia-exporter Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Chia-Exporter Service
@@ -143,7 +144,7 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	// Assemble Chia-Healthcheck Service
 	healthcheckSrv := assembleChiaHealthcheckService(harvester)
 	if err := controllerutil.SetControllerReference(&harvester, &healthcheckSrv, r.Scheme); err != nil {
-		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester chia-healthcheck Service -- Check operator logs.")
+		r.Recorder.Eventf(&harvester, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble harvester chia-healthcheck Service -- Check operator logs.")
 		return ctrl.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s encountered error assembling chia-healthcheck Service: %v", req.NamespacedName, err)
 	}
 	// Reconcile Chia-Healthcheck Service
@@ -158,14 +159,14 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	if kube.ShouldMakeChiaRootVolumeClaim(harvester.Spec.Storage) {
 		pvc, err := assembleVolumeClaim(harvester)
 		if err != nil {
-			r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester PVC -- Check operator logs.")
+			r.Recorder.Eventf(&harvester, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble harvester PVC -- Check operator logs.")
 			return reconcile.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)
 		}
 
 		if pvc != nil {
 			res, err = kube.ReconcilePersistentVolumeClaim(ctx, r.Client, harvester.Spec.Storage, *pvc)
 			if err != nil {
-				r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester PVC -- Check operator logs.")
+				r.Recorder.Eventf(&harvester, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to create harvester PVC -- Check operator logs.")
 				return res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)
 			}
 		} else {
@@ -176,22 +177,22 @@ func (r *ChiaHarvesterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	// Assemble Deployment
 	deploy, err := assembleDeployment(harvester, networkData)
 	if err != nil {
-		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&harvester, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble harvester Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)
 	}
 	if err := controllerutil.SetControllerReference(&harvester, &deploy, r.Scheme); err != nil {
-		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to assemble harvester Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&harvester, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to assemble harvester Deployment -- Check operator logs.")
 		return reconcile.Result{}, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)
 	}
 	// Reconcile Deployment
 	res, err = kube.ReconcileDeployment(ctx, r.Client, deploy)
 	if err != nil {
-		r.Recorder.Event(&harvester, corev1.EventTypeWarning, "Failed", "Failed to create harvester Deployment -- Check operator logs.")
+		r.Recorder.Eventf(&harvester, nil, corev1.EventTypeWarning, "Failed", "Failed", "Failed to create harvester Deployment -- Check operator logs.")
 		return res, fmt.Errorf("ChiaHarvesterReconciler ChiaHarvester=%s %v", req.NamespacedName, err)
 	}
 
 	// Update CR status
-	r.Recorder.Event(&harvester, corev1.EventTypeNormal, "Created", "Successfully created ChiaHarvester resources.")
+	r.Recorder.Eventf(&harvester, nil, corev1.EventTypeNormal, "Created", "Created", "Successfully created ChiaHarvester resources.")
 	harvester.Status.Ready = true
 	err = r.Status().Update(ctx, &harvester)
 	if err != nil {
