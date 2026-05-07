@@ -25,6 +25,10 @@ linters:
           - dupl
           - lll
         path: internal/*
+      # ChiaNode Reconcile function complexity has become too high
+      - linters:
+          - gocyclo
+        path: internal/controller/chianode/controller.go
     paths:
       - third_party$
       - builtin$

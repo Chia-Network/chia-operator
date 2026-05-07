@@ -7,12 +7,14 @@ ENVTEST_K8S_VERSION = 1.30.0
 CHIA_IMAGE_TAG      ?= latest
 EXPORTER_IMAGE_TAG  ?= latest
 HEALTHCHECK_IMAGE_TAG ?= latest
+DBPULL_IMAGE_TAG    ?= latest
 CHIA_OPERATOR_VERSION ?= latest
 
 LD_FLAGS := \
   -X 'github.com/chia-network/chia-operator/internal/controller/common/consts.DefaultChiaImageTag=$(CHIA_IMAGE_TAG)' \
   -X 'github.com/chia-network/chia-operator/internal/controller/common/consts.DefaultChiaExporterImageTag=$(EXPORTER_IMAGE_TAG)' \
-  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts.DefaultChiaHealthcheckImageTag=$(HEALTHCHECK_IMAGE_TAG)'
+  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts.DefaultChiaHealthcheckImageTag=$(HEALTHCHECK_IMAGE_TAG)' \
+  -X 'github.com/chia-network/chia-operator/internal/controller/common/consts.DefaultChiaDBPullImageTag=$(DBPULL_IMAGE_TAG)'
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))

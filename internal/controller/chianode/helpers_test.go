@@ -280,3 +280,110 @@ func TestGetChiaVolumesAndTemplates(t *testing.T) {
 func stringPtr(s string) *string {
 	return &s
 }
+
+func TestAssembleChiaDBPullContainer(t *testing.T) {
+	network := "testnet11"
+	minHeight := int64(123456)
+	credsSecret := "aws-creds"
+
+	node := k8schianetv1.ChiaNode{
+		Spec: k8schianetv1.ChiaNodeSpec{
+			CommonSpec: k8schianetv1.CommonSpec{
+				ImagePullPolicy: corev1.PullIfNotPresent,
+			},
+			ChiaDBPullConfig: k8schianetv1.SpecChiaDBPull{
+				S3Prefix:             "s3://test/",
+				Network:              &network,
+				MinHeight:            &minHeight,
+				AWSCredentialsSecret: &credsSecret,
+			},
+		},
+	}
+
+	cont := assembleChiaDBPullContainer(node, nil)
+
+	assert.Equal(t, "chia-db-pull", cont.Name)
+	assert.Equal(t, corev1.PullIfNotPresent, cont.ImagePullPolicy)
+	assert.NotEmpty(t, cont.Image, "Image should default when not set")
+
+	envByName := map[string]string{}
+	for _, e := range cont.Env {
+		envByName[e.Name] = e.Value
+	}
+	assert.Equal(t, "/chia-data", envByName["CHIA_ROOT"])
+	assert.Equal(t, "s3://test/", envByName["S3_PREFIX"])
+	assert.Equal(t, "testnet11", envByName["NETWORK"])
+	assert.Equal(t, "123456", envByName["MIN_HEIGHT"])
+
+	assert.Len(t, cont.EnvFrom, 1)
+	assert.Equal(t, credsSecret, cont.EnvFrom[0].SecretRef.Name)
+
+	assert.Len(t, cont.VolumeMounts, 1)
+	assert.Equal(t, "chiaroot", cont.VolumeMounts[0].Name)
+	assert.Equal(t, "/chia-data", cont.VolumeMounts[0].MountPath)
+}
+
+func TestAssembleChiaDBPullContainer_DerivesNetwork(t *testing.T) {
+	chiaNet := "testnet11"
+	configmapNet := "testnet-from-cm"
+
+	envByName := func(c corev1.Container) map[string]string {
+		m := map[string]string{}
+		for _, e := range c.Env {
+			m[e.Name] = e.Value
+		}
+		return m
+	}
+
+	t.Run("from CommonSpecChia.Network when chiaDBPull.network unset", func(t *testing.T) {
+		node := k8schianetv1.ChiaNode{
+			Spec: k8schianetv1.ChiaNodeSpec{
+				ChiaConfig: k8schianetv1.ChiaNodeSpecChia{
+					CommonSpecChia: k8schianetv1.CommonSpecChia{Network: &chiaNet},
+				},
+				ChiaDBPullConfig: k8schianetv1.SpecChiaDBPull{S3Prefix: "s3://test/"},
+			},
+		}
+		assert.Equal(t, "testnet11", envByName(assembleChiaDBPullContainer(node, nil))["NETWORK"])
+	})
+
+	t.Run("ChiaNetwork ConfigMap data overrides inline chia.network", func(t *testing.T) {
+		networkData := map[string]string{"network": configmapNet}
+		node := k8schianetv1.ChiaNode{
+			Spec: k8schianetv1.ChiaNodeSpec{
+				ChiaConfig: k8schianetv1.ChiaNodeSpecChia{
+					CommonSpecChia: k8schianetv1.CommonSpecChia{Network: &chiaNet},
+				},
+				ChiaDBPullConfig: k8schianetv1.SpecChiaDBPull{S3Prefix: "s3://test/"},
+			},
+		}
+		assert.Equal(t, configmapNet, envByName(assembleChiaDBPullContainer(node, &networkData))["NETWORK"])
+	})
+
+	t.Run("explicit chiaDBPull.network wins over derivation", func(t *testing.T) {
+		networkData := map[string]string{"network": configmapNet}
+		explicit := "explicit-net"
+		node := k8schianetv1.ChiaNode{
+			Spec: k8schianetv1.ChiaNodeSpec{
+				ChiaConfig: k8schianetv1.ChiaNodeSpecChia{
+					CommonSpecChia: k8schianetv1.CommonSpecChia{Network: &chiaNet},
+				},
+				ChiaDBPullConfig: k8schianetv1.SpecChiaDBPull{
+					S3Prefix: "s3://test/",
+					Network:  &explicit,
+				},
+			},
+		}
+		assert.Equal(t, "explicit-net", envByName(assembleChiaDBPullContainer(node, &networkData))["NETWORK"])
+	})
+
+	t.Run("no NETWORK env when nothing is resolvable", func(t *testing.T) {
+		node := k8schianetv1.ChiaNode{
+			Spec: k8schianetv1.ChiaNodeSpec{
+				ChiaDBPullConfig: k8schianetv1.SpecChiaDBPull{S3Prefix: "s3://test/"},
+			},
+		}
+		_, hasNetwork := envByName(assembleChiaDBPullContainer(node, nil))["NETWORK"]
+		assert.False(t, hasNetwork, "NETWORK env should be omitted when no network is resolvable")
+	})
+}

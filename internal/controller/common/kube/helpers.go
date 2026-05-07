@@ -371,3 +371,29 @@ func ChiaExporterEnabled(in k8schianetv1.SpecChiaExporter) bool {
 	}
 	return *in.Enabled
 }
+
+// ChiaDBPullEnabled returns true if the first-class chia-db-pull init container was enabled.
+// Defaults to disabled, since this init container only makes sense when an S3 prefix is configured.
+func ChiaDBPullEnabled(in k8schianetv1.SpecChiaDBPull) bool {
+	if in.Enabled == nil {
+		return false
+	}
+	return *in.Enabled
+}
+
+// ResolveChiaNetwork returns the chia network name implied by a CommonSpecChia and optional
+// ChiaNetwork ConfigMap data, in the same priority order the chia container's "network" env var
+// is resolved from: a "network" key in the ChiaNetwork ConfigMap overrides the inline
+// CommonSpecChia.Network field. Returns "" when neither is set (which the caller should treat
+// as "let the consumer use its own default", typically mainnet).
+func ResolveChiaNetwork(commonSpecChia k8schianetv1.CommonSpecChia, networkData *map[string]string) string {
+	if networkData != nil {
+		if v, ok := (*networkData)["network"]; ok && v != "" {
+			return v
+		}
+	}
+	if commonSpecChia.Network != nil && *commonSpecChia.Network != "" {
+		return *commonSpecChia.Network
+	}
+	return ""
+}

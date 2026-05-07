@@ -87,6 +87,51 @@ spec:
 
 This specifies two trusted CIDRs, where if the IP address of a full_node peer is discovered to be within one of these two CIDR ranges, chia will consider that a trusted peer.
 
+## chia-db-pull init container
+
+ChiaNode supports an optional first-class `chia-db-pull` init container that downloads a chia blockchain database from an S3-compatible bucket into `CHIA_ROOT` before the chia container starts. This can dramatically reduce sync time for fresh nodes.
+
+A minimal example:
+
+```yaml
+spec:
+  chia:
+    network: "testnet11"   # NETWORK is auto-derived from this
+  chiaDBPull:
+    enabled: true
+    s3Prefix: "s3://chia-blockchain-sqlite-backups/testnet11/"
+```
+
+The S3 bucket + path specified by `chiaDBPull.s3Prefix` must contain a `blockchain_v2_${NETWORK}.sqlite` file. If one is not found within the `s3Prefix` the init container will fail and the node won't start. The `height-to-hash` and `sub-epoch-summaries` cache files may also optionally be picked up by this init container, the init container won't fail if they're missing, however.
+
+The network variable is only required by chia-db-pull if the target network is a testnet. If the target network is a testnet, the operator derives the network variable the same way the chia container's network variable is derived. In order of precedence the network variable is either pulled from `spec.chiaDBPull.network`, a ChiaNetwork specified in `spec.chia.chiaNetwork`, or `spec.chia.network`. If none are set, no network variable is emitted and chia-db-pull falls back to its own default (mainnet). When using `spec.chia.testnet: true` you must configure one of the methods for setting the network variable so chia-db-pull knows which testnet to pull.
+
+A more full example using a Secret for AWS credentials and a min-height threshold:
+
+```yaml
+spec:
+  chia:
+    network: "testnet11"
+  chiaDBPull:
+    enabled: true
+    s3Prefix: "s3://chia-blockchain-sqlite-backups/testnet11/"
+    network: "testnet11"      # optional override; derived from spec.chia when omitted
+    minHeight: 123456
+    awsCredentialsSecret: aws-creds
+```
+
+The Secret referenced by `awsCredentialsSecret` is mounted via `envFrom`, so its keys (e.g. `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, optionally `AWS_SESSION_TOKEN`) become environment variables on the init container without needing to be in the CR in plaintext.
+
+If you are running on EKS with IRSA (or another mechanism where the pod's ServiceAccount provides AWS credentials), simply omit `awsCredentialsSecret` and set the appropriate `serviceAccountName` on the ChiaNode.
+
+When `chiaDBPull.enabled` is `true`, `chiaDBPull.s3Prefix` is required; the controller will refuse to reconcile and emit an event otherwise.
+
+See the [chia-db-pull README](https://github.com/Chia-Network/chia-db-pull) for more details on each of these settings.
+
+### Note on ordering with `spec.initContainers`
+
+The first-class `chia-db-pull` container is appended to the StatefulSet's init container list **after** any containers defined in `spec.initContainers`. This means manually-defined init containers run first (good for things like clearing peer caches), and `chia-db-pull` is the last init container before the main chia container starts.
+
 ## More Info
 
 This page contains documentation specific to this resource. Please see the rest of the documentation for information on more available configurations.

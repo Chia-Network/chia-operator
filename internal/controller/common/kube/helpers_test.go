@@ -409,6 +409,50 @@ func TestChiaExporterEnabled(t *testing.T) {
 	require.Equal(t, false, actual, "expected exporter disabled, set to false")
 }
 
+func TestResolveChiaNetwork(t *testing.T) {
+	// Empty when nothing is set
+	got := ResolveChiaNetwork(k8schianetv1.CommonSpecChia{}, nil)
+	require.Equal(t, "", got)
+
+	// Falls back to commonSpecChia.Network
+	net := "testnet11"
+	got = ResolveChiaNetwork(k8schianetv1.CommonSpecChia{Network: &net}, nil)
+	require.Equal(t, "testnet11", got)
+
+	// ChiaNetwork ConfigMap "network" key takes precedence over inline Network
+	configmapNetwork := "testnetX"
+	override := map[string]string{"network": configmapNetwork}
+	got = ResolveChiaNetwork(k8schianetv1.CommonSpecChia{Network: &net}, &override)
+	require.Equal(t, configmapNetwork, got)
+
+	// Empty value in the ConfigMap is ignored (falls through to inline)
+	emptyOverride := map[string]string{"network": ""}
+	got = ResolveChiaNetwork(k8schianetv1.CommonSpecChia{Network: &net}, &emptyOverride)
+	require.Equal(t, "testnet11", got)
+}
+
+func TestChiaDBPullEnabled(t *testing.T) {
+	// False case - default false (opposite of healthcheck/exporter)
+	actual := ChiaDBPullEnabled(k8schianetv1.SpecChiaDBPull{
+		Enabled: nil,
+	})
+	require.Equal(t, false, actual, "expected chia-db-pull disabled by default")
+
+	// True case - set to true
+	enabled := true
+	actual = ChiaDBPullEnabled(k8schianetv1.SpecChiaDBPull{
+		Enabled: &enabled,
+	})
+	require.Equal(t, true, actual, "expected chia-db-pull enabled, set to true")
+
+	// False case - set to false
+	disabled := false
+	actual = ChiaDBPullEnabled(k8schianetv1.SpecChiaDBPull{
+		Enabled: &disabled,
+	})
+	require.Equal(t, false, actual, "expected chia-db-pull disabled, set to false")
+}
+
 func TestGetCommonChiaEnv(t *testing.T) {
 	testCases := []struct {
 		name        string
