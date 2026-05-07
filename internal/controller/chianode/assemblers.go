@@ -328,6 +328,11 @@ func assembleStatefulset(ctx context.Context, node k8schianetv1.ChiaNode, fullNo
 		stateful.Spec.Template.Spec.Volumes = append(stateful.Spec.Template.Spec.Volumes, init.Volumes...)
 	}
 
+	// Append the first-class chia-db-pull init container last so any user-defined init containers run first.
+	if kube.ChiaDBPullEnabled(node.Spec.ChiaDBPullConfig) {
+		stateful.Spec.Template.Spec.InitContainers = append(stateful.Spec.Template.Spec.InitContainers, assembleChiaDBPullContainer(node))
+	}
+
 	// Get Sidecar Containers
 	stateful.Spec.Template.Spec.Containers = append(stateful.Spec.Template.Spec.Containers, kube.GetExtraContainers(node.Spec.Sidecars, chiaContainer)...)
 	// Add Sidecar Container Volumes
@@ -464,4 +469,26 @@ func assembleChiaHealthcheckContainer(node k8schianetv1.ChiaNode) corev1.Contain
 	}
 
 	return kube.AssembleChiaHealthcheckContainer(input)
+}
+
+func assembleChiaDBPullContainer(node k8schianetv1.ChiaNode) corev1.Container {
+	input := kube.AssembleChiaDBPullContainerInputs{
+		Image:                node.Spec.ChiaDBPullConfig.Image,
+		ImagePullPolicy:      node.Spec.ImagePullPolicy,
+		S3Prefix:             node.Spec.ChiaDBPullConfig.S3Prefix,
+		Network:              node.Spec.ChiaDBPullConfig.Network,
+		MinHeight:            node.Spec.ChiaDBPullConfig.MinHeight,
+		AWSCredentialsSecret: node.Spec.ChiaDBPullConfig.AWSCredentialsSecret,
+		AdditionalEnv:        node.Spec.ChiaDBPullConfig.AdditionalEnv,
+	}
+
+	if node.Spec.ChiaDBPullConfig.SecurityContext != nil {
+		input.SecurityContext = node.Spec.ChiaDBPullConfig.SecurityContext
+	}
+
+	if node.Spec.ChiaDBPullConfig.Resources != nil {
+		input.ResourceRequirements = *node.Spec.ChiaDBPullConfig.Resources
+	}
+
+	return kube.AssembleChiaDBPullContainer(input)
 }

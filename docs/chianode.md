@@ -87,6 +87,42 @@ spec:
 
 This specifies two trusted CIDRs, where if the IP address of a full_node peer is discovered to be within one of these two CIDR ranges, chia will consider that a trusted peer.
 
+## chia-db-pull init container
+
+ChiaNode supports an optional first-class `chia-db-pull` init container that downloads a chia blockchain database from an S3-compatible bucket into `CHIA_ROOT` before the chia container starts. This can dramatically reduce sync time for fresh nodes.
+
+A minimal example:
+
+```yaml
+spec:
+  chiaDBPull:
+    enabled: true
+    s3Prefix: "s3://chia-blockchain-sqlite-backups/testnet11/"
+    network: "testnet11"
+```
+
+A more full example using a Secret for AWS credentials and a min-height threshold:
+
+```yaml
+spec:
+  chiaDBPull:
+    enabled: true
+    s3Prefix: "s3://chia-blockchain-sqlite-backups/testnet11/"
+    network: "testnet11"
+    minHeight: 123456
+    awsCredentialsSecret: aws-creds
+```
+
+The Secret referenced by `awsCredentialsSecret` is mounted via `envFrom`, so its keys (e.g. `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, optionally `AWS_SESSION_TOKEN`) become environment variables on the init container without needing to be in the CR in plaintext.
+
+If you are running on EKS with IRSA (or another mechanism where the pod's ServiceAccount provides AWS credentials), simply omit `awsCredentialsSecret` and set the appropriate `serviceAccountName` on the ChiaNode.
+
+When `chiaDBPull.enabled` is `true`, `chiaDBPull.s3Prefix` is required; the controller will refuse to reconcile and emit an event otherwise. The S3 bucket + path specified by `chiaDBPull.s3Prefix` must contain the following files: `blockchain_v2_${NETWORK}.sqlite`, `height-to-hash`, and `sub-epoch-summaries`. If any of those files are missing within the `s3Prefix` the init container will fail and the node won't start.
+
+### Note on ordering with `spec.initContainers`
+
+The first-class `chia-db-pull` container is appended to the StatefulSet's init container list **after** any containers defined in `spec.initContainers`. This means manually-defined init containers run first (good for things like clearing peer caches), and `chia-db-pull` is the last init container before the main chia container starts.
+
 ## More Info
 
 This page contains documentation specific to this resource. Please see the rest of the documentation for information on more available configurations.

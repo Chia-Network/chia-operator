@@ -34,19 +34,22 @@ jobs:
           CHIA_IMAGE_TAG=$(curl -fsSL https://latest.cmm.io/chia)
           EXPORTER_IMAGE_TAG=$(curl -fsSL https://latest.cmm.io/chia-exporter)
           HEALTHCHECK_IMAGE_TAG=$(curl -fsSL https://latest.cmm.io/chia-healthcheck)
+          DBPULL_IMAGE_TAG=$(curl -fsSL https://latest.cmm.io/chia-db-pull)
 
           # Verify all variables are set
-          if [ -z "$CHIA_IMAGE_TAG" ] || [ -z "$EXPORTER_IMAGE_TAG" ] || [ -z "$HEALTHCHECK_IMAGE_TAG" ]; then
+          if [ -z "$CHIA_IMAGE_TAG" ] || [ -z "$EXPORTER_IMAGE_TAG" ] || [ -z "$HEALTHCHECK_IMAGE_TAG" ] || [ -z "$DBPULL_IMAGE_TAG" ]; then
             echo "Error: Failed to fetch one or more version tags"
             echo "CHIA_IMAGE_TAG=$CHIA_IMAGE_TAG"
             echo "EXPORTER_IMAGE_TAG=$EXPORTER_IMAGE_TAG"
             echo "HEALTHCHECK_IMAGE_TAG=$HEALTHCHECK_IMAGE_TAG"
+            echo "DBPULL_IMAGE_TAG=$DBPULL_IMAGE_TAG"
             exit 1
           fi
 
           echo "CHIA_IMAGE_TAG=$CHIA_IMAGE_TAG" >> $GITHUB_ENV
           echo "EXPORTER_IMAGE_TAG=$EXPORTER_IMAGE_TAG" >> $GITHUB_ENV
           echo "HEALTHCHECK_IMAGE_TAG=$HEALTHCHECK_IMAGE_TAG" >> $GITHUB_ENV
+          echo "DBPULL_IMAGE_TAG=$DBPULL_IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Build Container
         uses: Chia-Network/actions/docker/build@main
@@ -56,3 +59,4 @@ jobs:
             "CHIA_IMAGE_TAG=${{ env.CHIA_IMAGE_TAG }}"
             "EXPORTER_IMAGE_TAG=${{ env.EXPORTER_IMAGE_TAG }}"
             "HEALTHCHECK_IMAGE_TAG=${{ env.HEALTHCHECK_IMAGE_TAG }}"
+            "DBPULL_IMAGE_TAG=${{ env.DBPULL_IMAGE_TAG }}"

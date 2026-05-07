@@ -371,3 +371,12 @@ func ChiaExporterEnabled(in k8schianetv1.SpecChiaExporter) bool {
 	}
 	return *in.Enabled
 }
+
+// ChiaDBPullEnabled returns true if the first-class chia-db-pull init container was enabled.
+// Defaults to disabled, since this init container only makes sense when an S3 prefix is configured.
+func ChiaDBPullEnabled(in k8schianetv1.SpecChiaDBPull) bool {
+	if in.Enabled == nil {
+		return false
+	}
+	return *in.Enabled
+}
