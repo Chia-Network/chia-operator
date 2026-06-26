@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -27,8 +27,9 @@ jobs:
           make install
 
       - name: Run the operator in the background
-        run: |
-          make run &
+        id: operator
+        background: true
+        run: make run
 
       - name: Install chia components
         run: |
@@ -204,3 +205,6 @@ jobs:
             exit 1
           fi
           echo "Expected 1 endpoint, found $service_endpoints_number"
+
+      - name: Stop operator
+        cancel: operator
