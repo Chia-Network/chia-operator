@@ -127,14 +127,18 @@ type NetworkConstants struct {
 	// +optional
 	QualityProofScanFilter *uint8 `json:"QUALITY_PROOF_SCAN_FILTER,omitempty"`
 
+	// PlotFilterV2RelativeHeight is the v2 plot filter reduction schedule: heights
+	// relative to HARD_FORK2_HEIGHT, in reverse chronological order (the first
+	// entry is the last to activate). Must contain exactly 9 entries when set.
 	// +optional
-	PlotFilterV2FirstAdjustmentHeight *uint32 `json:"PLOT_FILTER_V2_FIRST_ADJUSTMENT_HEIGHT,omitempty"`
+	// +listType=atomic
+	PlotFilterV2RelativeHeight []uint32 `json:"PLOT_FILTER_V2_RELATIVE_HEIGHT,omitempty"`
 
 	// +optional
-	PlotFilterV2SecondAdjustmentHeight *uint32 `json:"PLOT_FILTER_V2_SECOND_ADJUSTMENT_HEIGHT,omitempty"`
+	FilterWindowSize *uint8 `json:"FILTER_WINDOW_SIZE,omitempty"`
 
 	// +optional
-	PlotFilterV2ThirdAdjustmentHeight *uint32 `json:"PLOT_FILTER_V2_THIRD_ADJUSTMENT_HEIGHT,omitempty"`
+	MaxEffectivePlotFilterBits *uint8 `json:"MAX_EFFECTIVE_PLOT_FILTER_BITS,omitempty"`
 }
 
 // ChiaNetworkStatus defines the observed state of ChiaNetwork

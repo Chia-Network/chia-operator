@@ -65,6 +65,8 @@ spec:
                   EPOCH_BLOCKS:
                     format: int32
                     type: integer
+                  FILTER_WINDOW_SIZE:
+                    type: integer
                   GENESIS_CHALLENGE:
                     type: string
                   GENESIS_PRE_FARM_FARMER_PUZZLE_HASH:
@@ -76,6 +78,8 @@ spec:
                     type: integer
                   HARD_FORK2_HEIGHT:
                     format: int32
+                    type: integer
+                  MAX_EFFECTIVE_PLOT_FILTER_BITS:
                     type: integer
                   MAX_PLOT_STRENGTH:
                     type: integer
@@ -102,15 +106,16 @@ spec:
                   PLOT_FILTER_128_HEIGHT:
                     format: int32
                     type: integer
-                  PLOT_FILTER_V2_FIRST_ADJUSTMENT_HEIGHT:
-                    format: int32
-                    type: integer
-                  PLOT_FILTER_V2_SECOND_ADJUSTMENT_HEIGHT:
-                    format: int32
-                    type: integer
-                  PLOT_FILTER_V2_THIRD_ADJUSTMENT_HEIGHT:
-                    format: int32
-                    type: integer
+                  PLOT_FILTER_V2_RELATIVE_HEIGHT:
+                    description: |-
+                      PlotFilterV2RelativeHeight is the v2 plot filter reduction schedule: heights
+                      relative to HARD_FORK2_HEIGHT, in reverse chronological order (the first
+                      entry is the last to activate). Must contain exactly 9 entries when set.
+                    items:
+                      format: int32
+                      type: integer
+                    type: array
+                    x-kubernetes-list-type: atomic
                   PLOT_SIZE_V2:
                     type: integer
                   PLOT_V1_PHASE_OUT_EPOCH_BITS:
