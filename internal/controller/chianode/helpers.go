@@ -97,7 +97,7 @@ func getChiaRootVolume(storage *k8schianetv1.StorageConfig) (*corev1.Volume, *co
 
 // getChiaVolumeMounts retrieves the requisite volume mounts from the Chia config struct
 func getChiaVolumeMounts() []corev1.VolumeMount {
-	var v []corev1.VolumeMount
+	v := make([]corev1.VolumeMount, 0, 2)
 
 	// secret ca volume
 	v = append(v, corev1.VolumeMount{

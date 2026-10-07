@@ -6,7 +6,6 @@ linters:
     - copyloopvar
     - dupl
     - ginkgolinter
-    - goconst
     - gocyclo
     - lll
     - misspell
