@@ -29,9 +29,9 @@ func assemblePeerService(introducer k8schianetv1.ChiaIntroducer, fullNodePort in
 		Ports: []corev1.ServicePort{
 			{
 				Port:       fullNodePort,
-				TargetPort: intstr.FromString(consts.PeersPortName),
-				Protocol:   corev1.ProtocolTCP,
-				Name:       consts.PeersPortName,
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
 			},
 		},
 	}
@@ -69,9 +69,9 @@ func assembleAllService(introducer k8schianetv1.ChiaIntroducer, fullNodePort int
 		Ports: []corev1.ServicePort{
 			{
 				Port:       fullNodePort,
-				TargetPort: intstr.FromString(consts.PeersPortName),
-				Protocol:   corev1.ProtocolTCP,
-				Name:       consts.PeersPortName,
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
 			},
 		},
 	}
@@ -286,12 +286,12 @@ func assembleChiaContainer(introducer k8schianetv1.ChiaIntroducer, fullNodePort 
 			{
 				Name:          "daemon",
 				ContainerPort: consts.DaemonPort,
-				Protocol:      corev1.ProtocolTCP,
+				Protocol:      "TCP",
 			},
 			{
-				Name:          consts.PeersPortName,
+				Name:          "peers",
 				ContainerPort: fullNodePort,
-				Protocol:      corev1.ProtocolTCP,
+				Protocol:      "TCP",
 			},
 		},
 		VolumeMounts: getChiaVolumeMounts(introducer),

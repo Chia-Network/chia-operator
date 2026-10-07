@@ -29,9 +29,9 @@ func assemblePeerService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.HarvesterPort,
-				TargetPort: intstr.FromString(consts.PeersPortName),
-				Protocol:   corev1.ProtocolTCP,
-				Name:       consts.PeersPortName,
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
 			},
 		},
 	}
@@ -74,15 +74,15 @@ func assembleAllService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.HarvesterPort,
-				TargetPort: intstr.FromString(consts.PeersPortName),
-				Protocol:   corev1.ProtocolTCP,
-				Name:       consts.PeersPortName,
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
 			},
 			{
 				Port:       consts.HarvesterRPCPort,
-				TargetPort: intstr.FromString(consts.RPCPortName),
-				Protocol:   corev1.ProtocolTCP,
-				Name:       consts.RPCPortName,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
 			},
 		},
 	}
@@ -154,9 +154,9 @@ func assembleRPCService(harvester k8schianetv1.ChiaHarvester) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.HarvesterRPCPort,
-				TargetPort: intstr.FromString(consts.RPCPortName),
-				Protocol:   corev1.ProtocolTCP,
-				Name:       consts.RPCPortName,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
 			},
 		},
 	}
@@ -374,17 +374,17 @@ func assembleChiaContainer(harvester k8schianetv1.ChiaHarvester, networkData *ma
 			{
 				Name:          "daemon",
 				ContainerPort: consts.DaemonPort,
-				Protocol:      corev1.ProtocolTCP,
+				Protocol:      "TCP",
 			},
 			{
-				Name:          consts.PeersPortName,
+				Name:          "peers",
 				ContainerPort: consts.HarvesterPort,
-				Protocol:      corev1.ProtocolTCP,
+				Protocol:      "TCP",
 			},
 			{
-				Name:          consts.RPCPortName,
+				Name:          "rpc",
 				ContainerPort: consts.HarvesterRPCPort,
-				Protocol:      corev1.ProtocolTCP,
+				Protocol:      "TCP",
 			},
 		},
 		VolumeMounts: getChiaVolumeMounts(harvester),
@@ -404,7 +404,7 @@ func assembleChiaContainer(harvester k8schianetv1.ChiaHarvester, networkData *ma
 		input.LivenessProbe = harvester.Spec.ChiaConfig.LivenessProbe
 	} else if kube.ChiaHealthcheckEnabled(harvester.Spec.ChiaHealthcheckConfig) {
 		input.LivenessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Path: consts.HarvesterPath,
+			Path: "/harvester",
 		})
 	}
 
@@ -412,7 +412,7 @@ func assembleChiaContainer(harvester k8schianetv1.ChiaHarvester, networkData *ma
 		input.ReadinessProbe = harvester.Spec.ChiaConfig.ReadinessProbe
 	} else if kube.ChiaHealthcheckEnabled(harvester.Spec.ChiaHealthcheckConfig) {
 		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Path: consts.HarvesterPath,
+			Path: "/harvester",
 		})
 	}
 
@@ -422,7 +422,7 @@ func assembleChiaContainer(harvester k8schianetv1.ChiaHarvester, networkData *ma
 		failThresh := int32(30)
 		periodSec := int32(10)
 		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Path:             consts.HarvesterPath,
+			Path:             "/harvester",
 			FailureThreshold: &failThresh,
 			PeriodSeconds:    &periodSec,
 		})

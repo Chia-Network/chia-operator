@@ -32,7 +32,7 @@ func getChiaVolumes(harvester k8schianetv1.ChiaHarvester) []corev1.Volume {
 	// CHIA_ROOT volume
 	if kube.ShouldMakeChiaRootVolumeClaim(harvester.Spec.Storage) {
 		v = append(v, corev1.Volume{
-			Name: consts.ChiaRootVolumeName,
+			Name: "chiaroot",
 			VolumeSource: corev1.VolumeSource{
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 					ClaimName: fmt.Sprintf(chiaharvesterNamePattern, harvester.Name),
@@ -95,7 +95,7 @@ func getChiaVolumeMounts(harvester k8schianetv1.ChiaHarvester) []corev1.VolumeMo
 
 	// CHIA_ROOT volume
 	v = append(v, corev1.VolumeMount{
-		Name:      consts.ChiaRootVolumeName,
+		Name:      "chiaroot",
 		MountPath: "/chia-data",
 	})
 

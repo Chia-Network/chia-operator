@@ -17,8 +17,6 @@ import (
 	"github.com/chia-network/chia-operator/internal/controller/common/consts"
 )
 
-const dataLayerServerName = "server"
-
 // getChiaVolumes retrieves the requisite volumes from the Chia config struct
 func getChiaVolumes(datalayer k8schianetv1.ChiaDataLayer) []corev1.Volume {
 	var v []corev1.Volume
@@ -48,7 +46,7 @@ func getChiaVolumes(datalayer k8schianetv1.ChiaDataLayer) []corev1.Volume {
 	// CHIA_ROOT volume
 	if kube.ShouldMakeChiaRootVolumeClaim(datalayer.Spec.Storage) {
 		v = append(v, corev1.Volume{
-			Name: consts.ChiaRootVolumeName,
+			Name: "chiaroot",
 			VolumeSource: corev1.VolumeSource{
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 					ClaimName: fmt.Sprintf(chiadatalayerNamePattern, datalayer.Name),
@@ -63,7 +61,7 @@ func getChiaVolumes(datalayer k8schianetv1.ChiaDataLayer) []corev1.Volume {
 	serverFilesClaimName := fmt.Sprintf(chiadatalayerNamePattern, datalayer.Name) + "-server"
 	if kube.ShouldMakeChiaRootVolumeClaim(datalayer.Spec.Storage) {
 		v = append(v, corev1.Volume{
-			Name: dataLayerServerName,
+			Name: "server",
 			VolumeSource: corev1.VolumeSource{
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 					ClaimName: serverFilesClaimName,
@@ -97,13 +95,13 @@ func getChiaVolumeMounts(datalayer k8schianetv1.ChiaDataLayer) []corev1.VolumeMo
 
 	// CHIA_ROOT volume
 	v = append(v, corev1.VolumeMount{
-		Name:      consts.ChiaRootVolumeName,
+		Name:      "chiaroot",
 		MountPath: "/chia-data",
 	})
 
 	// data_layer server files volume
 	v = append(v, corev1.VolumeMount{
-		Name:      dataLayerServerName,
+		Name:      "server",
 		MountPath: "/datalayer/server",
 	})
 
@@ -188,24 +186,24 @@ func getChiaPorts() []corev1.ContainerPort {
 		{
 			Name:          "daemon",
 			ContainerPort: consts.DaemonPort,
-			Protocol:      corev1.ProtocolTCP,
+			Protocol:      "TCP",
 		},
 		{
-			Name:          consts.RPCPortName,
+			Name:          "rpc",
 			ContainerPort: consts.DataLayerRPCPort,
-			Protocol:      corev1.ProtocolTCP,
+			Protocol:      "TCP",
 		},
 		{
 			Name:          "wallet-rpc",
 			ContainerPort: consts.WalletRPCPort,
-			Protocol:      corev1.ProtocolTCP,
+			Protocol:      "TCP",
 		},
 	}
 }
 
 // getExistingChiaDatalayerServerVolume similar to GetExistingChiaRootVolume but for a datalayer server file volume
 func getExistingChiaDatalayerServerVolume(storage *k8schianetv1.StorageConfig) corev1.Volume {
-	volumeName := dataLayerServerName
+	volumeName := "server"
 	if storage != nil && storage.DataLayerServerFiles != nil {
 		if storage.DataLayerServerFiles.PersistentVolumeClaim != nil && storage.DataLayerServerFiles.PersistentVolumeClaim.ClaimName != "" {
 			return corev1.Volume{

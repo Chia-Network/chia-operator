@@ -34,7 +34,7 @@ func getChiaVolumes(seeder k8schianetv1.ChiaSeeder) []corev1.Volume {
 	// CHIA_ROOT volume
 	if kube.ShouldMakeChiaRootVolumeClaim(seeder.Spec.Storage) {
 		v = append(v, corev1.Volume{
-			Name: consts.ChiaRootVolumeName,
+			Name: "chiaroot",
 			VolumeSource: corev1.VolumeSource{
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 					ClaimName: fmt.Sprintf(chiaseederNamePattern, seeder.Name),
@@ -62,7 +62,7 @@ func getChiaVolumeMounts(seeder k8schianetv1.ChiaSeeder) []corev1.VolumeMount {
 
 	// CHIA_ROOT volume
 	v = append(v, corev1.VolumeMount{
-		Name:      consts.ChiaRootVolumeName,
+		Name:      "chiaroot",
 		MountPath: "/chia-data",
 	})
 
@@ -148,27 +148,27 @@ func getChiaPorts(fullNodePort int32) []corev1.ContainerPort {
 		{
 			Name:          "daemon",
 			ContainerPort: consts.DaemonPort,
-			Protocol:      corev1.ProtocolTCP,
+			Protocol:      "TCP",
 		},
 		{
-			Name:          consts.DNSPortName,
+			Name:          "dns",
 			ContainerPort: 53,
-			Protocol:      corev1.ProtocolUDP,
+			Protocol:      "UDP",
 		},
 		{
-			Name:          consts.DNSTCPPortName,
+			Name:          "dns-tcp",
 			ContainerPort: 53,
-			Protocol:      corev1.ProtocolTCP,
+			Protocol:      "TCP",
 		},
 		{
-			Name:          consts.PeersPortName,
+			Name:          "peers",
 			ContainerPort: fullNodePort,
-			Protocol:      corev1.ProtocolTCP,
+			Protocol:      "TCP",
 		},
 		{
-			Name:          consts.RPCPortName,
+			Name:          "rpc",
 			ContainerPort: consts.CrawlerRPCPort,
-			Protocol:      corev1.ProtocolTCP,
+			Protocol:      "TCP",
 		},
 	}
 }

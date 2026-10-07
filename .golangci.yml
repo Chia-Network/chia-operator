@@ -6,7 +6,6 @@ linters:
     - copyloopvar
     - dupl
     - ginkgolinter
-    - goconst
     - gocyclo
     - lll
     - misspell
@@ -14,10 +13,6 @@ linters:
     - prealloc
     - unconvert
     - unparam
-  settings:
-    goconst:
-      # Keep literal expected values and fixtures readable in tests.
-      ignore-tests: true
   exclusions:
     generated: lax
     rules:

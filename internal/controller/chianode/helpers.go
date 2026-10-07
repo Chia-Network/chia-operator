@@ -9,8 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
-
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
@@ -50,7 +48,7 @@ func getChiaVolumesAndTemplates(node k8schianetv1.ChiaNode) ([]corev1.Volume, []
 // getChiaRootVolume gets the CHIA_ROOT volume for a Chia full_node.
 // This function is unique to ChiaNodes because it's the only Kind that deploys a StatefulSet that can use PersistentVolumeClaimTemplates.
 func getChiaRootVolume(storage *k8schianetv1.StorageConfig) (*corev1.Volume, *corev1.PersistentVolumeClaim) {
-	volumeName := consts.ChiaRootVolumeName
+	volumeName := "chiaroot"
 	if storage != nil && storage.ChiaRoot != nil {
 		if storage.ChiaRoot.PersistentVolumeClaim != nil {
 			// Get AccessModes, default to RWO
@@ -109,7 +107,7 @@ func getChiaVolumeMounts() []corev1.VolumeMount {
 
 	// CHIA_ROOT volume
 	v = append(v, corev1.VolumeMount{
-		Name:      consts.ChiaRootVolumeName,
+		Name:      "chiaroot",
 		MountPath: "/chia-data",
 	})
 

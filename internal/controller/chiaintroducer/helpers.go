@@ -7,8 +7,6 @@ package chiaintroducer
 import (
 	"fmt"
 
-	"github.com/chia-network/chia-operator/internal/controller/common/consts"
-
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
 
@@ -34,7 +32,7 @@ func getChiaVolumes(introducer k8schianetv1.ChiaIntroducer) []corev1.Volume {
 	// CHIA_ROOT volume
 	if kube.ShouldMakeChiaRootVolumeClaim(introducer.Spec.Storage) {
 		v = append(v, corev1.Volume{
-			Name: consts.ChiaRootVolumeName,
+			Name: "chiaroot",
 			VolumeSource: corev1.VolumeSource{
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 					ClaimName: fmt.Sprintf(chiaintroducerNamePattern, introducer.Name),
@@ -62,7 +60,7 @@ func getChiaVolumeMounts(introducer k8schianetv1.ChiaIntroducer) []corev1.Volume
 
 	// CHIA_ROOT volume
 	v = append(v, corev1.VolumeMount{
-		Name:      consts.ChiaRootVolumeName,
+		Name:      "chiaroot",
 		MountPath: "/chia-data",
 	})
 

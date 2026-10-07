@@ -29,9 +29,9 @@ func assemblePeerService(crawler k8schianetv1.ChiaCrawler, fullNodePort int32) c
 		Ports: []corev1.ServicePort{
 			{
 				Port:       fullNodePort,
-				TargetPort: intstr.FromString(consts.PeersPortName),
-				Protocol:   corev1.ProtocolTCP,
-				Name:       consts.PeersPortName,
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
 			},
 		},
 	}
@@ -69,15 +69,15 @@ func assembleAllService(crawler k8schianetv1.ChiaCrawler, fullNodePort int32) co
 		Ports: []corev1.ServicePort{
 			{
 				Port:       fullNodePort,
-				TargetPort: intstr.FromString(consts.PeersPortName),
-				Protocol:   corev1.ProtocolTCP,
-				Name:       consts.PeersPortName,
+				TargetPort: intstr.FromString("peers"),
+				Protocol:   "TCP",
+				Name:       "peers",
 			},
 			{
 				Port:       consts.CrawlerRPCPort,
-				TargetPort: intstr.FromString(consts.RPCPortName),
-				Protocol:   corev1.ProtocolTCP,
-				Name:       consts.RPCPortName,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
 			},
 		},
 	}
@@ -149,9 +149,9 @@ func assembleRPCService(crawler k8schianetv1.ChiaCrawler) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.CrawlerRPCPort,
-				TargetPort: intstr.FromString(consts.RPCPortName),
-				Protocol:   corev1.ProtocolTCP,
-				Name:       consts.RPCPortName,
+				TargetPort: intstr.FromString("rpc"),
+				Protocol:   "TCP",
+				Name:       "rpc",
 			},
 		},
 	}
@@ -332,17 +332,17 @@ func assembleChiaContainer(crawler k8schianetv1.ChiaCrawler, fullNodePort int32,
 			{
 				Name:          "daemon",
 				ContainerPort: consts.DaemonPort,
-				Protocol:      corev1.ProtocolTCP,
+				Protocol:      "TCP",
 			},
 			{
-				Name:          consts.PeersPortName,
+				Name:          "peers",
 				ContainerPort: fullNodePort,
-				Protocol:      corev1.ProtocolTCP,
+				Protocol:      "TCP",
 			},
 			{
-				Name:          consts.RPCPortName,
+				Name:          "rpc",
 				ContainerPort: consts.CrawlerRPCPort,
-				Protocol:      corev1.ProtocolTCP,
+				Protocol:      "TCP",
 			},
 		},
 		VolumeMounts: getChiaVolumeMounts(crawler),
