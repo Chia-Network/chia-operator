@@ -2071,19 +2071,19 @@ func (in *NetworkConstants) DeepCopyInto(out *NetworkConstants) {
 		*out = new(uint8)
 		**out = **in
 	}
-	if in.PlotFilterV2FirstAdjustmentHeight != nil {
-		in, out := &in.PlotFilterV2FirstAdjustmentHeight, &out.PlotFilterV2FirstAdjustmentHeight
-		*out = new(uint32)
+	if in.PlotFilterV2RelativeHeight != nil {
+		in, out := &in.PlotFilterV2RelativeHeight, &out.PlotFilterV2RelativeHeight
+		*out = make([]uint32, len(*in))
+		copy(*out, *in)
+	}
+	if in.FilterWindowSize != nil {
+		in, out := &in.FilterWindowSize, &out.FilterWindowSize
+		*out = new(uint8)
 		**out = **in
 	}
-	if in.PlotFilterV2SecondAdjustmentHeight != nil {
-		in, out := &in.PlotFilterV2SecondAdjustmentHeight, &out.PlotFilterV2SecondAdjustmentHeight
-		*out = new(uint32)
-		**out = **in
-	}
-	if in.PlotFilterV2ThirdAdjustmentHeight != nil {
-		in, out := &in.PlotFilterV2ThirdAdjustmentHeight, &out.PlotFilterV2ThirdAdjustmentHeight
-		*out = new(uint32)
+	if in.MaxEffectivePlotFilterBits != nil {
+		in, out := &in.MaxEffectivePlotFilterBits, &out.MaxEffectivePlotFilterBits
+		*out = new(uint8)
 		**out = **in
 	}
 }

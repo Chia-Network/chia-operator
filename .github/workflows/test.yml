@@ -11,7 +11,7 @@ jobs:
     name: Run lint and test
     runs-on: "ubuntu-latest"
     timeout-minutes: 10
-    container: golang:1
+    container: golang:1.26
     steps:
       - name: Add safe git directory
         uses: Chia-Network/actions/git-mark-workspace-safe@main
@@ -32,7 +32,7 @@ jobs:
   test-controller-gen-ran:
     runs-on: "ubuntu-latest"
     timeout-minutes: 10
-    container: golang:1
+    container: golang:1.26
     steps:
       - uses: actions/checkout@v7
 

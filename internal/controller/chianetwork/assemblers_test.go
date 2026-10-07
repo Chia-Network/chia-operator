@@ -40,14 +40,19 @@ var (
 		AddressPrefix:       "txch",
 		DefaultFullNodePort: 58444,
 	}
-	minPlotSize    uint8  = 18
-	hardForkHeight uint32 = 0
-	networkConsts         = k8schianetv1.NetworkConstants{
+	minPlotSize                uint8  = 18
+	hardForkHeight             uint32 = 0
+	filterWindowSize           uint8  = 16
+	maxEffectivePlotFilterBits uint8  = 13
+	networkConsts                     = k8schianetv1.NetworkConstants{
 		MinPlotSize:                    &minPlotSize,
 		HardForkHeight:                 &hardForkHeight,
 		GenesisChallenge:               "fb00c54298fc1c149afbf4c8996fb2317ae41e4649b934ca495991b7852b841",
 		GenesisPreFarmPoolPuzzleHash:   "asdlsakldlskalskdsasdasdsadsadsadsadsdsadsas",
 		GenesisPreFarmFarmerPuzzleHash: "testestestestestestestesrestestestestestest",
+		PlotFilterV2RelativeHeight:     []uint32{15168, 13632, 12096, 10560, 9024, 7488, 5952, 4416, 2880},
+		FilterWindowSize:               &filterWindowSize,
+		MaxEffectivePlotFilterBits:     &maxEffectivePlotFilterBits,
 	}
 	network                     = "testnetz"
 	networkPort          uint16 = 58444
@@ -62,7 +67,7 @@ func TestAssembleConfigMap(t *testing.T) {
 			Namespace: "testnamespace",
 		},
 		Data: map[string]string{
-			"chia.network_overrides.constants": `{"testnetz":{"GENESIS_CHALLENGE":"fb00c54298fc1c149afbf4c8996fb2317ae41e4649b934ca495991b7852b841","GENESIS_PRE_FARM_POOL_PUZZLE_HASH":"asdlsakldlskalskdsasdasdsadsadsadsadsdsadsas","GENESIS_PRE_FARM_FARMER_PUZZLE_HASH":"testestestestestestestesrestestestestestest","MIN_PLOT_SIZE":18,"HARD_FORK_HEIGHT":0}}`,
+			"chia.network_overrides.constants": `{"testnetz":{"GENESIS_CHALLENGE":"fb00c54298fc1c149afbf4c8996fb2317ae41e4649b934ca495991b7852b841","GENESIS_PRE_FARM_POOL_PUZZLE_HASH":"asdlsakldlskalskdsasdasdsadsadsadsadsdsadsas","GENESIS_PRE_FARM_FARMER_PUZZLE_HASH":"testestestestestestestesrestestestestestest","MIN_PLOT_SIZE":18,"HARD_FORK_HEIGHT":0,"PLOT_FILTER_V2_RELATIVE_HEIGHT":[15168,13632,12096,10560,9024,7488,5952,4416,2880],"FILTER_WINDOW_SIZE":16,"MAX_EFFECTIVE_PLOT_FILTER_BITS":13}}`,
 			"chia.network_overrides.config":    `{"testnetz":{"address_prefix":"txch","default_full_node_port":58444}}`,
 			"network":                          network,
 			"network_port":                     strconv.Itoa(int(networkPort)),
