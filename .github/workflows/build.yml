@@ -29,12 +29,25 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set dependency versions
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -e
-          CHIA_IMAGE_TAG=$(curl -fsSL https://latest.cmm.io/chia)
-          EXPORTER_IMAGE_TAG=$(curl -fsSL https://latest.cmm.io/chia-exporter)
-          HEALTHCHECK_IMAGE_TAG=$(curl -fsSL https://latest.cmm.io/chia-healthcheck)
-          DBPULL_IMAGE_TAG=$(curl -fsSL https://latest.cmm.io/chia-db-pull)
+          fetch_tag() {
+            curl -fsSL \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/Chia-Network/${1}/releases/latest" \
+              | sed -n 's/^  "tag_name": "\([^"]*\)",/\1/p'
+          }
+          CHIA_IMAGE_TAG=$(fetch_tag chia-blockchain)
+          EXPORTER_IMAGE_TAG=$(fetch_tag chia-exporter)
+          HEALTHCHECK_IMAGE_TAG=$(fetch_tag chia-healthcheck)
+          DBPULL_IMAGE_TAG=$(fetch_tag chia-db-pull)
+          echo "CHIA_IMAGE_TAG=$CHIA_IMAGE_TAG"
+          echo "EXPORTER_IMAGE_TAG=$EXPORTER_IMAGE_TAG"
+          echo "HEALTHCHECK_IMAGE_TAG=$HEALTHCHECK_IMAGE_TAG"
+          echo "DBPULL_IMAGE_TAG=$DBPULL_IMAGE_TAG"
 
           # Verify all variables are set
           if [ -z "$CHIA_IMAGE_TAG" ] || [ -z "$EXPORTER_IMAGE_TAG" ] || [ -z "$HEALTHCHECK_IMAGE_TAG" ] || [ -z "$DBPULL_IMAGE_TAG" ]; then
