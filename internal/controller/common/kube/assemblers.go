@@ -137,21 +137,21 @@ func AssembleChiaExporterContainer(input AssembleChiaExporterContainerInputs) co
 		ImagePullPolicy: input.ImagePullPolicy,
 		Env: []corev1.EnvVar{
 			{
-				Name:  "CHIA_ROOT",
-				Value: "/chia-data",
+				Name:  chiaRootEnvName,
+				Value: chiaRootPath,
 			},
 		},
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "metrics",
 				ContainerPort: consts.ChiaExporterPort,
-				Protocol:      "TCP",
+				Protocol:      corev1.ProtocolTCP,
 			},
 		},
 		LivenessProbe: &corev1.Probe{
 			ProbeHandler: corev1.ProbeHandler{
 				HTTPGet: &corev1.HTTPGetAction{
-					Path: "/healthz",
+					Path: healthcheckPath,
 					Port: intstr.FromInt32(consts.ChiaExporterPort),
 				},
 			},
@@ -159,7 +159,7 @@ func AssembleChiaExporterContainer(input AssembleChiaExporterContainerInputs) co
 		ReadinessProbe: &corev1.Probe{
 			ProbeHandler: corev1.ProbeHandler{
 				HTTPGet: &corev1.HTTPGetAction{
-					Path: "/healthz",
+					Path: healthcheckPath,
 					Port: intstr.FromInt32(consts.ChiaExporterPort),
 				},
 			},
@@ -167,7 +167,7 @@ func AssembleChiaExporterContainer(input AssembleChiaExporterContainerInputs) co
 		StartupProbe: &corev1.Probe{
 			ProbeHandler: corev1.ProbeHandler{
 				HTTPGet: &corev1.HTTPGetAction{
-					Path: "/healthz",
+					Path: healthcheckPath,
 					Port: intstr.FromInt32(consts.ChiaExporterPort),
 				},
 			},
@@ -177,8 +177,8 @@ func AssembleChiaExporterContainer(input AssembleChiaExporterContainerInputs) co
 		Resources: input.ResourceRequirements,
 		VolumeMounts: []corev1.VolumeMount{
 			{
-				Name:      "chiaroot",
-				MountPath: "/chia-data",
+				Name:      consts.ChiaRootVolumeName,
+				MountPath: chiaRootPath,
 			},
 		},
 	}
@@ -219,8 +219,8 @@ func AssembleChiaHealthcheckContainer(input AssembleChiaHealthcheckContainerInpu
 		ImagePullPolicy: input.ImagePullPolicy,
 		Env: []corev1.EnvVar{
 			{
-				Name:  "CHIA_ROOT",
-				Value: "/chia-data",
+				Name:  chiaRootEnvName,
+				Value: chiaRootPath,
 			},
 			{
 				Name:  "CHIA_HEALTHCHECK_HOSTNAME",
@@ -231,13 +231,13 @@ func AssembleChiaHealthcheckContainer(input AssembleChiaHealthcheckContainerInpu
 			{
 				Name:          "health",
 				ContainerPort: consts.ChiaHealthcheckPort,
-				Protocol:      "TCP",
+				Protocol:      corev1.ProtocolTCP,
 			},
 		},
 		LivenessProbe: &corev1.Probe{
 			ProbeHandler: corev1.ProbeHandler{
 				HTTPGet: &corev1.HTTPGetAction{
-					Path: "/healthz",
+					Path: healthcheckPath,
 					Port: intstr.FromInt32(consts.ChiaHealthcheckPort),
 				},
 			},
@@ -245,7 +245,7 @@ func AssembleChiaHealthcheckContainer(input AssembleChiaHealthcheckContainerInpu
 		ReadinessProbe: &corev1.Probe{
 			ProbeHandler: corev1.ProbeHandler{
 				HTTPGet: &corev1.HTTPGetAction{
-					Path: "/healthz",
+					Path: healthcheckPath,
 					Port: intstr.FromInt32(consts.ChiaHealthcheckPort),
 				},
 			},
@@ -253,7 +253,7 @@ func AssembleChiaHealthcheckContainer(input AssembleChiaHealthcheckContainerInpu
 		StartupProbe: &corev1.Probe{
 			ProbeHandler: corev1.ProbeHandler{
 				HTTPGet: &corev1.HTTPGetAction{
-					Path: "/healthz",
+					Path: healthcheckPath,
 					Port: intstr.FromInt32(consts.ChiaHealthcheckPort),
 				},
 			},
@@ -263,8 +263,8 @@ func AssembleChiaHealthcheckContainer(input AssembleChiaHealthcheckContainerInpu
 		Resources: input.ResourceRequirements,
 		VolumeMounts: []corev1.VolumeMount{
 			{
-				Name:      "chiaroot",
-				MountPath: "/chia-data",
+				Name:      consts.ChiaRootVolumeName,
+				MountPath: chiaRootPath,
 			},
 		},
 	}
@@ -336,8 +336,8 @@ func AssembleChiaDBPullContainer(input AssembleChiaDBPullContainerInputs) corev1
 		ImagePullPolicy: input.ImagePullPolicy,
 		Env: []corev1.EnvVar{
 			{
-				Name:  "CHIA_ROOT",
-				Value: "/chia-data",
+				Name:  chiaRootEnvName,
+				Value: chiaRootPath,
 			},
 			{
 				Name:  "S3_PREFIX",
@@ -347,8 +347,8 @@ func AssembleChiaDBPullContainer(input AssembleChiaDBPullContainerInputs) corev1
 		Resources: input.ResourceRequirements,
 		VolumeMounts: []corev1.VolumeMount{
 			{
-				Name:      "chiaroot",
-				MountPath: "/chia-data",
+				Name:      consts.ChiaRootVolumeName,
+				MountPath: chiaRootPath,
 			},
 		},
 	}

@@ -80,7 +80,7 @@ func GetChiaExporterServicePorts() []corev1.ServicePort {
 		{
 			Port:       consts.ChiaExporterPort,
 			TargetPort: intstr.FromString("metrics"),
-			Protocol:   "TCP",
+			Protocol:   corev1.ProtocolTCP,
 			Name:       "metrics",
 		},
 	}
@@ -92,7 +92,7 @@ func GetChiaHealthcheckServicePorts() []corev1.ServicePort {
 		{
 			Port:       consts.ChiaHealthcheckPort,
 			TargetPort: intstr.FromString("health"),
-			Protocol:   "TCP",
+			Protocol:   corev1.ProtocolTCP,
 			Name:       "health",
 		},
 	}
@@ -103,7 +103,7 @@ func GetChiaDaemonServicePorts() []corev1.ServicePort {
 		{
 			Port:       consts.DaemonPort,
 			TargetPort: intstr.FromString("daemon"),
-			Protocol:   "TCP",
+			Protocol:   corev1.ProtocolTCP,
 			Name:       "daemon",
 		},
 	}
@@ -139,7 +139,7 @@ func GetFullNodePort(chia k8schianetv1.CommonSpecChia, networkData *map[string]s
 // NOTE: This function does not handle the mode where the controller generates a CHIA_ROOT PVC, itself.
 // Therefore, if ShouldMakeChiaRootVolumeClaim is true, specifying the PVC's name should be handled in the controller.
 func GetExistingChiaRootVolume(storage *k8schianetv1.StorageConfig) corev1.Volume {
-	volumeName := "chiaroot"
+	volumeName := consts.ChiaRootVolumeName
 	if storage != nil && storage.ChiaRoot != nil {
 		if storage.ChiaRoot.PersistentVolumeClaim != nil && storage.ChiaRoot.PersistentVolumeClaim.ClaimName != "" {
 			return corev1.Volume{
@@ -176,8 +176,8 @@ func GetCommonChiaEnv(commonSpecChia k8schianetv1.CommonSpecChia, networkData *m
 
 	// CHIA_ROOT env var
 	env = append(env, corev1.EnvVar{
-		Name:  "CHIA_ROOT",
-		Value: "/chia-data",
+		Name:  chiaRootEnvName,
+		Value: chiaRootPath,
 	})
 
 	// ca env var

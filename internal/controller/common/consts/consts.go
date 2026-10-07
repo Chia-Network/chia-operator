@@ -115,3 +115,14 @@ const (
 	// ChiaHealthcheckPort defines the port for Chia Healthcheck instances
 	ChiaHealthcheckPort = 9950
 )
+
+// Names and paths shared by Chia container and service definitions.
+const (
+	PeersPortName      = "peers"
+	RPCPortName        = "rpc"
+	DNSPortName        = "dns"
+	DNSTCPPortName     = "dns-tcp"
+	ChiaRootVolumeName = "chiaroot"
+	FarmerPath         = "/farmer"
+	HarvesterPath      = "/harvester"
+)

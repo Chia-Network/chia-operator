@@ -24,7 +24,7 @@ func AssembleService(datalayer k8schianetv1.ChiaDataLayer) corev1.Service {
 			{
 				Port:       80,
 				TargetPort: intstr.FromString("http"),
-				Protocol:   "TCP",
+				Protocol:   corev1.ProtocolTCP,
 				Name:       "http",
 			},
 		},
@@ -99,7 +99,7 @@ func AssembleContainer(datalayer k8schianetv1.ChiaDataLayer) corev1.Container {
 		{
 			Name:          "http",
 			ContainerPort: int32(containerPort),
-			Protocol:      "TCP",
+			Protocol:      corev1.ProtocolTCP,
 		},
 	}
 

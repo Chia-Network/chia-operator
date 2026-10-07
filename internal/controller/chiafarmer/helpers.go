@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
+
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
@@ -43,7 +45,7 @@ func getChiaVolumes(farmer k8schianetv1.ChiaFarmer) []corev1.Volume {
 	// CHIA_ROOT volume
 	if kube.ShouldMakeChiaRootVolumeClaim(farmer.Spec.Storage) {
 		v = append(v, corev1.Volume{
-			Name: "chiaroot",
+			Name: consts.ChiaRootVolumeName,
 			VolumeSource: corev1.VolumeSource{
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 					ClaimName: fmt.Sprintf(chiafarmerNamePattern, farmer.Name),
@@ -69,7 +71,7 @@ func getChiaVolumeMounts() []corev1.VolumeMount {
 			MountPath: "/key",
 		},
 		{
-			Name:      "chiaroot",
+			Name:      consts.ChiaRootVolumeName,
 			MountPath: "/chia-data",
 		},
 	}

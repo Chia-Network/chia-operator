@@ -63,14 +63,14 @@ func assembleRPCService(datalayer k8schianetv1.ChiaDataLayer) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.DataLayerRPCPort,
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   "TCP",
-				Name:       "rpc",
+				TargetPort: intstr.FromString(consts.RPCPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.RPCPortName,
 			},
 			{
 				Port:       consts.WalletRPCPort,
 				TargetPort: intstr.FromString("wallet-rpc"),
-				Protocol:   "TCP",
+				Protocol:   corev1.ProtocolTCP,
 				Name:       "wallet-rpc",
 			},
 		},

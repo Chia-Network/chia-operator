@@ -30,9 +30,9 @@ func assemblePeerService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.WalletPort,
-				TargetPort: intstr.FromString("peers"),
-				Protocol:   "TCP",
-				Name:       "peers",
+				TargetPort: intstr.FromString(consts.PeersPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.PeersPortName,
 			},
 		},
 	}
@@ -70,15 +70,15 @@ func assembleAllService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.WalletPort,
-				TargetPort: intstr.FromString("peers"),
-				Protocol:   "TCP",
-				Name:       "peers",
+				TargetPort: intstr.FromString(consts.PeersPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.PeersPortName,
 			},
 			{
 				Port:       consts.WalletRPCPort,
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   "TCP",
-				Name:       "rpc",
+				TargetPort: intstr.FromString(consts.RPCPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.RPCPortName,
 			},
 		},
 	}
@@ -150,9 +150,9 @@ func assembleRPCService(wallet k8schianetv1.ChiaWallet) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.WalletRPCPort,
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   "TCP",
-				Name:       "rpc",
+				TargetPort: intstr.FromString(consts.RPCPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.RPCPortName,
 			},
 		},
 	}

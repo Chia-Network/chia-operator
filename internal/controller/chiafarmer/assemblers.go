@@ -30,9 +30,9 @@ func assemblePeerService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.FarmerPort,
-				TargetPort: intstr.FromString("peers"),
-				Protocol:   "TCP",
-				Name:       "peers",
+				TargetPort: intstr.FromString(consts.PeersPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.PeersPortName,
 			},
 		},
 	}
@@ -75,15 +75,15 @@ func assembleAllService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.FarmerPort,
-				TargetPort: intstr.FromString("peers"),
-				Protocol:   "TCP",
-				Name:       "peers",
+				TargetPort: intstr.FromString(consts.PeersPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.PeersPortName,
 			},
 			{
 				Port:       consts.FarmerRPCPort,
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   "TCP",
-				Name:       "rpc",
+				TargetPort: intstr.FromString(consts.RPCPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.RPCPortName,
 			},
 		},
 	}
@@ -155,9 +155,9 @@ func assembleRPCService(farmer k8schianetv1.ChiaFarmer) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.FarmerRPCPort,
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   "TCP",
-				Name:       "rpc",
+				TargetPort: intstr.FromString(consts.RPCPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.RPCPortName,
 			},
 		},
 	}
@@ -375,17 +375,17 @@ func assembleChiaContainer(ctx context.Context, farmer k8schianetv1.ChiaFarmer, 
 			{
 				Name:          "daemon",
 				ContainerPort: consts.DaemonPort,
-				Protocol:      "TCP",
+				Protocol:      corev1.ProtocolTCP,
 			},
 			{
-				Name:          "peers",
+				Name:          consts.PeersPortName,
 				ContainerPort: consts.FarmerPort,
-				Protocol:      "TCP",
+				Protocol:      corev1.ProtocolTCP,
 			},
 			{
-				Name:          "rpc",
+				Name:          consts.RPCPortName,
 				ContainerPort: consts.FarmerRPCPort,
-				Protocol:      "TCP",
+				Protocol:      corev1.ProtocolTCP,
 			},
 		},
 		VolumeMounts: getChiaVolumeMounts(),
@@ -405,7 +405,7 @@ func assembleChiaContainer(ctx context.Context, farmer k8schianetv1.ChiaFarmer, 
 		input.LivenessProbe = farmer.Spec.ChiaConfig.LivenessProbe
 	} else if kube.ChiaHealthcheckEnabled(farmer.Spec.ChiaHealthcheckConfig) {
 		input.LivenessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Path: "/farmer",
+			Path: consts.FarmerPath,
 		})
 	}
 
@@ -413,7 +413,7 @@ func assembleChiaContainer(ctx context.Context, farmer k8schianetv1.ChiaFarmer, 
 		input.ReadinessProbe = farmer.Spec.ChiaConfig.ReadinessProbe
 	} else if kube.ChiaHealthcheckEnabled(farmer.Spec.ChiaHealthcheckConfig) {
 		input.ReadinessProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Path: "/farmer",
+			Path: consts.FarmerPath,
 		})
 	}
 
@@ -423,7 +423,7 @@ func assembleChiaContainer(ctx context.Context, farmer k8schianetv1.ChiaFarmer, 
 		failThresh := int32(30)
 		periodSec := int32(10)
 		input.StartupProbe = kube.AssembleChiaHealthcheckProbe(kube.AssembleChiaHealthcheckProbeInputs{
-			Path:             "/farmer",
+			Path:             consts.FarmerPath,
 			FailureThreshold: &failThresh,
 			PeriodSeconds:    &periodSec,
 		})

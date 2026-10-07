@@ -23,17 +23,17 @@ func getChiaPorts() []corev1.ContainerPort {
 		{
 			Name:          "daemon",
 			ContainerPort: consts.DaemonPort,
-			Protocol:      "TCP",
+			Protocol:      corev1.ProtocolTCP,
 		},
 		{
-			Name:          "peers",
+			Name:          consts.PeersPortName,
 			ContainerPort: consts.WalletPort,
-			Protocol:      "TCP",
+			Protocol:      corev1.ProtocolTCP,
 		},
 		{
-			Name:          "rpc",
+			Name:          consts.RPCPortName,
 			ContainerPort: consts.WalletRPCPort,
-			Protocol:      "TCP",
+			Protocol:      corev1.ProtocolTCP,
 		},
 	}
 }
@@ -67,7 +67,7 @@ func getChiaVolumes(wallet k8schianetv1.ChiaWallet) []corev1.Volume {
 	// CHIA_ROOT volume
 	if kube.ShouldMakeChiaRootVolumeClaim(wallet.Spec.Storage) {
 		v = append(v, corev1.Volume{
-			Name: "chiaroot",
+			Name: consts.ChiaRootVolumeName,
 			VolumeSource: corev1.VolumeSource{
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 					ClaimName: fmt.Sprintf(chiawalletNamePattern, wallet.Name),
@@ -100,7 +100,7 @@ func getChiaVolumeMounts(wallet k8schianetv1.ChiaWallet) []corev1.VolumeMount {
 
 	// CHIA_ROOT volume
 	v = append(v, corev1.VolumeMount{
-		Name:      "chiaroot",
+		Name:      consts.ChiaRootVolumeName,
 		MountPath: "/chia-data",
 	})
 

@@ -28,9 +28,9 @@ func assemblePeerService(node k8schianetv1.ChiaNode, fullNodePort int32) corev1.
 		Ports: []corev1.ServicePort{
 			{
 				Port:       fullNodePort,
-				TargetPort: intstr.FromString("peers"),
-				Protocol:   "TCP",
-				Name:       "peers",
+				TargetPort: intstr.FromString(consts.PeersPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.PeersPortName,
 			},
 		},
 	}
@@ -73,15 +73,15 @@ func assembleAllService(node k8schianetv1.ChiaNode, fullNodePort int32) corev1.S
 		Ports: []corev1.ServicePort{
 			{
 				Port:       fullNodePort,
-				TargetPort: intstr.FromString("peers"),
-				Protocol:   "TCP",
-				Name:       "peers",
+				TargetPort: intstr.FromString(consts.PeersPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.PeersPortName,
 			},
 			{
 				Port:       consts.NodeRPCPort,
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   "TCP",
-				Name:       "rpc",
+				TargetPort: intstr.FromString(consts.RPCPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.RPCPortName,
 			},
 		},
 	}
@@ -153,9 +153,9 @@ func assembleRPCService(node k8schianetv1.ChiaNode) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.NodeRPCPort,
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   "TCP",
-				Name:       "rpc",
+				TargetPort: intstr.FromString(consts.RPCPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.RPCPortName,
 			},
 		},
 	}
@@ -375,17 +375,17 @@ func assembleChiaContainer(ctx context.Context, node k8schianetv1.ChiaNode, full
 			{
 				Name:          "daemon",
 				ContainerPort: consts.DaemonPort,
-				Protocol:      "TCP",
+				Protocol:      corev1.ProtocolTCP,
 			},
 			{
-				Name:          "peers",
+				Name:          consts.PeersPortName,
 				ContainerPort: fullNodePort,
-				Protocol:      "TCP",
+				Protocol:      corev1.ProtocolTCP,
 			},
 			{
-				Name:          "rpc",
+				Name:          consts.RPCPortName,
 				ContainerPort: consts.NodeRPCPort,
-				Protocol:      "TCP",
+				Protocol:      corev1.ProtocolTCP,
 			},
 		},
 		VolumeMounts: getChiaVolumeMounts(),

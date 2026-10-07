@@ -7,6 +7,8 @@ package chiacrawler
 import (
 	"fmt"
 
+	"github.com/chia-network/chia-operator/internal/controller/common/consts"
+
 	"github.com/chia-network/chia-operator/internal/controller/common/kube"
 	corev1 "k8s.io/api/core/v1"
 
@@ -32,7 +34,7 @@ func getChiaVolumes(crawler k8schianetv1.ChiaCrawler) []corev1.Volume {
 	// CHIA_ROOT volume
 	if kube.ShouldMakeChiaRootVolumeClaim(crawler.Spec.Storage) {
 		v = append(v, corev1.Volume{
-			Name: "chiaroot",
+			Name: consts.ChiaRootVolumeName,
 			VolumeSource: corev1.VolumeSource{
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 					ClaimName: fmt.Sprintf(chiacrawlerNamePattern, crawler.Name),
@@ -60,7 +62,7 @@ func getChiaVolumeMounts(crawler k8schianetv1.ChiaCrawler) []corev1.VolumeMount 
 
 	// CHIA_ROOT volume
 	v = append(v, corev1.VolumeMount{
-		Name:      "chiaroot",
+		Name:      consts.ChiaRootVolumeName,
 		MountPath: "/chia-data",
 	})
 

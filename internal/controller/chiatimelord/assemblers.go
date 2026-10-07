@@ -30,9 +30,9 @@ func assemblePeerService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.TimelordPort,
-				TargetPort: intstr.FromString("peers"),
-				Protocol:   "TCP",
-				Name:       "peers",
+				TargetPort: intstr.FromString(consts.PeersPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.PeersPortName,
 			},
 		},
 	}
@@ -75,15 +75,15 @@ func assembleAllService(timelord k8schianetv1.ChiaTimelord) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.TimelordPort,
-				TargetPort: intstr.FromString("peers"),
-				Protocol:   "TCP",
-				Name:       "peers",
+				TargetPort: intstr.FromString(consts.PeersPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.PeersPortName,
 			},
 			{
 				Port:       consts.TimelordRPCPort,
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   "TCP",
-				Name:       "rpc",
+				TargetPort: intstr.FromString(consts.RPCPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.RPCPortName,
 			},
 		},
 	}
@@ -155,9 +155,9 @@ func assembleRPCService(tl k8schianetv1.ChiaTimelord) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.TimelordRPCPort,
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   "TCP",
-				Name:       "rpc",
+				TargetPort: intstr.FromString(consts.RPCPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.RPCPortName,
 			},
 		},
 	}
@@ -374,17 +374,17 @@ func assembleChiaContainer(ctx context.Context, tl k8schianetv1.ChiaTimelord, ne
 			{
 				Name:          "daemon",
 				ContainerPort: consts.DaemonPort,
-				Protocol:      "TCP",
+				Protocol:      corev1.ProtocolTCP,
 			},
 			{
-				Name:          "peers",
+				Name:          consts.PeersPortName,
 				ContainerPort: consts.TimelordPort,
-				Protocol:      "TCP",
+				Protocol:      corev1.ProtocolTCP,
 			},
 			{
-				Name:          "rpc",
+				Name:          consts.RPCPortName,
 				ContainerPort: consts.TimelordRPCPort,
-				Protocol:      "TCP",
+				Protocol:      corev1.ProtocolTCP,
 			},
 		},
 		VolumeMounts: getChiaVolumeMounts(),

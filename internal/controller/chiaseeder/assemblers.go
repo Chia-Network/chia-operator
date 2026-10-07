@@ -29,21 +29,21 @@ func assemblePeerService(seeder k8schianetv1.ChiaSeeder, fullNodePort int32) cor
 		Ports: []corev1.ServicePort{
 			{
 				Port:       53,
-				TargetPort: intstr.FromString("dns"),
-				Protocol:   "UDP",
-				Name:       "dns",
+				TargetPort: intstr.FromString(consts.DNSPortName),
+				Protocol:   corev1.ProtocolUDP,
+				Name:       consts.DNSPortName,
 			},
 			{
 				Port:       53,
-				TargetPort: intstr.FromString("dns-tcp"),
-				Protocol:   "TCP",
-				Name:       "dns-tcp",
+				TargetPort: intstr.FromString(consts.DNSTCPPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.DNSTCPPortName,
 			},
 			{
 				Port:       fullNodePort,
-				TargetPort: intstr.FromString("peers"),
-				Protocol:   "TCP",
-				Name:       "peers",
+				TargetPort: intstr.FromString(consts.PeersPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.PeersPortName,
 			},
 		},
 	}
@@ -86,27 +86,27 @@ func assembleAllService(seeder k8schianetv1.ChiaSeeder, fullNodePort int32) core
 		Ports: []corev1.ServicePort{
 			{
 				Port:       53,
-				TargetPort: intstr.FromString("dns"),
-				Protocol:   "UDP",
-				Name:       "dns",
+				TargetPort: intstr.FromString(consts.DNSPortName),
+				Protocol:   corev1.ProtocolUDP,
+				Name:       consts.DNSPortName,
 			},
 			{
 				Port:       53,
-				TargetPort: intstr.FromString("dns-tcp"),
-				Protocol:   "TCP",
-				Name:       "dns-tcp",
+				TargetPort: intstr.FromString(consts.DNSTCPPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.DNSTCPPortName,
 			},
 			{
 				Port:       fullNodePort,
-				TargetPort: intstr.FromString("peers"),
-				Protocol:   "TCP",
-				Name:       "peers",
+				TargetPort: intstr.FromString(consts.PeersPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.PeersPortName,
 			},
 			{
 				Port:       consts.CrawlerRPCPort,
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   "TCP",
-				Name:       "rpc",
+				TargetPort: intstr.FromString(consts.RPCPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.RPCPortName,
 			},
 		},
 	}
@@ -178,9 +178,9 @@ func assembleRPCService(seeder k8schianetv1.ChiaSeeder) corev1.Service {
 		Ports: []corev1.ServicePort{
 			{
 				Port:       consts.CrawlerRPCPort,
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   "TCP",
-				Name:       "rpc",
+				TargetPort: intstr.FromString(consts.RPCPortName),
+				Protocol:   corev1.ProtocolTCP,
+				Name:       consts.RPCPortName,
 			},
 		},
 	}
